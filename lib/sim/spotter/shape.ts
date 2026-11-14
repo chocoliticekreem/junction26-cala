@@ -33,6 +33,7 @@
 // MIN_UNICORNS unicorns.
 import type { Stage } from "@/lib/taxonomy";
 import type { InvestorKind } from "../types";
+import { simModel } from "./futures";
 import { LOW_CONFIDENCE_N, MONTH_MS, ROUND_STAGES, median, stageIdx, toMs, type CompanyRow, type SpotterIndex } from "./base";
 
 export const SHAPE_K = 12;
@@ -176,6 +177,48 @@ export function seedSampleBase(idx: SpotterIndex): number | undefined {
   }
   const out = known ? (unicorns + 0.5) / (known + 1) : undefined;
   popBaseCache.set(idx, out);
+  return out;
+}
+
+// Stage-matched unicorn base rate: among seed-sample companies (outcome-blind, calibration.ts) with a
+// known outcome at asOf, the smoothed unicorn share of those that reached stage s (had an
+// effective-stage episode there): (unicorns + 0.5) / (reached + 1). A company counts at every stage
+// it reached, so the rate rises with stage, as it should: later-stage companies have already
+// survived the early stalls. A stage with fewer than MIN_STAGE_UNICORNS unicorns (pre-seed on the
+// real cohort: 0 of 55) backs off down the chain instead of to a near-zero smoothed share:
+// base(s) = raise rate(s) x base(next stage), with the founder engine's calibrated raise rate
+// (calibration.ts), so pre-seed reads as "raises seed, then the seed rate", not 0.9%.
+// Without a seed sample (fixtures) the whole cohort's known outcomes are used and basis = "cohort"
+// (case-enriched, so lifts read low there).
+export const MIN_STAGE_UNICORNS = 3;
+export type StageBase = { rate: number; reached: number; unicorns: number; backoff: boolean };
+const stageBaseCache = new WeakMap<SpotterIndex, { byStage: Partial<Record<Stage, StageBase>>; basis: "seed-sample" | "cohort" }>();
+
+export function stageBaseRates(idx: SpotterIndex): { byStage: Partial<Record<Stage, StageBase>>; basis: "seed-sample" | "cohort" } {
+  const hit = stageBaseCache.get(idx);
+  if (hit) return hit;
+  const hasSample = [...idx.rows.values()].some((r) => r.co.sampledBy === "seed-sample" && r.outcome !== "open");
+  const counts: Partial<Record<Stage, { reached: number; unicorns: number }>> = {};
+  for (const row of idx.rows.values()) {
+    if (row.outcome === "open" || (hasSample && row.co.sampledBy !== "seed-sample")) continue;
+    for (const s of new Set(row.eps.map((e) => e.stage))) {
+      const c = (counts[s] ??= { reached: 0, unicorns: 0 });
+      c.reached++;
+      if (row.outcome === "unicorn") c.unicorns++;
+    }
+  }
+  const byStage: Partial<Record<Stage, StageBase>> = {};
+  const raise = simModel(idx.cohort, idx.asOf).baseRates;
+  for (let i = ROUND_STAGES.length - 1; i >= 0; i--) {
+    const s = ROUND_STAGES[i];
+    const c = counts[s];
+    if (!c) continue;
+    const next = byStage[ROUND_STAGES[i + 1]];
+    const backoff = c.unicorns < MIN_STAGE_UNICORNS && !!next && raise[s] !== undefined;
+    byStage[s] = { rate: backoff ? raise[s]!.p * next!.rate : (c.unicorns + 0.5) / (c.reached + 1), ...c, backoff };
+  }
+  const out = { byStage, basis: hasSample ? ("seed-sample" as const) : ("cohort" as const) };
+  stageBaseCache.set(idx, out);
   return out;
 }
 

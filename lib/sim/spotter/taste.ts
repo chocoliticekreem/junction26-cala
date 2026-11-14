@@ -4,6 +4,8 @@
 //   cheque band                  - IQR of the round sizes it was on (round size, not its own cheque:
 //                                  Cala rarely splits a round by investor)
 //   entry stage                  - the stage of the first round it joined at each company (mode)
+//   entry distribution           - those first rounds by stage, lead-weighted like the above: where it
+//                                  comes into new companies, without its follow-ons
 //   follow-on                    - share of its companies' next rounds it re-upped in, and the
 //                                  share of its companies that raised again within 24 months
 // When the investor is one of the 193 in data/investors.json and the cohort history is thin
@@ -30,6 +32,7 @@ export type InvestorTaste = {
   chequeBand?: [number, number];
   chequeMedian?: number;
   entryStage?: Stage;
+  entryDist: Partial<Record<Stage, number>>;
   coInvestors: { id: string; name: string; count: number }[];
   followOn: { reUpRate: number; raisedAgainWithin24m: number; observed: number };
   portfolio: Set<string>;
@@ -65,6 +68,7 @@ export function tasteFromIndex(idx: SpotterIndex, investorId: string, opts: { re
   const sector: Partial<Record<Sector, number>> = {};
   const stage: Partial<Record<Stage, number>> = {};
   const entry: Partial<Record<Stage, number>> = {};
+  const entryW: Partial<Record<Stage, number>> = {};
   const amounts: number[] = [];
   let rounds = 0;
   let led = 0;
@@ -90,6 +94,7 @@ export function tasteFromIndex(idx: SpotterIndex, investorId: string, opts: { re
       stage[e.stage] = (stage[e.stage] ?? 0) + w;
       if (!entered) {
         entry[e.stage] = (entry[e.stage] ?? 0) + 1;
+        entryW[e.stage] = (entryW[e.stage] ?? 0) + w;
         entered = true;
         if ((idx.asOfMs - e.dateMs) / MONTH_MS >= 24) {
           observed++;
@@ -133,6 +138,7 @@ export function tasteFromIndex(idx: SpotterIndex, investorId: string, opts: { re
     chequeBand,
     chequeMedian: median(amounts) ?? (revealedBlended ? opts.revealed?.chequeMedian : undefined),
     entryStage,
+    entryDist: norm(entryW),
     coInvestors,
     followOn: { reUpRate: ru && ru.raised ? ru.reUp / ru.raised : 0, raisedAgainWithin24m: observed ? raisedAgain / observed : 0, observed },
     portfolio,

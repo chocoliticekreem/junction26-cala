@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import fixture from "@/tests/fixtures/spotter-cohort.json";
 import { POST } from "@/app/api/spotter/route";
-import { backtestSpotter, investorTaste, rankSpotter, runSpotter, simulateFutures, spotterCandidates, spotterIndex, unicornShape } from "@/lib/sim/spotter";
+import { backtestSpotter, inLane, investorLane, investorTaste, LANE_MIN_STAGE_SHARE, rankSpotter, runSpotter, simulateFutures, spotterCandidates, spotterIndex, unicornShape, type InvestorTaste } from "@/lib/sim/spotter";
 import { tasteFromIndex } from "@/lib/sim/spotter/taste";
-import { FUTURE_RUNS, simModel, UNICORN_VISION } from "@/lib/sim/spotter/futures";
-import { calibratedLift, seedSampleBase } from "@/lib/sim/spotter/shape";
-import { simulate } from "@/lib/sim/simulate";
-import { mulberry32, toMs } from "@/lib/sim/spotter/base";
+import { FUTURE_RUNS, PARTICIPATION_SCALE, pInRound, simModel, stageParticipation, UNICORN_VISION } from "@/lib/sim/spotter/futures";
+import { calibratedLift, MIN_STAGE_UNICORNS, seedSampleBase, stageBaseRates } from "@/lib/sim/spotter/shape";
+import { simulate, simulateRuns } from "@/lib/sim/simulate";
+import { mulberry32, ROUND_STAGES, toMs, type CompanyRow } from "@/lib/sim/spotter/base";
 import type { Cohort, CohortCompany, CohortRound, InvestorKind } from "@/lib/sim/types";
 import type { Revealed } from "@/lib/types";
 import { SECTORS, type Stage } from "@/lib/taxonomy";
@@ -105,6 +105,54 @@ describe("calibrated lift", () => {
     expect(calibratedLift(0.8, 0.4, 0.05) * 0.05).toBeLessThan(0.5);
   });
 
+  it("keeps candidates in the investor's stage lane", () => {
+    const taste = (entryDist: InvestorTaste["entryDist"], entryStage: Stage, stageDist: InvestorTaste["stageDist"] = {}) => ({ entryDist, stageDist, entryStage }) as InvestorTaste;
+    // Entries, not all rounds: a seed fund's Series B+ follow-ons do not open a Series B+ lane.
+    const seedFund = investorLane(taste({ "pre-seed": 0.35, seed: 0.45, "series-a": 0.2 }, "seed", { seed: 0.4, "series-a": 0.25, "series-b-plus": 0.2 }))!;
+    expect(seedFund).toEqual({ maxStage: "series-a", nextStages: ["pre-seed", "seed", "series-a"], minShare: LANE_MIN_STAGE_SHARE });
+    const growth = investorLane(taste({ "pre-seed": 0.03, seed: 0.13, "series-a": 0.28, "series-b-plus": 0.56 }, "series-b-plus"))!;
+    expect(growth.nextStages).toEqual(["series-a", "series-b-plus"]);
+    expect(investorLane(taste({}, "seed", { seed: 1 }))!.nextStages).toEqual(["seed"]);
+    const row = (stages: Stage[]) => ({ eps: stages.map((stage) => ({ stage })) }) as unknown as CompanyRow;
+    expect(inLane(seedFund, row(["pre-seed"]))).toBe(true);
+    expect(inLane(seedFund, row(["pre-seed", "seed"]))).toBe(true);
+    // A Series A company's next round is Series B+: a 10% follow-on tail, not the seed fund's lane.
+    expect(inLane(seedFund, row(["seed", "series-a"]))).toBe(false);
+    expect(inLane(growth, row(["pre-seed"]))).toBe(false);
+    expect(inLane(growth, row(["seed", "series-a"]))).toBe(true);
+    expect(investorLane(taste({}, "seed"))).toBeUndefined();
+    expect(inLane(undefined, row(["series-b-plus"]))).toBe(true);
+    const idx = spotterIndex(cohort);
+    const t = tasteFromIndex(idx, "inv:seedcamp");
+    for (const c of spotterCandidates(idx, t)) expect(inLane(investorLane(t), c.row)).toBe(true);
+  });
+
+  it("computes stage-matched base rates from seed-sample companies, backing off sparse stages", () => {
+    const tagged = structuredClone(cohort);
+    for (const c of Object.values(tagged.companies)) c.sampledBy = "seed-sample";
+    const idx = spotterIndex(tagged);
+    const { byStage, basis } = stageBaseRates(idx);
+    expect(basis).toBe("seed-sample");
+    const raise = simModel(tagged, idx.asOf).baseRates;
+    for (let i = ROUND_STAGES.length - 1; i >= 0; i--) {
+      const s = ROUND_STAGES[i];
+      let reached = 0;
+      let unicorns = 0;
+      for (const r of idx.rows.values()) {
+        if (r.outcome === "open" || !r.eps.some((e) => e.stage === s)) continue;
+        reached++;
+        if (r.outcome === "unicorn") unicorns++;
+      }
+      if (!reached) continue;
+      const b = byStage[s]!;
+      expect(b).toMatchObject({ reached, unicorns });
+      const next = byStage[ROUND_STAGES[i + 1]];
+      if (unicorns < MIN_STAGE_UNICORNS && next) expect(b.rate).toBeCloseTo(raise[s]!.p * next.rate, 9);
+      else expect(b.rate).toBeCloseTo((unicorns + 0.5) / (reached + 1), 9);
+    }
+    expect(stageBaseRates(spotterIndex(cohort)).basis).toBe("cohort");
+  });
+
   it("reads the base rate from seed-sample companies only", () => {
     expect(seedSampleBase(spotterIndex(cohort))).toBeUndefined();
     const tagged = structuredClone(cohort);
@@ -138,6 +186,37 @@ describe("simulated futures", () => {
     expect(index.runs).toBe(FUTURE_RUNS);
   });
 
+  it("counts the investor's own new-money participation rate toward pOnPath", () => {
+    const idx = spotterIndex(cohort);
+    const part = stageParticipation(idx, "inv:seedcamp");
+    let episodes = 0;
+    let joined = 0;
+    for (const r of idx.rows.values()) {
+      r.eps.forEach((e, k) => {
+        if (k === 0 || e.stage !== "seed") return;
+        episodes++;
+        const earlier = r.eps.slice(0, k).some((x) => x.memberIds.includes("inv:seedcamp"));
+        if (!earlier && e.leadId !== "inv:seedcamp" && e.memberIds.includes("inv:seedcamp")) joined++;
+      });
+    }
+    expect(part.seed ?? 0).toBeCloseTo(joined / episodes, 9);
+    const step = { stage: "seed" as Stage, leadId: "inv:x", coInvestorIds: ["inv:y"] };
+    expect(pInRound({ ...step, leadId: "inv:seedcamp" }, "inv:seedcamp", part)).toBe(1);
+    expect(pInRound({ ...step, coInvestorIds: ["inv:seedcamp"] }, "inv:seedcamp", part)).toBe(1);
+    expect(pInRound(step, "inv:seedcamp", { seed: 0.1 })).toBeCloseTo(PARTICIPATION_SCALE * 0.1, 9);
+    expect(pInRound(step, "inv:seedcamp", {})).toBe(0);
+    // pOnPath = mean over runs of 1 - prod(1 - P(in round)) over the next two rounds, which sits
+    // above the engine-only share (lead or drawn co-investor) whenever the rate is positive.
+    const row = idx.rows.get("c:good")!;
+    const fut = simulateFutures(idx, row, "inv:seedcamp");
+    const { outs } = simulateRuns({ sectors: {}, stage: row.eps[row.eps.length - 1].stage, companyId: row.co.id }, UNICORN_VISION, simModel(cohort, idx.asOf), { runs: FUTURE_RUNS, naturalLead: true });
+    const two = (o: (typeof outs)[number]) => o.steps.slice(0, 2);
+    const expected = outs.reduce((a, o) => a + 1 - two(o).reduce((m, s) => m * (1 - pInRound(s, "inv:seedcamp", part)), 1), 0) / outs.length;
+    const engineOnly = outs.filter((o) => two(o).some((s) => s.leadId === "inv:seedcamp" || s.coInvestorIds.includes("inv:seedcamp"))).length / outs.length;
+    expect(fut.pOnPath).toBeCloseTo(expected, 9);
+    expect(fut.pOnPath).toBeGreaterThanOrEqual(engineOnly);
+  });
+
   it("reads pUnicorn off the founder simulator's engine for the same company", () => {
     const idx = spotterIndex(cohort);
     const row = idx.rows.get("c:good")!;
@@ -165,7 +244,9 @@ describe("runSpotter", () => {
     const p = res.picks[0];
     expect(p.line).toMatch(/^Same first two steps as /);
     expect(p.scores.pOnPath).toBeGreaterThan(0);
-    expect(p.scores.unicornLift).toBe(p.scores.shapeLift);
+    const base = stageBaseRates(spotterIndex(cohort)).byStage[p.company.latestRound.stage]!.rate;
+    expect(p.scores.unicornBaseRate).toBeCloseTo(base, 3);
+    expect(p.scores.unicornLift).toBeCloseTo(p.scores.pUnicorn! / base, 1);
     expect(p.scores.pUnicorn).toBeCloseTo(simulateFutures(spotterIndex(cohort), spotterIndex(cohort).rows.get("c:good")!, "inv:index").pUnicorn, 3);
     for (const x of res.picks) expect(x.scores.combined).toBeLessThanOrEqual(1);
     expect(p.company.latestRound.leadName).toBe("Seedcamp (fixture)");

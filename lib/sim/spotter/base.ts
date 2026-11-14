@@ -3,7 +3,7 @@
 // simulator (lib/sim/util.ts, lib/sim/fit.ts) so both read the same rounds the same way. Only the
 // lead's investor kind is added per episode (the shape score reads it).
 import type { Sector, Stage } from "@/lib/taxonomy";
-import { buildEpisodes as buildSimEpisodes } from "../fit";
+import { buildEpisodes as buildSimEpisodes, labelSizeBands } from "../fit";
 import type { Cohort, CohortCompany, Episode as SimEpisode, InvestorKind } from "../types";
 import { LOW_CONFIDENCE_N, MONTH_MS, PROXY_FUNDING_USD, ROUND_STAGES, STALL_MONTHS, leadOf, median, monthsBetween, mulberry32, roundStageIndex, toMs } from "../util";
 import { UNICORN_USD } from "../vision";
@@ -20,10 +20,12 @@ export function hashSeed(s: string): number {
 
 export type Episode = SimEpisode & { leadKind: InvestorKind };
 
-// Episodes for every company with a dated round before asOf (lib/sim/fit.ts buildEpisodes), plus
+// Episodes for every company with a dated round before asOf (lib/sim/fit.ts buildEpisodes), at
+// effective stages with the same size bands as fitModel, so the spotter and the engine agree on a
+// company's stage (a $40M "seed" is a Series A company to both), plus
 // the kind of each episode's lead.
 export function buildEpisodes(cohort: Cohort, asOfMs: number): Record<string, Episode[]> {
-  const sim = buildSimEpisodes(cohort, asOfMs);
+  const sim = buildSimEpisodes(cohort, asOfMs, undefined, labelSizeBands(cohort, asOfMs));
   return Object.fromEntries(
     Object.entries(sim).map(([id, eps]) => [
       id,
