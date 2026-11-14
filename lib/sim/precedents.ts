@@ -3,11 +3,12 @@
 import { STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import type { Precedent, Reality, RealityStep, SimModel } from "./types";
 import type { Prepared, RunOutcome } from "./simulate";
-import { queryVector, similarityIndex, textSimilarity } from "./similarity";
+import { domainTier, queryVector, similarityIndex, textMatch, type TextMatch } from "./similarity";
 import { realReachedVision } from "./vision";
 import { LOW_CONFIDENCE_N, ROUND_STAGES, fmtMonths, fmtUsd, leadOf, median, quantile, roundStageIndex } from "./util";
 
 const MAX_PRECEDENTS = 8;
+const MIN_PRECEDENTS = 4;
 const MAX_REALITIES = 5;
 const MIN_REALITY_SHARE = 0.02;
 const NO_URL_SOURCE = "Cala knowledge query";
@@ -37,7 +38,7 @@ function companyFactsList(model: SimModel, prep: Prepared): Facts[] {
   return out;
 }
 
-export function toPrecedent(model: SimModel, companyId: string, reachedVision: boolean, similarity?: number): Precedent {
+export function toPrecedent(model: SimModel, companyId: string, reachedVision: boolean, similarity?: number, fallback?: boolean): Precedent {
   const co = model.cohort.companies[companyId];
   const eps = model.episodes[companyId] ?? [];
   return {
@@ -46,6 +47,7 @@ export function toPrecedent(model: SimModel, companyId: string, reachedVision: b
     sector: co.sector,
     reachedVision,
     ...(similarity !== undefined ? { similarity: Math.round(similarity * 1000) / 1000 } : {}),
+    ...(fallback ? { fallback: true } : {}),
     path: eps.flatMap((e) =>
       e.roundIds.map((rid) => {
         const r = model.cohort.rounds[rid];
@@ -68,34 +70,60 @@ export function buildPrecedents(model: SimModel, prep: Prepared): Precedent[] {
   const facts = companyFactsList(model, prep);
   const existing = new Set(prep.allExisting);
   const like = likeness(model, prep);
+  const tier = tierFn(model, prep);
   const score = (f: Facts) =>
     (sw.size ? (sw.get(f.sector) ?? 0) * 3 : 1) +
     (f.stages.has(ds) ? 2 : 0) +
     1.5 * [...f.investors].filter((i) => existing.has(i)).length +
     (like ? LIKE_W * like(f.id) : 0);
-  const ranked = [...facts].sort((a, b) => score(b) - score(a) || a.id.localeCompare(b.id));
+  // Domain first (same-domain tier, then text similarity in 0.05 bands), stage and path second.
+  const band = (f: Facts) => (like ? Math.round(like(f.id) * 20) : 0);
+  const ranked = [...facts].sort(
+    (a, b) => tier(a) - tier(b) || band(b) - band(a) || score(b) - score(a) || a.id.localeCompare(b.id),
+  );
   const chosen: Facts[] = [];
-  const take = (pred: (f: Facts) => boolean, n: number) => {
+  const take = (pred: (f: Facts) => boolean, n: number, maxTier: number) => {
     for (const f of ranked) {
       if (n <= 0 || chosen.length >= MAX_PRECEDENTS) break;
-      if (!chosen.includes(f) && pred(f)) {
+      if (!chosen.includes(f) && tier(f) <= maxTier && pred(f)) {
         chosen.push(f);
         n--;
       }
     }
   };
-  take((f) => f.reached, 4);
-  take((f) => !!f.stalledAt && roundStageIndex(f.stalledAt) >= roundStageIndex(ds), 3);
-  take(() => true, MAX_PRECEDENTS);
-  return chosen.map((f) => toPrecedent(model, f.id, f.reached, like?.(f.id)));
+  // Unrelated companies (tier 2) only when the related ones cannot fill MIN_PRECEDENTS.
+  for (const maxTier of [1, 2]) {
+    if (maxTier === 2 && chosen.length >= MIN_PRECEDENTS) break;
+    take((f) => f.reached, 4, maxTier);
+    take((f) => !!f.stalledAt && roundStageIndex(f.stalledAt) >= roundStageIndex(ds), 3, maxTier);
+    take(() => true, MAX_PRECEDENTS, maxTier);
+  }
+  return chosen.map((f) => toPrecedent(model, f.id, f.reached, like?.(f.id), tier(f) > 0));
+}
+
+// Domain tier of a candidate (see domainTier): 0 same domain, 1 same sector family, 2 unrelated.
+function tierFn(model: SimModel, prep: Prepared): (f: Facts) => number {
+  const sectors = new Set(prep.sectors.map(([s]) => s));
+  const match = textMatcher(model, prep);
+  const memo = new Map<string, number>();
+  return (f) => {
+    let t = memo.get(f.id);
+    if (t === undefined) memo.set(f.id, (t = domainTier(f, sectors, match?.(f.id))));
+    return t;
+  };
 }
 
 // Text similarity to the founder's tags + description, or undefined when the founder gave none.
 function likeness(model: SimModel, prep: Prepared): ((companyId: string) => number) | undefined {
+  const match = textMatcher(model, prep);
+  return match && ((id) => match(id).sim);
+}
+
+function textMatcher(model: SimModel, prep: Prepared): ((companyId: string) => TextMatch) | undefined {
   if (!prep.like.tags?.length && !prep.like.text?.trim()) return undefined;
   const idx = similarityIndex(model.cohort);
   const q = queryVector(idx, prep.like);
-  return q.size ? (id) => textSimilarity(idx, q, id) : undefined;
+  return q.size ? (id) => textMatch(idx, q, id) : undefined;
 }
 
 type ClassKey = string;
@@ -145,6 +173,7 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
 
   const facts = companyFactsList(model, prep);
   const like = likeness(model, prep);
+  const tier = tierFn(model, prep);
   const sectorSet = new Set(prep.sectors.map(([s]) => s));
   const target = STAGE_LABELS[prep.basis.targetStage];
   const visionName = prep.basis.targetValuationUsd ? `a ${fmtUsd(prep.basis.targetValuationUsd)} outcome` : target;
@@ -213,7 +242,12 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
       const pool = inSector.length ? inSector : all;
       const routeLeads = new Set(first.steps.map((s) => s.leadId).filter((x): x is string => !!x));
       const shared = (f: Facts) => [...f.leads].filter((l) => routeLeads.has(l)).length;
-      const ranked = [...pool].sort((a, b) => shared(b) - shared(a) || (like ? like(b.id) - like(a.id) : 0) || a.id.localeCompare(b.id));
+      // Named precedents come from the closest domain first (any sector), then shared leads.
+      const ranked = [...all].sort(
+        (a, b) => tier(a) - tier(b) || shared(b) - shared(a) || (like ? like(b.id) - like(a.id) : 0) || a.id.localeCompare(b.id),
+      );
+      const related = ranked.filter((f) => tier(f) <= 1);
+      const named = (related.length ? related : ranked).slice(0, 3);
       return {
         title,
         outcome,
@@ -222,7 +256,8 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
         steps,
         outcomeLine,
         outcomeShort,
-        precedents: ranked.slice(0, 3).map((f) => ({ companyId: f.id, name: model.cohort.companies[f.id].name, roundIds: model.episodes[f.id].flatMap((e) => e.roundIds) })),
+        precedents: named.map((f) => ({ companyId: f.id, name: model.cohort.companies[f.id].name, roundIds: model.episodes[f.id].flatMap((e) => e.roundIds) })),
+        ...(named.some((f) => tier(f) > 0) ? { precedentsFallback: true } : {}),
         sampleSize: pool.length,
         lowConfidence: pool.length < LOW_CONFIDENCE_N,
       };

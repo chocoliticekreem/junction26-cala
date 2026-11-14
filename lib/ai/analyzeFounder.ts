@@ -84,6 +84,9 @@ Map a niche domain to the nearest broad sector by what the product is and who pa
 - an EEG headband for focus or sleep sold to consumers -> primary_sector "medtech/devices" if clinical, "deep tech/hardware" if a consumer device; tags ["EEG","neurotech","wearable"]
 - a defence drone -> "deep tech/hardware", tags ["defence","drones","autonomy"]
 - an AI agent for law firms -> "applied AI/vertical SaaS", tags ["legal","AI agents"]
+- a knowledge graph of companies, people and funding rounds sold to AI agents through an API -> "AI infrastructure", sectors also "developer tools"; tags ["knowledge graph","company data","AI agents","API"]
+- an observability and evaluation SDK for teams building LLM apps -> "developer tools", sectors also "AI infrastructure"; tags ["LLM observability","evals","SDK"]
+AI infrastructure vs applied AI: a company that sells data, APIs, models, compute, infrastructure or tooling to AI agents or developers is "AI infrastructure" (or "developer tools"), even when its data is about one industry. "applied AI/vertical SaaS" is AI applied to one industry's own work and sold to that industry (legal AI, healthcare AI, insurance claims AI).
 List every plausible sector in sectors with a confidence; primary_sector must be the strongest.
 Stages: ${STAGES.join(", ")}. Raise amounts in USD (GBP x1.27, EUR x1.08).
 Fill company, one_liner and founder_name only when the founder states them; never guess. one_liner is at most 80 characters.
