@@ -3,7 +3,9 @@
 import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { recordTier, type CacheTier } from "./cacheStats";
 import type { Deal, Source, Stage } from "./types";
+import { VALKEY_PREFIX, valkeyDecr, valkeyGetJson, valkeyGetNumber, valkeyIncr, valkeySetJson } from "./valkey";
 
 export const CALA_BASE = "https://api.cala.ai";
 
@@ -85,11 +87,21 @@ export class CalaBudgetError extends CalaError {
 // ---------- caches ----------
 
 export interface CalaCache {
+  // Which tier answered, for the route's `source` field and the per-tier stats.
+  readonly tier?: CacheTier;
   get(key: string): Promise<unknown | undefined>;
   set(key: string, value: unknown): Promise<void>;
+  lookup?(key: string): Promise<{ value: unknown; tier: CacheTier } | undefined>;
+}
+
+// One request key -> one hash, shared by the file cache (file name) and Valkey (key suffix), so
+// scripts/seed-valkey.ts can load the file cache without re-deriving any request.
+export function cacheKeyHash(key: string): string {
+  return createHash("sha1").update(key).digest("hex");
 }
 
 export class MemoryLRU implements CalaCache {
+  readonly tier = "memory" as const;
   private map = new Map<string, unknown>();
   constructor(private readonly max = 500) {}
   async get(key: string) {
@@ -118,8 +130,9 @@ export function isReadOnlyFsError(e: unknown): boolean {
 // On a read-only filesystem the cache stops writing and acts as read-only (usually empty).
 export function diskCache(dir: string): CalaCache {
   let readOnly = false;
-  const file = (key: string) => path.join(dir, createHash("sha1").update(key).digest("hex") + ".json");
+  const file = (key: string) => path.join(dir, cacheKeyHash(key) + ".json");
   return {
+    tier: "file",
     async get(key) {
       try {
         return JSON.parse(await fs.readFile(file(key), "utf8")).value;
@@ -140,17 +153,38 @@ export function diskCache(dir: string): CalaCache {
   };
 }
 
-// Read-through in order; a hit in a later layer is copied into the earlier ones.
-export function tieredCache(...layers: CalaCache[]): CalaCache {
+// Aiven Valkey, shared by every server instance and script run. Values are the raw Cala JSON.
+// Writes are not awaited, so a slow Valkey never delays a response that is already in hand.
+export function valkeyCache(ttlSeconds?: number): CalaCache {
   return {
+    tier: "valkey",
+    get: (key) => valkeyGetJson(VALKEY_PREFIX + cacheKeyHash(key)),
+    async set(key, value) {
+      void valkeySetJson(VALKEY_PREFIX + cacheKeyHash(key), value, ttlSeconds);
+    },
+  };
+}
+
+// Read-through in order; a hit in a later layer is copied into the earlier ones (a file-cache hit
+// back-fills Valkey and memory). Records a miss for each tier passed and a hit for the one that
+// answered.
+export function tieredCache(...layers: CalaCache[]): CalaCache {
+  async function lookup(key: string) {
+    for (let i = 0; i < layers.length; i++) {
+      const t0 = performance.now();
+      const v = await layers[i].get(key);
+      const tier = layers[i].tier;
+      if (tier) recordTier(tier, v !== undefined, performance.now() - t0);
+      if (v === undefined) continue;
+      await Promise.all(layers.slice(0, i).map((l) => l.set(key, v)));
+      return { value: v, tier: tier ?? ("memory" as const) };
+    }
+    return undefined;
+  }
+  return {
+    lookup,
     async get(key) {
-      for (let i = 0; i < layers.length; i++) {
-        const v = await layers[i].get(key);
-        if (v === undefined) continue;
-        await Promise.all(layers.slice(0, i).map((l) => l.set(key, v)));
-        return v;
-      }
-      return undefined;
+      return (await lookup(key))?.value;
     },
     async set(key, value) {
       await Promise.all(layers.map((l) => l.set(key, value)));
@@ -207,6 +241,33 @@ export function fileBudget(file: string, limit: number): CalaBudget & { usage():
         }
         return true;
       }),
+  };
+}
+
+export const LIVE_USAGE_KEY = `${VALKEY_PREFIX}live-usage`;
+
+// The live-call cap shared by every instance: an atomic INCR on LIVE_USAGE_KEY in Valkey, so it
+// holds across serverless instances and cold starts. A refused call is DECRemented back, so the
+// count is calls actually allowed. Falls back to the per-checkout file counter whenever Valkey is
+// not configured or does not answer.
+export function sharedBudget(
+  file: string,
+  limit: number,
+): CalaBudget & { usage(): Promise<BudgetUsage & { shared: boolean }> } {
+  const fallback = fileBudget(file, limit);
+  return {
+    async tryConsume() {
+      const n = await valkeyIncr(LIVE_USAGE_KEY);
+      if (n === undefined) return fallback.tryConsume();
+      if (n <= limit) return true;
+      await valkeyDecr(LIVE_USAGE_KEY);
+      return false;
+    },
+    async usage() {
+      const used = await valkeyGetNumber(LIVE_USAGE_KEY);
+      if (used === undefined) return { ...(await fallback.usage()), shared: false };
+      return { used, limit, shared: true };
+    },
   };
 }
 
@@ -270,6 +331,8 @@ export type CalaClientOptions = {
   log?: (msg: string) => void;
 };
 
+export type CalaMeta<T> = { value: T; source: CacheTier; latencyMs: number };
+
 // calls = HTTP requests sent (incl. 429 retries); ok = successful responses (what uses credits).
 export type CalaStats = { calls: number; ok: number; cacheHits: number; retries: number; byEndpoint: Record<string, number> };
 
@@ -281,19 +344,32 @@ export function createCalaClient(opts: CalaClientOptions = {}) {
   const timeoutMs = opts.timeoutMs ?? 120_000;
   const stats: CalaStats = { calls: 0, ok: 0, cacheHits: 0, retries: 0, byEndpoint: {} };
 
-  async function request<T>(method: "GET" | "POST", p: string, body?: unknown, endpoint = p): Promise<T> {
+  async function lookup(key: string): Promise<{ value: unknown; tier: CacheTier } | undefined> {
+    const cache = opts.cache;
+    if (!cache) return undefined;
+    if (cache.lookup) return cache.lookup(key);
+    const value = await cache.get(key);
+    return value === undefined ? undefined : { value, tier: cache.tier ?? "memory" };
+  }
+
+  async function request<T>(method: "GET" | "POST", p: string, body?: unknown, endpoint = p): Promise<CalaMeta<T>> {
     if (!apiKey) throw new CalaError("CALA_API_KEY not set", 401);
+    const t0 = performance.now();
     const key = `${method} ${p} ${body === undefined ? "" : JSON.stringify(body)}`;
-    const hit = await opts.cache?.get(key);
+    const hit = await lookup(key);
     if (hit !== undefined) {
       stats.cacheHits++;
-      return hit as T;
+      return { value: hit.value as T, source: hit.tier, latencyMs: Math.round(performance.now() - t0) };
     }
     const value = await limit(async () => {
       for (let attempt = 0; ; attempt++) {
         let status = 0;
         let retryAfter = 0;
-        if (opts.budget && !(await opts.budget.tryConsume())) throw new CalaBudgetError();
+        if (opts.budget && !(await opts.budget.tryConsume())) {
+          recordTier("live", false, 0);
+          throw new CalaBudgetError();
+        }
+        const tLive = performance.now();
         try {
           stats.calls++;
           const res = await fetch(CALA_BASE + p, {
@@ -305,15 +381,18 @@ export function createCalaClient(opts: CalaClientOptions = {}) {
           status = res.status;
           if (res.ok) {
             const json = (await res.json()) as T;
+            recordTier("live", true, performance.now() - tLive);
             stats.ok++;
             stats.byEndpoint[endpoint] = (stats.byEndpoint[endpoint] ?? 0) + 1;
             return json;
           }
+          recordTier("live", false, 0);
           retryAfter = Number(res.headers.get("retry-after")) || 0;
           const text = (await res.text()).slice(0, 300);
           if (status !== 429 && status < 500) throw new CalaError(`Cala ${status}: ${text}`, status);
         } catch (e) {
           if (e instanceof CalaError) throw e;
+          recordTier("live", false, 0);
           if (!retryNetworkErrors) throw new CalaError(`Cala request failed: ${e instanceof Error ? e.name : e}`, status || 599);
           status = status || 599;
         }
@@ -325,25 +404,33 @@ export function createCalaClient(opts: CalaClientOptions = {}) {
       }
     });
     await opts.cache?.set(key, value);
-    return value;
+    return { value, source: "live", latencyMs: Math.round(performance.now() - t0) };
   }
+
+  const searchMeta = (input: string, explainability = false) =>
+    request<CalaSearchResponse>("POST", "/v1/knowledge/search", { input, explainability }, "knowledge/search");
+  const retrieveMeta = (id: string, projection?: CalaProjection) =>
+    request<CalaEntity>("POST", `/v1/entities/${encodeURIComponent(id)}`, projection, "entities/retrieve");
+  const unwrap = async <T,>(p: Promise<CalaMeta<T>>): Promise<T> => (await p).value;
 
   return {
     stats,
     configured: Boolean(apiKey),
     query: (input: string) =>
-      request<CalaQueryResponse>("POST", "/v1/knowledge/query", { input }, "knowledge/query"),
-    search: (input: string, explainability = false) =>
-      request<CalaSearchResponse>("POST", "/v1/knowledge/search", { input, explainability }, "knowledge/search"),
+      unwrap(request<CalaQueryResponse>("POST", "/v1/knowledge/query", { input }, "knowledge/query")),
+    search: (input: string, explainability = false) => unwrap(searchMeta(input, explainability)),
     searchEntities: (name: string, types: string[] = []) => {
       const qs = new URLSearchParams({ name: name.slice(0, 100) });
       for (const t of types) qs.append("entity_types", t);
-      return request<{ entities: CalaEntityMention[] }>("GET", `/v1/entities?${qs}`, undefined, "entities/search");
+      return unwrap(request<{ entities: CalaEntityMention[] }>("GET", `/v1/entities?${qs}`, undefined, "entities/search"));
     },
     introspect: (id: string) =>
-      request<CalaIntrospection>("GET", `/v1/entities/${encodeURIComponent(id)}/introspection`, undefined, "entities/introspection"),
-    retrieve: (id: string, projection?: CalaProjection) =>
-      request<CalaEntity>("POST", `/v1/entities/${encodeURIComponent(id)}`, projection, "entities/retrieve"),
+      unwrap(
+        request<CalaIntrospection>("GET", `/v1/entities/${encodeURIComponent(id)}/introspection`, undefined, "entities/introspection"),
+      ),
+    retrieve: (id: string, projection?: CalaProjection) => unwrap(retrieveMeta(id, projection)),
+    // The same requests, plus which tier answered and how long it took (for the routes).
+    withMeta: { search: searchMeta, retrieve: retrieveMeta },
   };
 }
 
@@ -591,13 +678,13 @@ export function dedupeByKey<T>(items: T[], name: (t: T) => string, prefer?: (a: 
 export const CALA_CACHE_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "data", "cala-cache");
 export const LIVE_USAGE_FILE = path.join(/* turbopackIgnore: true */ process.cwd(), "data", ".cala-live-usage.json");
 
-// The live-route client: memory LRU over the same on-disk cache the ingest uses, a persistent
-// live-call budget, one retry for 429/5xx and none for timeouts. Also used by scripts/prewarm.ts
-// so prewarmed entries are exactly the ones the routes look up.
+// The live-route client: memory LRU -> Aiven Valkey (shared) -> the on-disk cache the ingest
+// uses, a live-call budget shared through Valkey, one retry for 429/5xx and none for timeouts.
+// Also used by scripts/prewarm.ts so prewarmed entries are exactly the ones the routes look up.
 export function createRouteCala(extra: { budget?: CalaBudget; log?: (msg: string) => void } = {}): CalaClient {
-  const live = fileBudget(LIVE_USAGE_FILE, liveBudgetLimit());
+  const live = sharedBudget(LIVE_USAGE_FILE, liveBudgetLimit());
   return createCalaClient({
-    cache: tieredCache(new MemoryLRU(300), diskCache(CALA_CACHE_DIR)),
+    cache: tieredCache(new MemoryLRU(300), valkeyCache(), diskCache(CALA_CACHE_DIR)),
     budget: extra.budget ? allBudgets(extra.budget, live) : live,
     timeoutMs: 120_000,
     maxRetries: 1,

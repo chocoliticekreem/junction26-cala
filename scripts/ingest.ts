@@ -27,7 +27,9 @@ import {
   parseAmountUsd,
   searchSources,
   slugify,
+  tieredCache,
   toSource,
+  valkeyCache,
   type CalaEntity,
   type CalaEntityMention,
   type CalaQueryResponse,
@@ -36,6 +38,7 @@ import {
 import { finalizeInvestor } from "../lib/revealed";
 import { ALL_SECTORS, SECTORS, STAGES, isSector, isStage, type Sector, type Stage } from "../lib/taxonomy";
 import type { Deal, Door, Investor, InvestorKind, Partner, Source } from "../lib/types";
+import { closeValkey } from "../lib/valkey";
 
 const ROOT = path.resolve(__dirname, "..");
 const RAW = path.join(ROOT, "data/raw");
@@ -537,7 +540,7 @@ async function main() {
   if (!getAnthropic()) await log("ANTHROPIC_API_KEY missing: sectors fall back to 'other' and stated thesis stays empty");
 
   const cala = createCalaClient({
-    cache: diskCache(path.join(ROOT, "data/cala-cache")),
+    cache: tieredCache(valkeyCache(), diskCache(path.join(ROOT, "data/cala-cache"))),
     concurrency: CONCURRENCY,
     log: (m) => void log(m),
   });
@@ -608,7 +611,9 @@ async function main() {
   await build();
 }
 
-main().catch(async (e) => {
-  await log(`fatal: ${(e as Error).stack ?? e}`);
-  process.exit(1);
-});
+main()
+  .catch(async (e) => {
+    await log(`fatal: ${(e as Error).stack ?? e}`);
+    process.exitCode = 1;
+  })
+  .finally(() => closeValkey());

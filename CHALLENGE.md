@@ -52,6 +52,13 @@ Tick them on the form only if they are genuinely used.
 | Best agentic use of Oxylabs Web API (32) | At least one live /search or /scrape call at runtime, with source URLs shown | Note in the submission: which endpoints and why |
 | Best Use of Gemini API (48, Google DeepMind) | Meaningful use, not "an LLM added"; 18+ only | Explain problem, integration, why Gemini |
 
+### Added Sat 14 Nov: Aiven (decided, build it once the key is in)
+**Best Use of Aiven (43).** Prizes €1,000 / €750 / €500. Judged on meaningful use of Aiven 40%, technical implementation 30%, impact on the solution 20%, creativity 10%. "One well-executed service can match a multi-service build." Tick it in the form.
+- **Use:** an Aiven for **Valkey** cache in front of Cala. Uncached Cala queries take 40-70 s and the cache is currently `data/cala-cache/` on one machine, so a shared cache keeps the live demo fast and any deploy warm. Optional second use: Aiven **PostgreSQL** for the double opt-in interest state (parameterised queries only).
+- **Env:** `AIVEN_VALKEY_URI` (and `AIVEN_PG_URI` if Postgres is used) in `.env.local`; add the names to `.env.example`. Until the key exists, keep the file cache as the fallback and log it in `BLOCKED.md`. A missing key must never break the app.
+- **Show it:** a cache hit/miss counter or latency line visible in the demo, and a short note in `docs/submission.md` on which Aiven service is used and why.
+- Resources: https://console.aiven.io/signup ($50 free credits), https://aiven.io/docs/, Aiven mentors on site.
+
 ---
 
 ## Self-check: compare back to this before calling anything done

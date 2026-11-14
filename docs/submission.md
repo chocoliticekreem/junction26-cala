@@ -68,8 +68,9 @@ Make Unicorns Real (350), partner Cala.
 
 ### Tech challenges genuinely used
 
-None claimed. Leave "Tech Challenge Participation" empty.
+Tick **Best Use of Aiven (43)** in "Tech Challenge Participation".
 
+- **Aiven (43): Aiven for Valkey, the shared cache in front of Cala.** Uncached Cala knowledge searches take 40-70 s (`docs/CALA.md`) and every call costs a credit, while the existing cache was a folder on one laptop. Every investor panel now reads from Valkey first: the routes keep the panel's own responses in Valkey (`lib/routeCache.ts`), and below that the Cala client chain is memory -> Valkey -> disk -> live Cala (`lib/cala.ts`, `lib/valkey.ts`), with live answers written through and disk hits back-filled. The committed snapshot is only the fallback when Valkey is unset or down. `npm run seed-valkey` loaded 1,122 entries (741 raw Cala responses + 381 panel responses for all 193 investors, 11.2 MB) in about 1.4 s, so any deploy pointed at it is warm with 0 Cala calls. The live-call budget is an atomic `INCR` in Valkey, so the credit cap holds across serverless instances. If Valkey is missing or slow, every step falls through within 800 ms. Measured on 14 Nov against the Aiven service from a local `next start` (live budget 0): 12 of 12 panel requests for Zinc, 13Books Capital and London Business Angels were served by Valkey, p50 34 ms (about 260-320 ms on the first request of a fresh server, which includes the TLS connect), 0 Cala calls; with `AIVEN_VALKEY_URI` unset the same requests fell back to the snapshot. `GET /api/cache/stats` reports hits, misses and p50 latency per tier, and the profile panel shows which tier answered and how long it took, with a hit/miss counter.
 - ElevenLabs (50): a realtime speech-to-text client exists (`lib/stt.ts`, `app/api/stt-token/route.ts`), but Web Speech is the default and `ELEVENLABS_API_KEY` is not set. Claim it only after the key is set, a live run through ElevenLabs is verified, and the code is claimed at mlh.link/junction-26 (see `BLOCKED.md`).
 - Gemini, Context.dev, Oxylabs: not used.
 

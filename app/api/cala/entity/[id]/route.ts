@@ -1,6 +1,8 @@
 import { SNAPSHOT } from "@/lib/calaSnapshotData";
 import { CalaBudgetError, CalaError, UUID_RE, entitySources, getRouteCala } from "@/lib/cala";
+import { recordTier } from "@/lib/cacheStats";
 import { snapshotEntity } from "@/lib/calaSnapshot";
+import { entityRouteKey, routeCacheGet, routeCacheSet } from "@/lib/routeCache";
 
 function mock(id: string) {
   return {
@@ -37,20 +39,29 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/cala/entity/[id
   const { id } = await ctx.params;
   if (!UUID_RE.test(id)) return Response.json({ error: "invalid_id" }, { status: 400 });
 
+  const t0 = performance.now();
+  const key = entityRouteKey(id);
+  const shared = await routeCacheGet(key);
+  if (shared) {
+    return Response.json({ ...shared, cached: true, source: "valkey", latencyMs: Math.round(performance.now() - t0) });
+  }
+
+  const tSnap = performance.now();
   const snap = snapshotEntity(SNAPSHOT, id);
+  recordTier("snapshot", Boolean(snap), performance.now() - tSnap);
   if (snap) {
     const { sources, ...entity } = snap;
-    return Response.json({ entity: { ...entity, properties: {} }, sources, cached: true, source: "snapshot" });
+    const body = { entity: { ...entity, properties: {} }, sources, cached: true };
+    routeCacheSet(key, body);
+    return Response.json({ ...body, source: "snapshot", latencyMs: Math.round(performance.now() - t0) });
   }
 
   const cala = getRouteCala();
   if (!cala) return Response.json(mock(id));
 
-  const hitsBefore = cala.stats.cacheHits;
   try {
-    const e = await cala.retrieve(id);
-    const cached = cala.stats.cacheHits > hitsBefore;
-    return Response.json({
+    const { value: e, source } = await cala.withMeta.retrieve(id);
+    const body = {
       entity: {
         id: e.id,
         name: e.name,
@@ -59,9 +70,10 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/cala/entity/[id
         properties: Object.fromEntries(Object.entries(e.properties ?? {}).map(([k, v]) => [k, v.value])),
       },
       sources: entitySources(e),
-      cached,
-      source: cached ? "cache" : "live",
-    });
+      cached: source !== "live",
+    };
+    routeCacheSet(key, body);
+    return Response.json({ ...body, source, latencyMs: Math.round(performance.now() - t0) });
   } catch (err) {
     if (err instanceof CalaBudgetError) return Response.json(budgetExhausted(id));
     const status = err instanceof CalaError && err.status === 404 ? 404 : 502;

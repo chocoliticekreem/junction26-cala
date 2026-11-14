@@ -3,8 +3,9 @@
 // Spends at most MAX_CALLS live calls per run, and every call also counts against CALA_LIVE_BUDGET.
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { CalaBudgetError, LIVE_USAGE_FILE, createRouteCala, fileBudget, liveBudgetLimit, sessionBudget } from "../lib/cala";
+import { CalaBudgetError, LIVE_USAGE_FILE, createRouteCala, liveBudgetLimit, sessionBudget, sharedBudget } from "../lib/cala";
 import type { Investor } from "../lib/types";
+import { closeValkey } from "../lib/valkey";
 
 const ROOT = path.resolve(__dirname, "..");
 const DEFAULT_IDS = ["zinc", "4bio-capital", "syncona", "london-business-angels", "medicxi"];
@@ -59,15 +60,17 @@ async function main() {
     }),
   );
 
-  const usage = await fileBudget(LIVE_USAGE_FILE, liveBudgetLimit()).usage();
+  const usage = await sharedBudget(LIVE_USAGE_FILE, liveBudgetLimit()).usage();
   console.log(
-    `\ncalls spent: ${cala.stats.calls} (ok ${cala.stats.ok}, retries ${cala.stats.retries}) | cache hits: ${cala.stats.cacheHits} | live budget used ${usage.used}/${usage.limit}`,
+    `\ncalls spent: ${cala.stats.calls} (ok ${cala.stats.ok}, retries ${cala.stats.retries}) | cache hits: ${cala.stats.cacheHits} | live budget used ${usage.used}/${usage.limit} (${usage.shared ? "shared, Valkey" : "this checkout"})`,
   );
   if (budgetHit) console.error(`stopped: per-run cap (${MAX_CALLS}) or CALA_LIVE_BUDGET reached`);
   if (failed) process.exitCode = 1;
 }
 
-main().catch((e) => {
-  console.error(e instanceof Error ? e.message : e);
-  process.exit(1);
-});
+main()
+  .catch((e) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exitCode = 1;
+  })
+  .finally(() => closeValkey());

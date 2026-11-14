@@ -16,11 +16,13 @@
     "ingest": "tsx scripts/ingest.ts",
     "build-replay": "tsx scripts/build-replay.ts",
     "prewarm": "tsx scripts/prewarm.ts",
-    "build-snapshot": "tsx scripts/build-snapshot.ts"
+    "build-snapshot": "tsx scripts/build-snapshot.ts",
+    "seed-valkey": "tsx scripts/seed-valkey.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",
     "d3-force": "^3.0.1",
+    "iovalkey": "^0.4.0",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
