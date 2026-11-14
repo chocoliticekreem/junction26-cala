@@ -3,6 +3,27 @@
 **Start time:** 2026-11-14 05:32 EET (Helsinki). Minimum run until 08:32 EET, then polish backlog.
 **Mode:** hackathon (project CLAUDE.md).
 
+## 2026-11-14: Scalaxy (PRs #45 to #55)
+The product is now Scalaxy (styled sCALAxy), a path simulator, not a matcher. Founder page at `/`, investor showcase at `/path/investor`; `/match` and `/investor` remain as the older views.
+
+Shipped today:
+- #45 Galaxy UI, new type, founder CTA with saved companies and website, cleaner investor panel.
+- #46 Investor spotter that reads in one second: fund picker, taste chips, ranked picks as sentences.
+- #47 Founder flow as one stage: single company input, smooth CTA-to-results morph, far less text.
+- #48 Recent-companies list hidden in the founder flow.
+- #49 Credible next leads and precedents: leads fit the round size, Cala reads as AI infrastructure, same-sector precedents.
+- #50, #51 Speech: spoken words stay in the text box when the mic stops; the mic stops by itself after the founder goes quiet.
+- #52 Results lead with next-round odds and show the vision against a typical company.
+- #53 Investor spotter as a 20-second showcase with a Cala-network vision line.
+- #54 One results column, chosen-path map highlight and precedent case studies.
+- #55 Spaces kept when typing in the pitch and vision boxes.
+
+Parked (not on `main`):
+- Spotter-lane calibration: branches `spotter-lane` and `spotter-calibration` (investor-side ranking calibration).
+- Context.dev website verification for new startups: Context.dev only fills the company file today, and a new idea with no Cala entity is not checked against its website.
+
+Docs rewritten for the team: `README.md`, `docs/submission.md`. `.env.example` now lists every env var the code reads. The history below is unchanged and uses the older names (Room, matching).
+
 ## Done
 - 05:33 Repo created: github.com/chocoliticekreem/junction26-cala (private), first commit on `main`.
 - 05:40 PR #1 Scaffold: Next.js 16, TS strict, Tailwind 4, Vitest, Playwright, shared `lib/types.ts` + `lib/taxonomy.ts`.

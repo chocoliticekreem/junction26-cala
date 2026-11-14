@@ -1,117 +1,74 @@
-# Scalaxy
+# Scalaxy (styled sCALAxy)
 
-Name your company, say your pitch and where you are in five years. Scalaxy simulates thousands of futures through real rounds in Cala's graph: the realities ahead, the galaxy of investors and the highways between them, your company file, the best next moves and the real precedents behind every number. The older live matching view (investors ranked by revealed thesis as you pitch) lives at `/match`.
+Scalaxy simulates a startup's path to its next round and to a unicorn. A founder names a company, gives a pitch and a five-year vision; Scalaxy runs 5,000 Monte Carlo futures through real funding rounds from Cala's knowledge graph and shows the odds, the realities, the next investors to approach and the real companies that walked similar paths. Investors get a 20-second showcase of early companies that look like past unicorns' early paths.
 
-Built at Junction 2026 for Cala's "Make Unicorns Real" challenge.
+Built at Junction 2026 for Cala's "Make Unicorns Real" challenge. Long term, Scalaxy becomes a network built inside Cala, with founders and investors on the same graph.
 
-## Run
+## How it works
+
+1. **Data.** `data/cohort.json` holds real companies, funding rounds and investors read from Cala (486 companies, 1,975 rounds, 2,978 investors, as of 2026-11-14). Cala entities are the source of every round, lead and date.
+2. **Simulation** (`lib/sim/`). Investor agents are fitted on their real behaviour in the cohort: what they lead, round sizes, pace, co-investors, who leads after them, how their companies fare. `/api/simulate` draws 5,000 futures from the company's current stage. Claude Haiku reads the pitch and the vision (keyword parsers answer when it fails).
+3. **Results** (`/`, route code in `app/path/page.tsx`):
+   - headline: the odds of raising the next round, and the odds of the vision against a typical company at the same stage;
+   - possible realities, best to worst;
+   - next moves: the next lead investors and what each branch does to the odds;
+   - star map: every star is an investor from Cala's graph, the chosen path highlighted;
+   - case studies: real precedent companies with their real rounds;
+   - actions: intro email drafts, opened in your mail app (nothing is sent);
+   - company file: what Scalaxy knows about the company, with sources.
+4. **Investor side** (`/path/investor`). Pick a fund, read its taste in one line (built from its own rounds), see five early companies whose first rounds resemble past unicorns' early paths.
+
+Input: one company field (Existing company, matched to Cala by name, or New idea). The pitch is typed or spoken (ElevenLabs realtime speech-to-text; the mic stops after 2.5 s of silence and keeps the words). Without an ElevenLabs key the browser's Web Speech API is used (Chrome).
+
+## Run locally
 
 ```bash
 npm install
 cp .env.example .env.local   # fill in keys; every key is optional
-npm run dev                  # http://localhost:3000 (use Chrome for the mic)
+npm run dev                  # http://localhost:3000, Chrome for the mic
 ```
 
-| Key | Used for | Without it |
+| Env var | Used for | Without it |
 |---|---|---|
-| `CALA_API_KEY` | Ingest, live entity and knowledge-search panels | Panels answer from the committed `data/cala-snapshot.json`, mock for anything outside it; app runs on committed `data/investors.json` |
-| `ANTHROPIC_API_KEY` | Live pitch extraction (Claude Haiku), ingest classification | Offline keyword extractor drives the graph |
-| `ELEVENLABS_API_KEY` | Realtime speech-to-text | Browser Web Speech API (Chrome) |
-| `AIVEN_VALKEY_URI` | Shared Cala cache and live-call budget on Aiven for Valkey (`rediss://...`) | File cache on this machine and a per-checkout budget counter |
+| `CALA_API_KEY` | Live Cala entity and search lookups, ingest scripts | Committed data and snapshot answer; misses fall back to mock |
+| `CALA_LIVE_BUDGET` | Cap on live Cala calls (default 150) | Default cap |
+| `ANTHROPIC_API_KEY` | Claude Haiku: pitch, vision, branch narration, tags | Keyword parsers |
+| `ELEVENLABS_API_KEY` | Realtime speech-to-text token (`/api/stt-token`) | Browser Web Speech |
+| `AIVEN_VALKEY_URI` | Aiven for Valkey cache and shared call budget | File cache and per-instance budget |
+| `CONTEXT_DEV_API_KEY` | Company website facts for the company file (Context.dev) | Website facts skipped |
+| `E2E_MOCK` | Set to `1` by tests: no external calls | Not needed |
 
-## Demo
+Scripts (`package.json`): `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `test:e2e`, `gate`, `ingest`, `ingest-rounds`, `ingest-events`, `introspect`, `prewarm`, `build-snapshot`, `seed-valkey`, `verify-data`, `make-fixtures`, `build-replay`. Ingest details and Cala endpoints: `docs/CALA.md`.
 
-1. Founder view (`/`): press **R** (or Replay) to play the recorded biotech pitch, or press the mic and pitch live.
-2. Click an investor: evidence edges to the portfolio companies behind the match, live Cala sources, stated vs revealed thesis, easiest door.
-3. Investor view (`/investor`) in a second window: pick an investor, see the ranked founder feed and room suggestion, tap **Interested**. The founder window's inbox badge lights up; accept, both sides verify, chat unlocks.
+## Cache (Aiven for Valkey)
 
-## Ingest (Cala)
+Cala queries take 20-70 s and cost a credit each. Panel and Cala responses are served from Valkey first (`lib/routeCache.ts`, `lib/valkey.ts`), then the committed `data/cala-snapshot.json`, then in-process LRU, `data/cala-cache/`, and only then live Cala within `CALA_LIVE_BUDGET`. The budget is an atomic counter in Valkey, so it holds across instances. With the URI unset or Valkey slow (over 800 ms), every Valkey step is a miss and the file cache answers. `GET /api/cache/stats` shows hits, misses and latency per tier. `npm run seed-valkey` loads the local cache into Valkey with no Cala calls.
 
-```bash
-npm run introspect               # discover relationship types on known funds
-npm run ingest -- --dry-run      # plan only, no calls
-npm run ingest -- --limit 5      # small real run
-npm run ingest                   # full run, checkpointed and resumable
-npm run ingest -- --build        # rebuild data/investors.json from the raw cache
+## Architecture
 
-# Entity graph: FundingRound deals (is_lead, source_rank), then Cala Event participants
-npm run ingest-rounds -- --dry-run          # plan + measured cost estimate, no calls
-npm run ingest-rounds -- --event-investors --limit 0  # rounds of event participants named as investors
-npm run ingest-rounds -- --limit 15         # demo top-15 first, then by score
-npm run ingest-rounds -- --ids zinc,4bio-capital
-npm run ingest-rounds -- --merge            # checkpoint -> data/investors.json, no calls
-npm run ingest-events -- --event <id> [--event <id>]  # Cala Event participants -> investors' events
-npm run ingest-events -- --merge            # cached events -> data/investors.json (run after ingest-rounds)
-```
+| Folder | What is there |
+|---|---|
+| `app/` | Pages: `/` (founder, alias of `/path`), `/path/investor` (showcase); older `/match`, `/investor`, `/room`. API routes in `app/api/`: `simulate`, `network`, `company/resolve`, `context`, `actions`, `spotter`, `extract`, `stt-token`, `cala`, `cache/stats` |
+| `components/path/` | Founder results UI: interview, realities, next moves, precedents, case study, star map, company file |
+| `components/spotter/` | Investor showcase |
+| `lib/sim/` | Simulator: investor agents (`fit.ts`), futures (`simulate.ts`), vision parsing, precedents, similarity, spotter (`spotter.ts`, `spotter/`), backtest |
+| `lib/ai/`, `lib/anthropic.ts` | Claude Haiku calls |
+| `lib/context/` | Company file, Cala facts, website facts (Context.dev), intro email actions |
+| `lib/stt.ts`, `lib/usePitch.ts` | Speech-to-text and silence auto-stop |
+| `lib/cala.ts`, `lib/valkey.ts`, `lib/routeCache.ts` | Cala client and cache chain |
+| `data/` | `cohort.json`, `investors.json`, `cala-snapshot.json`, fixtures |
+| `scripts/` | Ingest, snapshot, seed, backtest |
+| `docs/` | `submission.md`, `CALA.md`, `DEMO.md`, `DATA-AUDIT.md`, research |
 
-`ingest-rounds` stops at `--budget` live call attempts in total across runs (default 426, counted in `data/raw/rounds/usage.json`; failed attempts count too, so on 14 Nov 340 counted for 300 successful calls) and paces requests 5 s apart. `ingest-events` shares that budget file. See `docs/CALA.md` for the endpoints, relationship names and caveats.
-
-### Live Cala credits
-
-Every live Cala call costs one credit. The `/api/cala/*` routes cache successful responses in memory, in Aiven Valkey (see below) and on disk (`data/cala-cache/`, shared with the ingest), so a repeat click or a restart is free. Real calls count against `CALA_LIVE_BUDGET` (default 150): in Valkey when it is configured, otherwise in `data/.cala-live-usage.json`. At the cap the routes return `budgetExhausted: true` with a "lookup paused" message instead of calling Cala. Reset by deleting the file, or the `room:cala:v1:live-usage` key in Valkey.
+## Tests
 
 ```bash
-npm run prewarm                  # cache the panel's requests for the demo investors (max 15 calls)
-npm run prewarm -- zinc syncona  # or chosen investor ids; --dry-run lists the requests
-npm run build-snapshot           # data/cala-cache -> committed data/cala-snapshot.json (no calls)
+npm run gate        # typegen, typecheck, lint, unit tests (vitest), build
+npm run test:e2e    # Playwright, E2E_MOCK=1
 ```
 
-The panel's two live requests (entity and "What does X invest in?") are answered first from Aiven Valkey (the panel's own responses, `lib/routeCache.ts`), then from the committed `data/cala-snapshot.json`, which holds the displayed fields (name, type, description, answer text, cited sources) for all 193 investors and is the fallback when Valkey is unset or down. Only a request neither can answer goes down the cache chain and then to live Cala. Each response carries `source: "memory" | "snapshot" | "valkey" | "file" | "live"` and `latencyMs`. Re-run `npm run build-snapshot` after a new ingest or prewarm.
+Tests never call Cala, Anthropic, ElevenLabs or Valkey. The simulator backtest (`lib/sim/backtest.ts`, `scripts/backtest.ts`) rewinds the cohort to an earlier year and checks where later unicorns land.
 
-### Aiven for Valkey (shared Cala cache)
+## Deploy and rules
 
-An uncached Cala knowledge search takes 40-70 s and every call costs a credit, while the disk cache lives on one machine. Aiven for Valkey makes the cache and the credit cap shared by every server instance and every script run.
-
-- **Chain**: the routes check the panel responses in **Valkey** first (`lib/routeCache.ts`), then the committed snapshot (back-filled into Valkey); below that the Cala client (`lib/cala.ts`, `createRouteCala`) goes in-process LRU, **Valkey**, `data/cala-cache/`, then live Cala within the budget. A live answer is written to Valkey, disk and memory; a disk hit back-fills Valkey. The ingest and prewarm scripts read and write the same Valkey keys.
-- **Keys**: `room:cala:v1:<sha1 of the request>` (the same hash as the disk file name), JSON values, 30-day TTL (Cala data changes slowly). The live-call budget is an atomic `INCR` on `room:cala:v1:live-usage`; per-tier hit/miss counts are a hash at `room:cala:v1:stats`.
-- **Failure mode** (`lib/valkey.ts`): with `AIVEN_VALKEY_URI` unset, Valkey down or a command slower than 800 ms, every Valkey step is a miss or no-op and the app answers from the disk cache as before. A failed connect waits 30 s before the next attempt. It logs once and never logs the URI.
-- **Stats**: `GET /api/cache/stats` returns hits, misses and p50 latency per tier for this instance, plus shared totals from Valkey. The profile panel's live Cala section shows which tier answered and how long it took, with a hit/miss counter.
-
-```bash
-npm run seed-valkey              # load data/cala-cache + the snapshot's panel responses into Valkey (idempotent, no Cala calls)
-```
-
-Seeding means a fresh deploy pointed at the same Valkey answers everything in the cache with zero Cala calls.
-
-## Investor side: the early spotter
-
-`POST /api/spotter { investorId | investorName, asOf? }` lists up to 20 companies on a unicorn-shaped path for one investor. Each investor gets a different list, because the list is built from that investor's own rounds in Cala. Code: `lib/sim/spotter.ts` and `lib/sim/spotter/*`.
-
-1. **Taste.** From the investor's rounds before `asOf`: sector and stage mix (a led round counts 1.5, a participation 1), lead share, the stage it usually enters at, round-size band (IQR), co-investors, and follow-on behaviour (re-up rate). If the investor is one of the 193 in `data/investors.json` and has fewer than 8 rounds in the cohort, its revealed vectors are blended in. This never happens in a backtest, because those vectors are present-day.
-2. **Candidates.** The company's first dated round falls within 36 months before `asOf`. The company is not already in the investor's portfolio, is not already a unicorn and is not closed. Its fit (0.6 × sector + 0.4 × next-stage, each relative to the investor's top one) is at least 0.3. If fewer than 40 companies pass, the best 40 by fit are used instead.
-3. **Unicorn shape.** A kNN (K = 12) compares the company's first 1–3 stage steps with the same number of steps at every cohort company whose outcome is known as of `asOf`: unicorn (valued at $1B or more) or stalled (no round for 24 months, or closed). It compares lead kinds, specific leads, months between rounds, round sizes, participants, investor overlap, and headcount growth when present. The score is the similarity-weighted unicorn share, shrunk toward the base rate. Each pick names its 2–3 nearest unicorns and its nearest stalled company.
-4. **Simulated futures.** 500 runs start from the last real round, using the founder simulator's rules (raise-or-stall rates, real gaps and step-ups, next lead drawn through co-investor ties). Each pick reports P(unicorn-shaped: Series B+ with $100M or more raised in 5 years), the median months to the next round, and P(this investor leads or joins one of the next two rounds).
-5. **Rank.** `fit^0.2 × shape^0.35 × P(unicorn)^0.3 × (0.05 + P(on path))^0.15`. Every component, sample size and `lowConfidence` flag is in the response.
-
-Responses are cached in Valkey per investor, `asOf` and cohort version. `E2E_MOCK=1` returns a fixed mock. A request takes about 85 ms on a synthetic 900-company cohort, including the cold index build. The backtest (`tests/unit/spotterBacktest.test.ts`) runs as soon as `data/cohort.json` exists. It ranks as of 2015 and 2016 and prints where later unicorns such as Tractable, Revolut and Wise landed.
-
-## Deploy
-
-Not deployed; deploy only when Anson says so. The app runs on a read-only filesystem (e.g. Vercel): the snapshot is bundled with the routes, the disk cache simply stays empty there, and nothing writes to disk.
-
-| Env var | Deploy value | Effect |
-|---|---|---|
-| `CALA_LIVE_BUDGET` | `25` (recommended) | Normal panel visits cost 0 (snapshot). Only requests outside the snapshot call Cala, up to 25. `0` = zero-spend mode: Cala is never called, misses show "Live Cala lookup paused". |
-| `CALA_API_KEY` | set, or leave unset | Unset: snapshot answers still work; misses fall back to mock. |
-| `ANTHROPIC_API_KEY` | optional | Unset: the offline keyword extractor drives the graph. Set: every visitor pitch spends Anthropic credits. |
-| `ELEVENLABS_API_KEY` | optional | Unset: browser Web Speech. |
-| `AIVEN_VALKEY_URI` | set (recommended) | Shared, warm cache (run `npm run seed-valkey` once) and a live-call cap that holds across instances. Unset: per-instance cap, see below. |
-
-With `AIVEN_VALKEY_URI` set, the live-call cap is counted in Valkey with an atomic `INCR`, so it holds across serverless instances and cold starts. Without it (or while Valkey is unreachable) the counter file cannot be written on a deploy, so the routes count in memory with the same cap per server instance, reset on a cold start: treat `CALA_LIVE_BUDGET` then as approximate, not a hard account limit.
-
-The repo becomes public at submission. `data/cala-snapshot.json` then publishes display fields of Cala data (entity names, descriptions, search answers and source links).
-
-## Test
-
-```bash
-npm run gate                     # typegen, typecheck, lint, unit tests, build
-npx playwright test              # e2e (replay, investor, interest, screenshots)
-```
-
-Tests never call Cala, Anthropic, ElevenLabs or Valkey (`E2E_MOCK=1`; unit tests mock the Valkey client).
-
-## Honesty rules
-
-- Fixture data is labelled; a "FIXTURE DATA" banner shows whenever any synthetic investor is loaded.
-- No invented statistics. Quotes come only from `data/quotes.json`.
-- LinkedIn is linked, never scraped.
+Not deployed; Anson decides. On a read-only filesystem the snapshot is bundled and nothing writes to disk. No secrets in git; keys live in `.env.local`. LinkedIn is linked, never scraped. MIT licensed.
