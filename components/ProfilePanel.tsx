@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import type { Investor, Match, Source } from "@/lib/types";
+import CacheBadge from "./CacheBadge";
 import DoorPanel from "./DoorPanel";
 import { EvidenceChip } from "./MatchList";
 
@@ -253,6 +254,7 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
             ))}
           </ul>
         )}
+        <CacheBadge result={search?.ok ? search.data : entity?.ok ? entity.data : undefined} />
       </section>
 
       <DoorPanel doors={investor.doors} />

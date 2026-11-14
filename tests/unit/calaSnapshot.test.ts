@@ -111,7 +111,7 @@ describe("route precedence: snapshot, then cache, then live within budget", () =
     const cached = { id: CACHED_ID, name: "Cached Co", entity_type: "Company", properties: {}, relationships: {} };
     await routeClient(0, { [`POST /v1/entities/${CACHED_ID} `]: cached });
     const body = await (await entityReq(CACHED_ID)).json();
-    expect(body).toMatchObject({ source: "cache", cached: true, entity: { name: "Cached Co" } });
+    expect(body).toMatchObject({ source: "memory", cached: true, entity: { name: "Cached Co" } });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -140,7 +140,7 @@ describe("route precedence: snapshot, then cache, then live within budget", () =
     const q = "Who founded Zinc?";
     const key = `POST /v1/knowledge/search ${JSON.stringify({ input: q, explainability: false })}`;
     await routeClient(0, { [key]: { content: "Cached answer", context: [], entities: null } });
-    expect((await (await searchReq(q)).json()).source).toBe("cache");
+    expect((await (await searchReq(q)).json()).source).toBe("memory");
     expect((await (await searchReq("Who funds Acme?")).json()).budgetExhausted).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
   });
