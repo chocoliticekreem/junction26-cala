@@ -108,7 +108,7 @@ test("investor cap: ten open requests disable every Interested button", async ({
 
 // App bug: app/investor/page.tsx runs `if (!identity.investorId) setInvestorId(investors[0].id)` on mount.
 // During hydration identity is the server default (null), so it overwrites the stored persona with fx-001.
-test.fixme("investor persona survives a reload", async ({ page }) => {
+test("investor persona survives a reload", async ({ page }) => {
   await page.goto("/investor");
   await page.getByTestId("investor-picker").click();
   await page.getByPlaceholder("Act as investor…").fill("Heron Mill");

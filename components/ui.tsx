@@ -46,6 +46,7 @@ export function Button({
   className = "",
   type = "button",
   dataTestId,
+  stopPropagation,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -55,6 +56,7 @@ export function Button({
   className?: string;
   type?: "button" | "submit";
   dataTestId?: string;
+  stopPropagation?: boolean;
 }) {
   const base = "inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40";
   const v =
@@ -66,7 +68,13 @@ export function Button({
           ? "border border-white/10 text-white/60 hover:border-white/20 hover:text-white/80"
           : "border border-white/10 text-white/80 hover:border-white/25 hover:bg-white/[0.04]";
   return (
-    <button type={type} onClick={onClick} disabled={disabled} title={title} className={`${base} ${v} ${className}`} data-testid={dataTestId}>
+    <button
+      type={type}
+      onClick={(e) => {
+        if (stopPropagation) e.stopPropagation();
+        onClick?.();
+      }}
+      disabled={disabled} title={title} className={`${base} ${v} ${className}`} data-testid={dataTestId}>
       {children}
     </button>
   );

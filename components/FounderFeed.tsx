@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { FounderProfile, InterestState } from "@/lib/types";
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, STAGES, type Sector, type Stage } from "@/lib/taxonomy";
 import type { FounderMatch } from "@/lib/engine";
+import type { OrbitGroupBy } from "@/lib/orbit";
 import { FounderCard } from "@/components/FounderCard";
 import { Label } from "@/components/ui";
 
@@ -13,16 +14,18 @@ export type FounderFeedProps = {
   interestByFounder: Map<string, InterestState>;
   capHit: boolean;
   onInterested: (founderId: string) => void;
+  groupBy: OrbitGroupBy;
+  selectedId?: string;
+  onSelect: (founderId?: string) => void;
 };
 
-type GroupBy = "none" | "sector" | "stage";
 type Traction = "all" | "revenue" | "users";
 
 function topSector(f: FounderProfile): Sector {
   return (Object.entries(f.sectors) as [Sector, number][]).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "other";
 }
 
-function Seg<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
+export function Seg<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
   return (
     <div className="inline-flex rounded-lg border border-white/10 p-0.5">
       {options.map((o) => (
@@ -41,8 +44,7 @@ function Seg<T extends string>({ value, onChange, options }: { value: T; onChang
   );
 }
 
-export function FounderFeed({ founders, matches, interestByFounder, capHit, onInterested }: FounderFeedProps) {
-  const [groupBy, setGroupBy] = useState<GroupBy>("none");
+export function FounderFeed({ founders, matches, interestByFounder, capHit, onInterested, groupBy, selectedId, onSelect }: FounderFeedProps) {
   const [traction, setTraction] = useState<Traction>("all");
 
   const byId = useMemo(() => new Map(founders.map((f) => [f.id, f])), [founders]);
@@ -73,8 +75,8 @@ export function FounderFeed({ founders, matches, interestByFounder, capHit, onIn
   }, [rows, groupBy]);
 
   return (
-    <section>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <section data-testid="founder-feed">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Label>Founder feed</Label>
           <span className="font-mono text-[12px] text-white/40">
@@ -82,15 +84,6 @@ export function FounderFeed({ founders, matches, interestByFounder, capHit, onIn
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Seg
-            value={groupBy}
-            onChange={setGroupBy}
-            options={[
-              { value: "none", label: "No grouping" },
-              { value: "sector", label: "By sector" },
-              { value: "stage", label: "By stage" },
-            ]}
-          />
           <Seg
             value={traction}
             onChange={setTraction}
@@ -123,6 +116,8 @@ export function FounderFeed({ founders, matches, interestByFounder, capHit, onIn
                   interestState={interestByFounder.get(f.id) ?? null}
                   capHit={capHit}
                   onInterested={() => onInterested(f.id)}
+                  selected={f.id === selectedId}
+                  onSelect={() => onSelect(f.id === selectedId ? undefined : f.id)}
                 />
               ))}
             </div>

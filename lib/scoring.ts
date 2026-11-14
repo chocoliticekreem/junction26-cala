@@ -160,6 +160,14 @@ export function formatUsd(n: number): string {
   return `$${Math.round(n)}`;
 }
 
+// Raise is stored in USD; the founder said it in pounds, so the investor reads it back in pounds.
+export function formatGbp(usd: number): string {
+  const gbp = usd / 1.27;
+  if (gbp >= 1e6) return `£${(gbp / 1e6).toFixed(1).replace(/\.0$/, "")}m`;
+  if (gbp >= 1e3) return `£${Math.round(gbp / 1e3)}k`;
+  return `£${Math.round(gbp)}`;
+}
+
 function argmax<K extends string>(w: Partial<Record<K, number>>): K | undefined {
   let best: K | undefined;
   let bv = -Infinity;
@@ -307,7 +315,7 @@ function founderReason(f: FounderProfile, inv: Investor, c: Computed, now: Date)
   const s = argmax(c.fs);
   if (s) parts.push(SECTOR_SHORT[s]);
   if (f.stage) parts.push(stageLabel(f.stage));
-  if (f.raise) parts.push(`raising ${formatUsd(f.raise)}`);
+  if (f.raise) parts.push(`raising ${formatGbp(f.raise)}`);
   const head = parts.join(", ") || "Profile still forming";
   const shared = bestSharedSector(c);
   const n = shared
