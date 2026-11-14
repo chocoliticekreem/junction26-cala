@@ -25,14 +25,16 @@ Press `R` on the founder view. The recorded pitch is a fictional founder, Amara 
 | 2 | 4BIO Capital | fund | 56.0 | Backed 10 biotech deals in 24 months; 7 deals in the last 12 months | none |
 | 3 | Syncona | fund | 55.9 | Backed 6 biotech deals in 24 months; mostly Series B+ | none |
 | 4 | Conception X | accelerator | 51.3 | Mostly pre-seed; rounds of £945k-£1.2m | none |
-| 5 | Fuel Ventures | fund | 50.9 | Mostly pre-seed; rounds of £908k-£2.7m | Says seed; 12 of last 14 deals were pre-seed |
-| 6 | Abingworth | fund | 50.8 | Backed 13 biotech deals in 24 months; 9 deals in the last 12 months | Says Series B+; 7 of last 11 deals were Series A |
+| 5 | Fuel Ventures | fund | 50.9 | Mostly pre-seed; rounds of £908k-£2.7m | none |
+| 6 | Abingworth | fund | 50.8 | Backed 13 biotech deals in 24 months; 9 deals in the last 12 months | none |
 | 7 | Deep Science Ventures | accelerator | 50.6 | Mostly pre-seed; rounds around £1.5m | none |
 | 8 | Sofinnova Partners | fund | 50.3 | Backed 12 biotech deals in 24 months; 14 deals in the last 12 months | none |
-| 9 | London Business Angels | angel network | 49.9 | Mostly pre-seed; 9 deals in the last 12 months | Says seed; 9 of last 10 deals were pre-seed |
-| 10 | Medicxi | fund | 49.4 | Backed 8 biotech deals in 24 months; 6 deals in the last 12 months | Says pre-idea; 5 of last 5 deals were Series B+ |
+| 9 | London Business Angels | angel network | 49.9 | Mostly pre-seed; 9 deals in the last 12 months | Says seed and Series A; 9 of last 10 deals were pre-seed |
+| 10 | Medicxi | fund | 49.4 | Backed 8 biotech deals in 24 months; 6 deals in the last 12 months | none |
 
 Evidence chips for the top match, Zinc: Serenatis Bio (pre-seed, 2025-06-03), Microsol (pre-seed, 2024-12-15), Nascent Therapeutics (seed, 2026-09-03). That is two pre-seed and one seed, so say "pre-seed and seed biotech deals", not "three pre-seed deals".
+
+The only contradiction badge in the replay's top 10 is London Business Angels (#9), and it is the one to show. Its evidence chips are Onya Therapeutics (pre-seed, 2026-02-15), ManholeMetrics (pre-seed, 2026-08-15) and ClicknClear (pre-seed, 2026-08-15), and they carry no source links (its deals are sourced to a "Cala knowledge query" only), so do not promise a link there. Show sources on Zinc instead.
 
 Caveat: the scores are close together below #3 (51.3 down to 49.4). Do not narrate the exact order of #4 to #10.
 
@@ -47,7 +49,7 @@ Adapted from SPEC 7.1 to what the app shows. Record at 1440 px wide, founder win
 | 0:20-0:50 | Words stream. On "therapeutics" the biotech chip appears and the biotech investors move inward. On "pre-seed" the stage chip appears | Silent. The motion carries it |
 | 0:50-1:05 | Graph settles. Top 10 cards on the right: Zinc, 4BIO Capital, Syncona at the top | "Ten matches. Every one backed by real deals." |
 | 1:05-1:15 | Click Zinc. Evidence edges light up to Serenatis Bio, Microsol and Nascent Therapeutics with round and year. Source links visible in the panel | "Five biotech deals in the last 24 months, with the rounds and sources from Cala." |
-| 1:15-1:25 | Click Fuel Ventures (#5), then show the contradiction badge | "This one says seed. Twelve of its last fourteen deals were pre-seed." |
+| 1:15-1:25 | Click London Business Angels (#9), then show the contradiction badge | "This one says seed and Series A. Nine of its last ten deals were pre-seed." |
 | 1:25-1:35 | Easiest-door section in the investor panel | "And the easiest way in, for each one." |
 | 1:35-1:50 | Split screen. Investor window: pick Zinc, show the biotech room suggestion, then switch to Medicxi and tap Interested on the live founder. Founder window: inbox badge lights, accept, both sides verify (see "Verification moment"), lock opens, chat appears | "Investors only reach out when the fit is real. Both sides verified, then you talk, or you meet in the room." |
 | 1:50-2:00 | Title card: "Built on Cala" | End |
@@ -94,11 +96,11 @@ From SPEC 7.2.
 |---|---|---|
 | 0:00-0:30 | Slide or title only. Read two lines: founders cold-email lists of investors who were never a fit; partners lose first meetings to wrong-fit founders | Add one real quote only if it is in `data/quotes.json`. Do not quote a statistic. The problem numbers are still `[N]` placeholders until quotes are collected |
 | 0:30-1:40 | Live: a teammate pitches into the mic, or a judge gives a one-line idea. The graph reacts. If the mic or Wi-Fi fails, press `R` | "Watch the biotech investors move when she says therapeutics." |
-| 1:40-2:10 | Click the top match, show evidence edges and sources. Show Fuel Ventures' contradiction. Show the door | "Ranked by what they did. Twelve of Fuel's last fourteen deals were pre-seed, not seed." |
+| 1:40-2:10 | Click the top match, show evidence edges and sources. Show London Business Angels' contradiction (#9 in the replay). Show the door | "Ranked by what they did. Nine of London Business Angels' last ten deals were pre-seed, not seed or Series A." |
 | 2:10-2:40 | Investor window: Zinc room suggestion, then Medicxi, Interested, accept, verify | "A VC told us the value is the room." |
 | 2:40-3:00 | Back to the founder window | "Revealed thesis needs typed, sourced deal data. 2,636 deals, 193 investors, all from Cala." |
 
-Facts to have ready for questions, from `data/investors.json`: 2,636 deals, 68% with at least one URL source, 133 investors with a Cala-linked partner, 53 with a contradiction badge, 32 flagged thin history. See `docs/SUBMISSION.md` for the full table and for the honesty notes (approximate dates, mocked chat and email checks).
+Facts to have ready for questions, from `data/investors.json`: 2,636 deals, 68% with at least one URL source, 133 investors with a Cala-linked partner, 12 with a contradiction badge, 32 flagged thin history. See `docs/SUBMISSION.md` for the full table and for the honesty notes (approximate dates, mocked chat and email checks).
 
 If a judge pitches a non-biotech idea, the room suggestion will not appear for the investors above. That is expected: only the biotech cluster passes the threshold with the seeded pool.
 

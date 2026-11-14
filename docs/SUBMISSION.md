@@ -67,7 +67,7 @@ Computed with a short Python script over the committed file.
 |---|---|
 | Investors | 193 (148 funds, 17 accelerators, 14 CVCs, 14 angel networks) |
 | Fixture records | 0 |
-| Deals | 2,636, between 2024-01-10 and 2026-11-15 |
+| Deals | 2,636, between 2024-01-10 and 2026-11-12 |
 | Deals with a date | 2,626 (99.6%) |
 | Deals with a parsed USD amount | 2,133 (80.9%) |
 | Deals with a known round type | 2,162 (82.0%) |
@@ -77,18 +77,19 @@ Computed with a short Python script over the committed file.
 | Investors with 3+ dated deals in 24 months | 161 |
 | Investors flagged thin history | 32 |
 | Investors with at least one partner linked to a Cala Person | 133 (350 partner links in total) |
-| Investors with a contradiction line | 53 |
+| Investors with a contradiction score above 0.4 | 22 |
+| Investors with a contradiction line (the badge) | 12 |
 | Stated-thesis sources | 1,139 across the 193 investors; 192 investors have at least one URL |
 
 From the ingest log in `docs/CALA.md` (not recomputed): about 725 successful Cala calls in the ingest, 155 further requests that were 429 retries, 201 candidates reduced to 193 investors.
 
 ### One real contradiction
 
-Fuel Ventures, taken verbatim from `contradictionLine` in `data/investors.json`:
+London Business Angels, taken verbatim from `contradictionLine` in `data/investors.json`:
 
-> Says seed; 12 of last 14 deals were pre-seed
+> Says seed and Series A; 9 of last 10 deals were pre-seed
 
-Checked independently: 14 Fuel Ventures deals fall in the 24-month window (as of 14 Nov 2026). 12 are pre-seed, 1 is seed and 1 is Series A. The stated-thesis stage weights from Cala search are seed 0.42, pre-seed 0.35, Series A 0.20, Series B+ 0.03, and the distance score is 0.65, above the 0.4 threshold. The newest of these deals is Atlian, pre-seed, 2026-10-21, sourced to a Tracxn page for Fuel Ventures.
+Checked independently: 10 London Business Angels deals fall in the 24-month window (as of 14 Nov 2026). 9 are pre-seed and 1 is seed. The stated-thesis stage weights from Cala search are seed 0.60 and Series A 0.40, and the distance score is 0.92, above the 0.4 threshold. The newest of these deals is dated 2026-08-15, which looks like a month-only date pinned to the 15th (the file cannot tell). Its deals carry only a "Cala knowledge query" source with no URL (0 of its 13 deals have a URL source), so the badge is backed by counted deals but not by a clickable link. It is #9 in the replay's top 10, with a score of 49.9.
 
 ## Method
 
@@ -100,7 +101,7 @@ Code: `lib/revealed.ts` (revealed vector, contradiction), `lib/scoring.ts` (scor
 - Activity: `log(1 + deals in last 12 months) / log(1 + 12)`, capped at 1.
 - Thin history: fewer than 3 counted deals. These investors blend their stated thesis into `S` and `G` (blend weight rises with the deal count, full revealed at 3).
 
-**Contradiction.** The average of the total variation distance between stated and revealed sectors and between stated and revealed stages (over the dimensions both sides have). A badge shows above 0.4 and only for investors that are not thin. The line names whichever dimension disagrees harder, using counted deals only.
+**Contradiction.** The average of the total variation distance between stated and revealed sectors and between stated and revealed stages (over the dimensions both sides have). A badge shows above 0.4 and only for investors that are not thin. The line picks the strongest counted contrast between the stated thesis and the deals, from sector or stage, preferring one where the off-thesis category is at least 40% of counted deals. A stated distribution with no clear lead (top share below 0.4, or a tie for first) counts as no stated preference: it neither scores nor words a line. A score above 0.4 with no qualifying contrast shows no badge, which is why 22 investors score above 0.4 and 12 carry a line.
 
 **Score** (0-100), computed in the browser on every profile update:
 
@@ -125,9 +126,9 @@ score = 100 * (0.40 * sectorFit + 0.30 * stageFit + 0.15 * chequeFit + 0.10 * ac
 ## Honesty
 
 - **Real data.** `data/investors.json` is the real Cala ingest: 193 investors, 0 fixture records. `data/investors.fixture.json` is synthetic and only loads if `investors.json` is empty; a "FIXTURE DATA" banner shows whenever any synthetic investor is loaded.
-- **Approximated dates.** Cala often returns month-only or year-only dates. The ingest pins them (month to the 15th, year to 1 July, "Late 2025" to 1 Oct 2025, quarter to mid-quarter). It computes an approximate flag per deal but discards it, so the committed file cannot tell exact dates from pinned ones. 57 deals carry a date after 14 Nov 2026 because month-only dates for November 2026 are pinned to the 15th. Treat all dates as month-accurate at best.
+- **Approximated dates.** Cala often returns month-only or year-only dates. The ingest pins them (month to the 15th, year to 1 July, "Late 2025" to 1 Oct 2025, quarter to mid-quarter). It computes an approximate flag per deal but discards it, so the committed file cannot tell exact dates from pinned ones. Month-only dates for November 2026 had been pinned to the 15th, which put 57 deals after the ingest date. The data was re-finalized: those dates are clamped to the 1st of their month, and 0 deals are now dated after 14 Nov 2026. Treat all dates as month-accurate at best.
 - **Amounts and rounds.** 19.1% of deals have no parsed USD amount and 18.0% have no round type. Amounts in GBP or EUR are converted at fixed rates (x1.27, x1.08).
-- **Contradictions are classifier-dependent.** Stated-thesis weights come from a Haiku classification of Cala search text. A badge is a prompt to look at the deals, not a verdict. Medicxi shows "Says pre-idea; 5 of last 5 deals were Series B+", which is a stated-thesis classification we have not checked against its website, so we do not lead with it.
+- **Contradictions are classifier-dependent.** Stated-thesis weights come from a Haiku classification of Cala search text. A badge is a prompt to look at the deals, not a verdict. Only 12 investors carry one, and each line is built from counted deals.
 - **Mocked or local.**
   - Seeded founders: 40 synthetic profiles in `data/founders.seed.json`, labelled seeded, plus the demo pitch from a fictional founder (Amara, Helixa Bio).
   - Seeded debriefs in `data/debriefs.seed.json`, labelled seeded in reasons.
@@ -138,6 +139,7 @@ score = 100 * (0.40 * sectorFit + 0.30 * stageFit + 0.15 * chequeFit + 0.10 * ac
 - **Live Cala panels depend on a key.** With no `CALA_API_KEY`, or with `E2E_MOCK=1`, `/api/cala/*` returns a labelled mock. Rankings and evidence do not depend on the key because they read the committed file.
 - **No invented statistics.** The problem-section figures are placeholders until quotes are collected at Junction (SPEC section 2): outreach volume per raise `[N emails per raise]`, reply rate `[x%]`, time spent `[__ hours]`, share of first meetings that are a wrong fit `[share of first meetings that are wrong-fit]`. Quotes come only from `data/quotes.json`.
 - **Privacy.** Pitch audio is not stored. LinkedIn is linked, never scraped. Investor partner records carry no LinkedIn links in the current data (0 of 350).
+- **Match checks.** `scripts/check-matches.ts` runs six test pitches (biotech, fintech, climate, AI infrastructure, consumer, off-taxonomy defence) through the ranking: all 60 top-10 rows have a reason, and 58 have at least 2 evidence chips. The other 2 are thin-history investors, which the check accepts with fewer chips.
 - **Latency.** `knowledge/query` and `knowledge/search` take 40-70 s on a cold input (`docs/CALA.md`), which is why the shipped ranking uses an ingest-time cache and the live panels show a loading state.
 
 ## Roadmap
