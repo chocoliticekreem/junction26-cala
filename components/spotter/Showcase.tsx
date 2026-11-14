@@ -11,7 +11,8 @@ import PickCard from "@/components/spotter/PickCard";
 import PickList from "@/components/spotter/PickList";
 import TasteStrip from "@/components/spotter/TasteStrip";
 import { useInvestorOptions, useSpotter } from "@/components/spotter/useSpotter";
-import { sectorColor } from "@/components/spotter/format";
+import { sectorColor, shortDate } from "@/components/spotter/format";
+import type { SpotterEventRow } from "@/components/spotter/types";
 import { SECTOR_COLOR, SECTOR_SHORT, type Sector } from "@/lib/taxonomy";
 import "@/components/spotter/spotter.css";
 
@@ -19,8 +20,7 @@ const FIXTURES = usingFixtures();
 const DEFAULT_FUND = "Seedcamp";
 const QUICK = ["Seedcamp", "Entrepreneur First", "Lightspeed Venture Partners"];
 const SHOW = 5;
-const SLUSH = "slush-2026";
-type Scope = "slush" | "all";
+type Tab = "picks" | "events";
 
 // Taste rows come back with short labels; map them back to the sector hue used on the map.
 const SHORT_TO_SECTOR = Object.fromEntries((Object.entries(SECTOR_SHORT) as [Sector, string][]).map(([s, short]) => [short, s])) as Record<string, Sector>;
@@ -59,40 +59,51 @@ export default function Showcase() {
   // The page never waits for a choice: the default fund is ranked the moment the list arrives.
   const investor = chosen ?? options.find((o) => o.name === DEFAULT_FUND) ?? options[0] ?? null;
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-  const [hostOpen, setHostOpen] = useState(false);
-  // The demo story is "who should this fund meet at Slush next week", so the event scope is the default.
-  const [scope, setScope] = useState<Scope>("slush");
+  const [hostIndex, setHostIndex] = useState<number | undefined>(undefined);
+  const [tab, setTab] = useState<Tab>("picks");
+  // The event list rides on every answer; keep the last one so the Events tab stays put while a scoped answer loads.
+  const [events, setEvents] = useState<SpotterEventRow[]>([]);
+  const [eventId, setEventId] = useState<string | undefined>(undefined);
   const reducedMotion = useReducedMotion();
-  const { state, retry } = useSpotter(investor ? { investorId: investor.id, ...(scope === "slush" ? { at: SLUSH } : {}) } : null);
+  const scopedTo = tab === "events" ? eventId : undefined;
+  const { state, retry } = useSpotter(investor ? { investorId: investor.id, ...(scopedTo ? { event: scopedTo } : {}) } : null);
+  const data = state.status === "ok" ? state.data : null;
+  if (data && data.events !== events) setEvents(data.events);
   const selectPick = (id: string | undefined) => {
-    setHostOpen(false);
+    setHostIndex(undefined);
     setSelectedId(id);
   };
   const pickInvestor = (o: PickerOption) => {
     selectPick(undefined);
     setChosen(o);
   };
-  const pickScope = (next: Scope) => {
+  const pickTab = (next: Tab) => {
     selectPick(undefined);
-    setScope(next);
+    setTab(next);
+    if (next === "events" && !eventId) setEventId(events[0]?.id);
+  };
+  const pickEvent = (id: string) => {
+    selectPick(undefined);
+    setEventId(id);
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSelectedId(undefined);
-        setHostOpen(false);
+        setHostIndex(undefined);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const data = state.status === "ok" ? state.data : null;
   const picks = (data?.picks ?? []).slice(0, SHOW);
   const selectedIndex = picks.findIndex((p) => p.company.id === selectedId);
   const selected = selectedIndex >= 0 ? picks[selectedIndex] : null;
   const hosts = data?.host ?? [];
+  const openHost = hostIndex !== undefined ? hosts[hostIndex] : undefined;
+  const scopedEvent = scopedTo ? events.find((e) => e.id === scopedTo) : undefined;
   const quick = quickPicks(options);
   const noCohort = state.status === "no_cohort" || investorsState.status === "no_cohort";
   const picker = <InvestorPicker options={options} value={investor} onChange={pickInvestor} loading={investorsState.status === "loading"} placeholder="Search funds…" id="spotter-fund" />;
@@ -101,12 +112,12 @@ export default function Showcase() {
     <div className="shell">
       <TopBar subtitle="Early spotter · for funds" inbox={null} tools={picker} showFixtureBanner={FIXTURES} />
       <main className="sp-stage">
-        <section className="sp-pane-wrap relative min-h-0" aria-label="Your picks, mapped" data-selected={selected || hostOpen ? "" : undefined}>
+        <section className="sp-pane-wrap relative min-h-0" aria-label="Your picks, mapped" data-selected={selected || openHost ? "" : undefined}>
           {picks.length > 0 && (
             <Constellation investorName={data?.investor.name ?? ""} picks={picks} selectedId={selectedId} onSelect={selectPick} reducedMotion={reducedMotion} />
           )}
           {selected && data && <PickCard key={selected.company.id} pick={selected} investor={data.investor} rank={selectedIndex + 1} asOf={data.asOf} onClose={() => setSelectedId(undefined)} />}
-          {hostOpen && hosts.length > 0 && <HostCard key={data?.investor.id} hosts={hosts} onClose={() => setHostOpen(false)} />}
+          {openHost && <HostCard key={`${data?.investor.id}:${openHost.sector}`} host={openHost} onClose={() => setHostIndex(undefined)} />}
 
           {(state.status === "loading" || (state.status === "idle" && !noCohort && investorsState.status !== "error")) && (
             <div className="sp-loading" data-testid="spotter-loading" aria-live="polite">
@@ -127,7 +138,7 @@ export default function Showcase() {
           {state.status === "ok" && picks.length === 0 && (
             <div className="sp-error" data-testid="spotter-empty">
               <span>
-                No young company in {data?.investor.name}’s lane {scope === "slush" ? "at Slush" : "yet"}.
+                No young company in {data?.investor.name}’s lane {scopedEvent ? `at ${scopedEvent.name}` : "yet"}.
               </span>
             </div>
           )}
@@ -154,12 +165,24 @@ export default function Showcase() {
             ))}
           </div>
 
+          <div className="sp-tabs" role="tablist" aria-label="View">
+            <button type="button" role="tab" aria-selected={tab === "picks"} className={`sp-tab ${tab === "picks" ? "is-on" : ""}`} onClick={() => pickTab("picks")} data-testid="spotter-tab-picks">
+              Picks
+            </button>
+            <button type="button" role="tab" aria-selected={tab === "events"} className={`sp-tab ${tab === "events" ? "is-on" : ""}`} onClick={() => pickTab("events")} data-testid="spotter-tab-events">
+              Events
+            </button>
+          </div>
+
           <div className="sp-head">
             <p className="hero-kicker">Early spotter</p>
             <div className="sp-h1-row">
               <h1 className="sp-h1">
-                {scope === "slush" && "Meet at Slush: "}
-                {data && picks.length > 0 ? (
+                {scopedEvent ? (
+                  <>
+                    Meet at <span className="k">{scopedEvent.name}</span>: {data ? picks.length : ""} picks
+                  </>
+                ) : data && picks.length > 0 ? (
                   <>
                     {picks.length} picks for <span className="k">{data.investor.name}</span>
                   </>
@@ -171,27 +194,38 @@ export default function Showcase() {
               </h1>
               {data && <HowItWorks data={data} />}
             </div>
-            <div className="sp-scope" role="radiogroup" aria-label="Which companies">
-              <button type="button" role="radio" aria-checked={scope === "slush"} className={`sp-scope-opt ${scope === "slush" ? "is-on" : ""}`} onClick={() => pickScope("slush")} data-testid="spotter-scope-slush">
-                At Slush · Nov 18
-              </button>
-              <button type="button" role="radio" aria-checked={scope === "all"} className={`sp-scope-opt ${scope === "all" ? "is-on" : ""}`} onClick={() => pickScope("all")} data-testid="spotter-scope-all">
-                All early companies
-              </button>
-            </div>
           </div>
 
-          {data && <TasteStrip investor={data.investor} sectorColor={tasteColor} />}
-          {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => selectPick(selectedId === id ? undefined : id)} tagEvents={scope === "all"} />}
-          {hosts.length > 0 && (
-            <HostRow
-              host={hosts[0]}
-              open={hostOpen}
-              onToggle={() => {
-                setSelectedId(undefined);
-                setHostOpen((o) => !o);
-              }}
-            />
+          {tab === "events" && events.length > 0 && (
+            <div className="sp-events" role="radiogroup" aria-label="Event" data-testid="spotter-events">
+              {events.map((e) => (
+                <button key={e.id} type="button" role="radio" aria-checked={eventId === e.id} className={`sp-event ${eventId === e.id ? "is-on" : ""}`} onClick={() => pickEvent(e.id)} data-testid={`spotter-event-${e.id}`}>
+                  <span className="sp-event-name">{e.name}</span>
+                  <span className="sp-event-meta font-mono">
+                    {shortDate(e.date)} · {e.place.split(",").pop()?.trim()} · {e.attending} fit attend
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {tab === "picks" && data && <TasteStrip investor={data.investor} sectorColor={tasteColor} />}
+          {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => selectPick(selectedId === id ? undefined : id)} tagEvents={!scopedEvent} />}
+          {tab === "events" && hosts.length > 0 && (
+            <div className="sp-hosts" data-testid="spotter-hosts">
+              <p className="sp-hosts-k">Host your own</p>
+              {hosts.map((h, i) => (
+                <HostRow
+                  key={h.sector}
+                  host={h}
+                  open={hostIndex === i}
+                  onToggle={() => {
+                    setSelectedId(undefined);
+                    setHostIndex((cur) => (cur === i ? undefined : i));
+                  }}
+                />
+              ))}
+            </div>
           )}
           {picks.length === 0 && (
             <div className="matches-idle" style={{ position: "static", inset: "auto" }} aria-hidden>

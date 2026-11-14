@@ -95,6 +95,8 @@ export type SpotterResult = {
   picks: SpotterPick[];
   // Events the fund could host (lib/sim/spotter/host.ts); filled by the API, not by runSpotter.
   host?: HostEvent[];
+  // Every event with an attendee list and how many of this fund's fit companies attend; filled by the API.
+  events?: { id: string; name: string; date: string; place: string; source: { name: string; url: string; asOf: string }; attendees: number; attending: number }[];
   asOf: string;
   basis: string;
   considered: { candidates: number; simulated: number; roundsInCohort: number };

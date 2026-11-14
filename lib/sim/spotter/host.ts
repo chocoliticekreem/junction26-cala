@@ -1,4 +1,4 @@
-// "Host an event": the fund's lane (every candidate that fits its taste, not only Slush attendees),
+// "Host an event": the fund's lane (every candidate that fits its taste, not only event attendees),
 // grouped by sector. Groups under MIN_GROUP are dropped and nothing is ever padded. A group's
 // weight is the fund's own share of rounds in that sector times the group's mean fit: raw
 // fit-weighted size would hand every fund the cohort's biggest sector (applied AI, 40 of ~75
@@ -16,13 +16,15 @@ export const MIN_GROUP = 3;
 export const MAX_GROUPS = 2;
 export const MAX_INVITES = 8;
 
-export type HostInvite = { id: string; name: string; stage: Stage; year?: string; atSlush: boolean };
+export type HostInviteEvent = { id: string; name: string; date: string };
+
+export type HostInvite = { id: string; name: string; stage: Stage; year?: string; events: HostInviteEvent[] };
 
 export type HostEvent = {
   sector: Sector;
   name: string;
   count: number;
-  atSlush: number;
+  attending: number;
   companies: HostInvite[];
 };
 
@@ -31,17 +33,17 @@ export type HostQuery = {
   investorName?: string;
   asOf?: string;
   revealedFor?: (investorId: string) => Revealed | undefined;
-  attending?: (company: { id: string; name: string }) => boolean;
+  eventsOf?: (company: { id: string; name: string }) => HostInviteEvent[];
 };
 
 export function hostEventName(sector: Sector): string {
-  return `${SECTOR_SHORT[sector] ?? sector} founders breakfast · Slush week`;
+  return `${SECTOR_SHORT[sector] ?? sector} founders breakfast`;
 }
 
-function invite(idx: ReturnType<typeof spotterIndex>, row: CompanyRow, atSlush: boolean): HostInvite {
+function invite(idx: ReturnType<typeof spotterIndex>, row: CompanyRow, events: HostInviteEvent[]): HostInvite {
   const last = row.eps[row.eps.length - 1];
   const date = idx.cohort.rounds[last.roundIds[last.roundIds.length - 1]]?.date;
-  return { id: row.co.id, name: row.co.name, stage: last.stage, year: date?.slice(0, 4), atSlush };
+  return { id: row.co.id, name: row.co.name, stage: last.stage, year: date?.slice(0, 4), events };
 }
 
 export function hostEvents(cohort: Cohort, q: HostQuery): HostEvent[] {
@@ -49,7 +51,7 @@ export function hostEvents(cohort: Cohort, q: HostQuery): HostEvent[] {
   const investorId = resolveInvestor(idx, q);
   if (!investorId) throw new SpotterError("investor_not_found", `No investor "${q.investorName ?? q.investorId}" in the cohort`);
   const taste = tasteFromIndex(idx, investorId, { revealed: q.revealedFor?.(investorId) });
-  const attending = q.attending ?? (() => false);
+  const eventsOf = q.eventsOf ?? (() => []);
   const groups = new Map<Sector, { fitSum: number; rows: { row: CompanyRow; fit: number }[] }>();
   for (const c of spotterCandidates(idx, taste)) {
     const g = groups.get(c.row.co.sector) ?? { fitSum: 0, rows: [] };
@@ -65,13 +67,13 @@ export function hostEvents(cohort: Cohort, q: HostQuery): HostEvent[] {
     .sort((a, b) => weight(b) - weight(a) || b[1].rows.length - a[1].rows.length || a[0].localeCompare(b[0]))
     .slice(0, MAX_GROUPS)
     .map(([sector, g]) => {
-      const rows = g.rows.map((c) => ({ ...c, atSlush: attending(c.row.co) }));
+      const rows = g.rows.map((c) => ({ ...c, events: eventsOf(c.row.co).map(({ id, name, date }) => ({ id, name, date })) }));
       return {
         sector,
         name: hostEventName(sector),
         count: rows.length,
-        atSlush: rows.filter((r) => r.atSlush).length,
-        companies: rows.slice(0, MAX_INVITES).map((r) => invite(idx, r.row, r.atSlush)),
+        attending: rows.filter((r) => r.events.length > 0).length,
+        companies: rows.slice(0, MAX_INVITES).map((r) => invite(idx, r.row, r.events)),
       };
     });
 }
