@@ -353,14 +353,11 @@ export default function PathPage() {
     [uploads, contextBody],
   );
 
-  const selectDecision = useCallback(
-    (d?: Decision) => {
-      setDecision(d);
-      setRealityId(undefined);
-      void simulate(d, false);
-    },
-    [simulate],
-  );
+  // Choosing a next lead highlights its paths in the current run; the results stay as simulated.
+  const selectDecision = useCallback((d?: Decision) => {
+    setDecision(d);
+    setRealityId(undefined);
+  }, []);
 
   // Map inputs: a selected reality re-weights the highways along its chain; a selected branch
   // (already re-simulated by the engine) brightens its top paths.
