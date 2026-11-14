@@ -21,7 +21,7 @@
 // lift = shape / base. lowConfidence when the reference set has fewer than LOW_CONFIDENCE_N rows
 // or fewer than MIN_UNICORNS unicorns.
 import type { Stage } from "@/lib/taxonomy";
-import type { InvestorKind } from "./cohort";
+import type { InvestorKind } from "../types";
 import { LOW_CONFIDENCE_N, MONTH_MS, ROUND_STAGES, median, stageIdx, toMs, type CompanyRow, type SpotterIndex } from "./base";
 
 export const SHAPE_K = 12;

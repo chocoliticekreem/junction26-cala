@@ -4,7 +4,8 @@
 //   2. candidates  first dated round within CANDIDATE_WINDOW_MONTHS before asOf, not already in the
 //                  investor's portfolio, not already a unicorn or closed, and
 //                  fit = 0.6 * sector fit + 0.4 * next-stage fit >= FIT_THRESHOLD (relative to the
-//                  investor's own top sector/stage). When fewer than MIN_CANDIDATES pass, the best
+//                  investor's own top sector/stage; sector fit is the larger of the sector share and
+//                  the tags+description similarity to the investor's portfolio, spotter/taste.ts). When fewer than MIN_CANDIDATES pass, the best
 //                  MIN_CANDIDATES by fit with fit > 0 are kept instead, so thin investors still get a list.
 //   3. shape       kNN of the early path against unicorns vs stalled companies (spotter/shape.ts)
 //   4. futures     FUTURE_RUNS simulated futures from the last real round (spotter/futures.ts):
@@ -16,7 +17,7 @@
 // Every component is returned so the UI can show why a company is on the list.
 import type { Sector, Stage } from "@/lib/taxonomy";
 import type { Revealed } from "@/lib/types";
-import type { Cohort } from "./spotter/cohort";
+import type { Cohort } from "./types";
 import {
   LOW_CONFIDENCE_N,
   MONTH_MS,
@@ -28,6 +29,7 @@ import {
   type SpotterIndex,
 } from "./spotter/base";
 import { simulateFutures, FUTURE_RUNS, type Futures } from "./spotter/futures";
+import { centroid, similarityIndex, textSimilarity } from "./similarity";
 import { companySteps, unicornShape, type Neighbour, type ShapeScore } from "./spotter/shape";
 import { tasteFit, tasteFromIndex, type InvestorTaste } from "./spotter/taste";
 
@@ -112,13 +114,18 @@ function nextStage(row: CompanyRow): Stage {
 
 export function spotterCandidates(idx: SpotterIndex, taste: InvestorTaste): { row: CompanyRow; fit: number }[] {
   const windowStart = idx.asOfMs - CANDIDATE_WINDOW_MONTHS * MONTH_MS;
-  const pool: { row: CompanyRow; fit: number }[] = [];
+  const rows: CompanyRow[] = [];
   for (const row of idx.rows.values()) {
     if (row.firstMs < windowStart || row.firstMs >= idx.asOfMs) continue;
     if (taste.portfolio.has(row.co.id) || row.outcome === "unicorn") continue;
     if (idx.trustPresent && row.co.status === "closed") continue;
-    pool.push({ row, fit: tasteFit(taste, row.co.sector, nextStage(row)) });
+    rows.push(row);
   }
+  const sim = similarityIndex(idx.cohort);
+  const portfolio = centroid(sim, taste.portfolio);
+  const likes = rows.map((r) => textSimilarity(sim, portfolio, r.co.id));
+  const maxLike = Math.max(0, ...likes);
+  const pool = rows.map((row, i) => ({ row, fit: tasteFit(taste, row.co.sector, nextStage(row), maxLike ? likes[i] / maxLike : 0) }));
   pool.sort((a, b) => b.fit - a.fit || a.row.co.id.localeCompare(b.row.co.id));
   const passing = pool.filter((c) => c.fit >= FIT_THRESHOLD);
   return passing.length >= MIN_CANDIDATES ? passing : pool.filter((c) => c.fit > 0).slice(0, MIN_CANDIDATES);

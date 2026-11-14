@@ -230,7 +230,9 @@ score = 100 * (0.40 * sectorFit + 0.30 * stageFit + 0.15 * chequeFit + 0.10 * ac
 
 **Taxonomy.** 18 sectors plus an `other` fallback, and 5 stages (pre-idea, pre-seed, seed, Series A, Series B+).
 
-**Extraction.** Server route `app/api/extract/route.ts` uses `claude-haiku-4-5` with a strict tool schema. A keyword fallback (`lib/fallbackExtract.ts`) produces the same shape offline.
+**Extraction.** AI is the default reader. `lib/ai/analyzeFounder.ts` (used by `/api/extract` and `/api/simulate`) makes one strict `claude-haiku-4-5` tool call that interprets the pitch: the nearest of the 18 sectors plus free-text domain tags ("EEG", "neurotech", "wearable"), stage, raise, traction, team, model, geography, each with a confidence. `lib/ai/analyzeVision.ts` reads the vision into targets and one line saying how it was read ("Unicorn = valuation of $1B or more, within 6 years"); unicorn ($1B), decacorn ($10B) and IPO (Series B+, public) are fixed meanings enforced after the call. The keyword parsers (`lib/fallbackExtract.ts`, `parseVision`) answer only when the call cannot run or fails, and every response says which one answered: `analysis: "ai" | "keyword_fallback"` (with `fallbackReason`).
+
+**Companies like you.** `lib/sim/similarity.ts`: TF-IDF over each cohort company's tags (counted twice) and description, built once per cohort, cosine against the founder's tags and pitch. Precedents add `4 x similarity` to their sector/stage/shared-investor score and report it; the spotter's sector fit is the larger of the sector share and the candidate's similarity to the investor's portfolio. Cohort tags come from `scripts/tag-cohort.ts` (Haiku, 25 companies per call, cached by id in `data/ai-cache/` and Valkey); deal tags from `scripts/tag-deals.ts` into the overlay `data/deal-tags.json`.
 
 ## Honesty
 

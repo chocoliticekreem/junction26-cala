@@ -37,6 +37,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-002": {
@@ -63,6 +67,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-003": {
@@ -91,6 +99,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-004": {
@@ -128,6 +140,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-005": {
@@ -158,6 +174,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-006": {
@@ -190,6 +210,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-007": {
@@ -222,6 +245,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-008": {
@@ -252,6 +279,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-009": {
@@ -287,6 +318,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-010": {
@@ -315,6 +350,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-011": {
@@ -351,6 +390,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-012": {
@@ -386,6 +429,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-013": {
@@ -422,6 +468,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-014": {
@@ -452,6 +502,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-015": {
@@ -487,6 +541,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-016": {
@@ -520,6 +578,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-017": {
@@ -556,6 +618,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-018": {
@@ -576,6 +642,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-019": {
@@ -612,6 +681,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-020": {
@@ -638,6 +711,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-021": {
@@ -679,6 +756,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-022": {
@@ -699,6 +780,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-023": {
@@ -739,6 +824,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-024": {
@@ -774,6 +863,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-025": {
@@ -802,6 +894,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-026": {
@@ -832,6 +928,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-027": {
@@ -862,6 +962,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-028": {
@@ -894,6 +998,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-029": {
@@ -919,6 +1027,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-030": {
@@ -949,6 +1061,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-031": {
@@ -975,6 +1090,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-032": {
@@ -1001,6 +1120,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-033": {
@@ -1029,6 +1152,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-034": {
@@ -1065,6 +1192,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-035": {
@@ -1085,6 +1216,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-036": {
@@ -1111,6 +1246,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-037": {
@@ -1137,6 +1275,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-038": {
@@ -1169,6 +1311,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-039": {
@@ -1197,6 +1343,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-040": {
@@ -1229,6 +1379,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-041": {
@@ -1261,6 +1415,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-042": {
@@ -1296,6 +1454,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-043": {
@@ -1336,6 +1497,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-044": {
@@ -1363,6 +1528,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-045": {
@@ -1391,6 +1560,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-046": {
@@ -1411,6 +1584,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-047": {
@@ -1431,6 +1608,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-048": {
@@ -1457,6 +1638,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-049": {
@@ -1484,6 +1668,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-050": {
@@ -1514,6 +1702,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-051": {
@@ -1534,6 +1726,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-052": {
@@ -1559,6 +1755,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-053": {
@@ -1590,6 +1790,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-054": {
@@ -1616,6 +1820,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-055": {
@@ -1641,6 +1848,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-056": {
@@ -1676,6 +1887,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-057": {
@@ -1707,6 +1922,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-058": {
@@ -1727,6 +1946,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-059": {
@@ -1759,6 +1982,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-060": {
@@ -1785,6 +2012,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-061": {
@@ -1816,6 +2046,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-062": {
@@ -1847,6 +2081,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-063": {
@@ -1867,6 +2105,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-064": {
@@ -1899,6 +2141,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-065": {
@@ -1930,6 +2176,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-066": {
@@ -1957,6 +2207,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-067": {
@@ -1982,6 +2235,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-068": {
@@ -2019,6 +2276,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-069": {
@@ -2039,6 +2300,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-070": {
@@ -2065,6 +2330,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-071": {
@@ -2094,6 +2363,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-072": {
@@ -2122,6 +2395,9 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery"
    ]
   },
   "fx-co-073": {
@@ -2154,6 +2430,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-074": {
@@ -2181,6 +2461,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-075": {
@@ -2211,6 +2495,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid",
+    "carbon"
    ]
   },
   "fx-co-076": {
@@ -2246,6 +2534,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical SaaS"
    ]
   },
   "fx-co-077": {
@@ -2278,6 +2570,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-078": {
@@ -2304,6 +2600,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-079": {
@@ -2330,6 +2630,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-080": {
@@ -2350,6 +2654,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic management"
    ]
   },
   "fx-co-081": {
@@ -2391,6 +2699,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon software"
    ]
   },
   "fx-co-082": {
@@ -2426,6 +2738,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical SaaS"
    ]
   },
   "fx-co-083": {
@@ -2451,6 +2767,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-084": {
@@ -2487,6 +2807,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-085": {
@@ -2507,6 +2831,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-086": {
@@ -2538,6 +2866,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic management"
    ]
   },
   "fx-co-087": {
@@ -2568,6 +2900,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon software"
    ]
   },
   "fx-co-088": {
@@ -2598,6 +2934,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical SaaS"
    ]
   },
   "fx-co-089": {
@@ -2619,6 +2959,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-090": {
@@ -2644,6 +2988,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-091": {
@@ -2669,6 +3017,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-092": {
@@ -2697,6 +3049,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic management"
    ]
   },
   "fx-co-093": {
@@ -2724,6 +3080,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon software"
    ]
   },
   "fx-co-094": {
@@ -2761,6 +3121,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical SaaS"
    ]
   },
   "fx-co-095": {
@@ -2787,6 +3151,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-096": {
@@ -2807,6 +3175,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-097": {
@@ -2837,6 +3209,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-098": {
@@ -2869,6 +3245,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic management"
    ]
   },
   "fx-co-099": {
@@ -2897,6 +3277,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon software"
    ]
   },
   "fx-co-100": {
@@ -2922,6 +3306,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical SaaS"
    ]
   },
   "fx-co-101": {
@@ -2941,6 +3329,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-102": {
@@ -2966,6 +3358,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-103": {
@@ -2996,6 +3392,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-104": {
@@ -3031,6 +3431,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-105": {
@@ -3061,6 +3465,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-106": {
@@ -3087,6 +3495,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-107": {
@@ -3123,6 +3535,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-108": {
@@ -3148,6 +3564,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-109": {
@@ -3174,6 +3594,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-110": {
@@ -3202,6 +3626,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-111": {
@@ -3234,6 +3662,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-112": {
@@ -3254,6 +3686,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-113": {
@@ -3290,6 +3726,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-114": {
@@ -3316,6 +3756,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-115": {
@@ -3342,6 +3786,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-116": {
@@ -3369,6 +3817,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-117": {
@@ -3399,6 +3851,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-118": {
@@ -3425,6 +3881,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-119": {
@@ -3456,6 +3916,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-120": {
@@ -3488,6 +3952,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-121": {
@@ -3520,6 +3988,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-122": {
@@ -3555,6 +4027,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinics"
    ]
   },
   "fx-co-123": {
@@ -3588,6 +4064,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-124": {
@@ -3618,6 +4098,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-125": {
@@ -3655,6 +4139,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "developer tooling",
+    "observability"
    ]
   },
   "fx-co-126": {
@@ -3684,6 +4172,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-127": {
@@ -3711,6 +4203,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-128": {
@@ -3741,6 +4237,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic tools"
    ]
   },
   "fx-co-129": {
@@ -3771,6 +4271,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-130": {
@@ -3802,6 +4306,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-131": {
@@ -3821,6 +4329,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "observability",
+    "tooling"
    ]
   },
   "fx-co-132": {
@@ -3857,6 +4369,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-133": {
@@ -3893,6 +4409,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-134": {
@@ -3915,6 +4435,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic tools"
    ]
   },
   "fx-co-135": {
@@ -3951,6 +4475,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-136": {
@@ -3977,6 +4505,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-137": {
@@ -4008,6 +4540,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "observability",
+    "tooling"
    ]
   },
   "fx-co-138": {
@@ -4038,6 +4574,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-139": {
@@ -4063,6 +4603,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-140": {
@@ -4091,6 +4635,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic tools"
    ]
   },
   "fx-co-141": {
@@ -4126,6 +4674,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-142": {
@@ -4151,6 +4703,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-143": {
@@ -4187,6 +4743,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "observability",
+    "tooling"
    ]
   },
   "fx-co-144": {
@@ -4213,6 +4773,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-145": {
@@ -4238,6 +4802,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "payments",
+    "lending"
    ]
   },
   "fx-co-146": {
@@ -4269,6 +4837,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "digital health",
+    "clinic tools"
    ]
   },
   "fx-co-147": {
@@ -4296,6 +4868,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "grid software",
+    "carbon"
    ]
   },
   "fx-co-148": {
@@ -4325,6 +4901,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "AI agents",
+    "vertical industry"
    ]
   },
   "fx-co-149": {
@@ -4361,6 +4941,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "observability",
+    "tooling"
    ]
   },
   "fx-co-150": {
@@ -4387,6 +4971,10 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "drug discovery",
+    "platform"
    ]
   },
   "fx-co-cala": {
@@ -4413,6 +5001,11 @@
     {
      "name": "Synthetic fixture (not real data)"
     }
+   ],
+   "tags": [
+    "API",
+    "AI agents",
+    "knowledge"
    ]
   }
  },
