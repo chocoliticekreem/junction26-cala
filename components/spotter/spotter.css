@@ -2,7 +2,7 @@
 
 .sp-stage {
   display: grid;
-  grid-template-columns: minmax(0, 64fr) minmax(380px, 36fr);
+  grid-template-columns: minmax(0, 1fr) 470px;
   min-height: 0;
 }
 
@@ -35,32 +35,10 @@
   height: 100%;
 }
 
-.sp-title {
-  position: absolute;
-  top: 16px;
-  left: 20px;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  pointer-events: none;
-}
-
-.sp-title b {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.sp-title span {
-  font-size: 12px;
-  color: var(--fg-3);
-}
-
-.sp-title .k,
-.sp-legend .k,
+.sp-h1 .k,
+.sp-taste .k,
+.sp-pick-line .k,
 .sp-chip.k,
-.sp-pick-nums .k,
 .sp-numbers .k b {
   color: var(--accent);
 }
@@ -69,8 +47,7 @@
 
 .sp-how {
   position: relative;
-  margin-top: 8px;
-  pointer-events: auto;
+  flex: none;
 }
 
 .sp-how-btn {
@@ -110,7 +87,7 @@
 .sp-how-pop {
   position: absolute;
   top: 34px;
-  left: 0;
+  right: 0;
   z-index: 5;
   width: 420px;
   padding: 14px 16px;
@@ -145,31 +122,6 @@
   font-size: 10.5px;
   letter-spacing: 0.02em;
   color: var(--fg-3);
-}
-
-.sp-legend {
-  position: absolute;
-  right: 20px;
-  bottom: 14px;
-  max-width: min(560px, 55%);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  font-size: 11.5px;
-  color: var(--fg-3);
-  pointer-events: none;
-  text-align: right;
-}
-
-.sp-pane-wrap[data-selected] .sp-legend {
-  max-width: calc(100% - 430px);
-}
-
-.sp-legend b {
-  color: var(--fg-2);
-  font-weight: 500;
 }
 
 .sp-honesty {
@@ -338,76 +290,6 @@
 
 /* Idle / loading / error --------------------------------------------------- */
 
-.sp-idle {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 24px;
-  animation: hero-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.sp-idle .hero-title {
-  font-size: clamp(36px, 4vw, 58px);
-}
-
-.sp-ask {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 34px;
-  width: min(440px, 100%);
-}
-
-.sp-ask label {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--fg);
-}
-
-.sp-ask .sp-picker {
-  width: 100%;
-}
-
-.sp-ask .sp-picker input {
-  height: 48px;
-  padding: 0 18px;
-  border-radius: 12px;
-  font-size: 16px;
-  text-align: center;
-  box-shadow: var(--glass-glow);
-}
-
-.sp-ask .sp-picker ul {
-  text-align: left;
-}
-
-.sp-quick {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.sp-quick .hero-btn {
-  height: 40px;
-  padding: 0 18px;
-  font-size: 14px;
-}
-
-.sp-idle-note {
-  margin-top: 18px;
-  font-size: 12px;
-  color: var(--fg-3);
-}
-
 .sp-loading {
   position: absolute;
   inset: 0;
@@ -443,14 +325,14 @@
   font-size: 14px;
 }
 
-/* Rail ------------------------------------------------------------------- */
+/* Rail: fund, taste, five picks. Sized to fit 900px tall without scrolling. ------- */
 
 .sp-rail {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   min-height: 0;
-  padding: 14px 14px 20px;
+  padding: 18px 22px 20px;
   overflow-y: auto;
   border-left: 1px solid var(--line);
   background: var(--bg-2);
@@ -462,36 +344,102 @@
   flex-shrink: 0;
 }
 
-.sp-card {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px 14px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), rgb(255 255 255 / 0.01));
-}
-
-.sp-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--fg-2);
-  margin-bottom: 10px;
-}
-
-.sp-card-head .muted {
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-/* Taste chips */
-
-.sp-taste-chips {
+.sp-funds {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.sp-fund {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgb(20 26 42 / 0.9);
+  color: var(--fg-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, background 150ms;
+}
+
+.sp-fund:hover {
+  border-color: rgb(255 255 255 / 0.26);
+  color: var(--fg);
+}
+
+.sp-fund.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.sp-head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.sp-head .hero-kicker {
+  margin: 0;
+  font-size: 11.5px;
+}
+
+.sp-h1-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sp-h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.sp-sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+
+.sp-taste {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01));
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+.sp-taste b {
+  font-weight: 600;
+}
+
+.sp-taste .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+
+.sp-taste small {
+  font-size: 11.5px;
+  color: var(--fg-3);
+}
+
+.sp-rail .sp-honesty {
+  margin: -8px 0 0;
 }
 
 .sp-chip {
@@ -513,18 +461,6 @@
   height: 6px;
 }
 
-.sp-chip-lg {
-  padding: 4px 11px;
-  font-size: 12.5px;
-  color: var(--fg);
-}
-
-.sp-chip-lg small {
-  font-family: var(--font-mono), monospace;
-  font-size: 11px;
-  color: var(--fg-3);
-}
-
 .sp-chip.k {
   --chip: rgb(255 106 61 / 0.9);
 }
@@ -537,19 +473,19 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
 .sp-pick {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
+  grid-template-columns: 20px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   width: 100%;
-  padding: 8px 8px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: transparent;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), rgb(255 255 255 / 0.01));
   color: inherit;
   font: inherit;
   text-align: left;
@@ -558,7 +494,8 @@
 }
 
 .sp-pick:hover {
-  background: rgb(255 255 255 / 0.035);
+  border-color: var(--line-2);
+  background: rgb(255 255 255 / 0.045);
 }
 
 .sp-pick.is-selected {
@@ -572,31 +509,44 @@
 }
 
 .sp-pick-rank {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--fg-3);
-  padding-top: 2px;
+  padding-top: 3px;
 }
 
 .sp-pick-main {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
 .sp-pick-name {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 7px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   min-width: 0;
 }
 
-.sp-pick-name > span:not(.sp-pick-chips) {
+.sp-pick-name .dot {
+  align-self: center;
+}
+
+.sp-pick-name > span:not(.sp-pick-meta) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sp-pick-meta {
+  flex: none;
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 11.5px;
+  color: var(--fg-3);
+  white-space: nowrap;
 }
 
 .sp-pick-chips {
@@ -605,32 +555,28 @@
   flex-wrap: wrap;
 }
 
-.sp-pick-name .sp-pick-chips {
-  flex: none;
-  flex-wrap: nowrap;
-  margin-left: auto;
-}
-
 .sp-pick-line {
-  font-size: 11.5px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: var(--fg-2);
 }
 
-.sp-pick-nums {
-  display: flex;
-  gap: 12px;
-  font-size: 11px;
-  color: var(--fg-3);
-}
-
-.sp-pick-nums b {
+.sp-pick-line b {
   font-weight: 500;
-  font-size: 12px;
   color: var(--fg);
 }
 
-.sp-picks li:nth-child(-n + 3) .sp-pick-nums b {
-  font-size: 13px;
+/* Vision line, bottom of the map */
+
+.sp-vision {
+  position: absolute;
+  right: 22px;
+  bottom: 16px;
+  z-index: 2;
+  margin: 0;
+  font-size: 12px;
+  color: var(--fg-3);
+  pointer-events: none;
 }
 
 /* Selected pick card (overlay in the pane) -------------------------------- */
@@ -926,7 +872,7 @@
 
 @media (max-width: 1320px) {
   .sp-stage {
-    grid-template-columns: minmax(0, 58fr) minmax(360px, 42fr);
+    grid-template-columns: minmax(0, 1fr) 420px;
   }
   .sp-detail {
     width: 340px;
