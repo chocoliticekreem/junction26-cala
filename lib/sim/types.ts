@@ -132,6 +132,12 @@ export type DecisionNode = {
   label: string;
   runs: number;
   reachVisionShare: number;
+  // Share of runs that close the next round (one stage up from today) within the horizon: the
+  // milestone that matters now, where reachVisionShare is the long shot.
+  nextRound: { stage: Stage; share: number };
+  // The same engine from a typical company at today's stage (no sector, no history, no chosen
+  // lead): the base rate both shares are read against.
+  typical: { reachVisionShare: number; nextRoundShare: number };
   medianMonthsToNextRound?: number;
   outcomeBands: { best: string; median: string; worst: string };
   // Distinct real cohort companies whose rounds inform this branch (not simulated runs).

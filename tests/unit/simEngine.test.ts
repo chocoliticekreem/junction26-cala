@@ -48,6 +48,22 @@ describe("simulate", () => {
     expect(r.highways.some((h) => h.from === "you")).toBe(true);
   });
 
+  it("reports the next round and the typical company's rates alongside the vision share", () => {
+    const r = simulate(founder, visionB, model, { runs: 3000 });
+    for (const n of [r.tree, ...r.tree.children, ...r.tree.children.flatMap((c) => c.children)]) {
+      expect(n.nextRound.stage).toBe("seed");
+      // Every run that reaches Series B+ closed the seed on the way.
+      expect(n.nextRound.share).toBeGreaterThanOrEqual(n.reachVisionShare);
+      expect(n.nextRound.share).toBeLessThanOrEqual(1);
+      expect(n.typical).toEqual(r.tree.typical);
+    }
+    expect(r.tree.typical.nextRoundShare).toBeGreaterThan(0);
+    expect(r.tree.typical.nextRoundShare).toBeGreaterThanOrEqual(r.tree.typical.reachVisionShare);
+    const cala = findCompanyByName(fixture, "Cala")!;
+    const c = simulate({ sectors: {}, stage: "pre-seed", companyId: cala.id }, parseVision("Cala becomes a unicorn"), model, { runs: 2000 });
+    expect(c.tree.nextRound.stage).toBe("series-a");
+  });
+
   it("starts a cohort company from its real state and branches on its next lead", () => {
     const cala = findCompanyByName(fixture, "Cala")!;
     expect(cala.id).toBe("fx-co-cala");
