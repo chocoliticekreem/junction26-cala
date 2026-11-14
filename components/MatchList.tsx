@@ -44,7 +44,7 @@ export default function MatchList({ matches, investors, selectedId, onSelect, li
           const sector = dominantSector(inv.revealed.S);
           const selected = m.investorId === selectedId;
           return (
-            <li key={m.investorId} data-testid="match-row">
+            <li key={m.investorId} data-testid="match-row" data-sector={sector} data-investor-id={m.investorId}>
               <button
                 type="button"
                 className={`match ${selected ? "is-selected" : ""}`}

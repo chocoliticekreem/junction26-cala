@@ -11,7 +11,9 @@ export type ProfileChipsProps = {
 
 type Chip = { key: string; label: string; value: string; color?: string; trigger?: string };
 
-export function formatRaise(usd: number): string {
+// Raise is stored in USD; a London founder hears it back in pounds.
+export function formatRaise(raiseUsd: number): string {
+  const usd = raiseUsd / 1.27;
   if (usd >= 1_000_000) return `£${(usd / 1_000_000).toFixed(usd % 1_000_000 === 0 ? 0 : 1)}m`;
   if (usd >= 1_000) return `£${Math.round(usd / 1_000)}k`;
   return `£${usd}`;
@@ -70,6 +72,8 @@ export default function ProfileChips({ profile, triggers = {} }: ProfileChipsPro
             className={`chip ${fresh.has(c.key) ? "chip-flash" : ""}`}
             style={c.color ? ({ "--chip": c.color } as React.CSSProperties) : undefined}
             data-testid="chip"
+            data-chip={c.key}
+            data-value={c.value}
             title={c.trigger ? `heard "${c.trigger}"` : undefined}
           >
             <span className="chip-label">{c.label}</span>

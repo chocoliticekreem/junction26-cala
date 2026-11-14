@@ -11,6 +11,7 @@ test("founder view renders the graph and ten matches", async ({ page }) => {
   await expect(page.getByTestId("match-row")).toHaveCount(10);
   await expect(page.getByTestId("fixture-banner")).toBeVisible();
 
+  await page.locator("body").press("r");
   await page.waitForTimeout(9000);
   await expect(page.getByTestId("chip").first()).toBeVisible();
 
@@ -19,5 +20,5 @@ test("founder view renders the graph and ten matches", async ({ page }) => {
   await expect(page.getByTestId("door-panel")).toBeVisible();
   await page.waitForTimeout(1500);
 
-  await page.screenshot({ path: "tests/screenshots/founder-mock.png" });
+  await page.screenshot({ path: "tests/screenshots/founder-selected.png" });
 });

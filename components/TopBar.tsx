@@ -1,11 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import FixtureBanner from "./FixtureBanner";
 import RoleSwitcher from "./RoleSwitcher";
 
 export type TopBarProps = {
-  inboxCount: number;
-  onInbox: () => void;
+  inbox: ReactNode;
   onReplay: () => void;
   replaying?: boolean;
   micState: "idle" | "listening" | "unsupported";
@@ -13,7 +13,7 @@ export type TopBarProps = {
   showFixtureBanner: boolean;
 };
 
-export default function TopBar({ inboxCount, onInbox, onReplay, replaying, micState, onMic, showFixtureBanner }: TopBarProps) {
+export default function TopBar({ inbox, onReplay, replaying, micState, onMic, showFixtureBanner }: TopBarProps) {
   return (
     <header className="topbar">
       <div className="topbar-row">
@@ -24,10 +24,7 @@ export default function TopBar({ inboxCount, onInbox, onReplay, replaying, micSt
         </div>
         <RoleSwitcher />
         <div className="topbar-actions">
-          <button type="button" className="btn" onClick={onInbox} aria-label={`Requests, ${inboxCount} new`} data-testid="inbox">
-            Requests
-            {inboxCount > 0 && <span className="badge font-mono">{inboxCount}</span>}
-          </button>
+          {inbox}
           <button type="button" className={`btn ${replaying ? "is-busy" : ""}`} onClick={onReplay} data-testid="replay" title="Replay the demo pitch (R)">
             Replay <kbd>R</kbd>
           </button>
