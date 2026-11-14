@@ -634,7 +634,7 @@ export default function PathPage() {
                   )}
                 </p>
                 <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} onCaseStudy={openRealityCase} horizonYears={result.vision.horizonYears || 5} />
-                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} onCaseStudy={allPrecedents.length ? openBranchCase : undefined} leadIds={leadIds} docId={context?.doc.id} />
+                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} onCaseStudy={allPrecedents.length ? openBranchCase : undefined} leadIds={leadIds} docId={context?.doc.id} goal={visionTarget?.split(" · ")[0]} />
                 <Precedents precedents={result.precedents} onCaseStudy={openPrecedentCase} />
                 <section className="path-file-wrap" aria-label="Company file">
                   <button type="button" className="path-section-head path-toggle" onClick={() => setFileOpen((v) => !v)} aria-expanded={fileOpen} data-testid="toggle-file">
