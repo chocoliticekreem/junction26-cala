@@ -1,78 +1,91 @@
-// One seam between the page and the engine. Each call tries the real route first and falls back
-// to the mock with `demo: true`, which the page shows as a small "demo data" tag. Swapping to the
-// engine for good means deleting the mock branches here, nothing else.
-import { contextMarkdown, mockActions, mockCompany, mockContext, mockFeed, mockNetwork, mockResolve, mockSimulate } from "./mockSim";
-import type { ActionCard, CompanyCandidate, CompanyState, ContextBuildBody, ContextDoc, NetworkData, SimResult, SimulateBody, WatchEvent } from "./types";
+// One seam between the page and the engine routes. Every call returns real data or throws an
+// ApiError; the page turns that into an honest empty state, never a stand-in number.
+import type { ContextBuildBody, ContextDoc, FeedItem, InvestorAction, NetworkData, ResolveResult, SimulateBody, SimulateResponse } from "./types";
 
-export type Sourced<T> = { data: T; demo: boolean };
-
-async function tryJson<T>(url: string, init?: RequestInit): Promise<T | undefined> {
-  try {
-    const res = await fetch(url, init);
-    if (!res.ok) return undefined;
-    return (await res.json()) as T;
-  } catch {
-    return undefined;
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+  ) {
+    super(code);
   }
 }
 
-export async function fetchNetwork(): Promise<Sourced<NetworkData>> {
-  const live = await tryJson<NetworkData>("/api/network");
-  if (live && Array.isArray(live.nodes) && live.nodes.length) return { data: live, demo: false };
-  return { data: mockNetwork(), demo: true };
+const MESSAGES: Record<string, string> = {
+  no_cohort: "No cohort on this server yet",
+  no_cala: "Cala is not configured on this server",
+  budget_exhausted: "Cala budget used up for today",
+  doc_not_found: "Build the company file first",
+};
+
+export function errorMessage(e: unknown): string {
+  if (e instanceof ApiError && MESSAGES[e.code]) return MESSAGES[e.code];
+  return "Couldn't reach Cala — try again";
 }
 
-export async function lookupCompany(name: string): Promise<Sourced<CompanyState>> {
-  const live = await tryJson<CompanyState>(`/api/company?name=${encodeURIComponent(name)}`);
-  if (live && typeof live.found === "boolean") return { data: live, demo: false };
-  return { data: mockCompany(name), demo: true };
-}
-
-export async function runSimulate(body: SimulateBody): Promise<Sourced<SimResult>> {
-  const live = await tryJson<SimResult>("/api/simulate", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (live && live.tree && Array.isArray(live.highways)) return { data: live, demo: false };
-  // The mock is synchronous; a short beat keeps the "gathering" animation readable on video.
-  await new Promise((r) => setTimeout(r, 1400));
-  return { data: mockSimulate(body), demo: true };
-}
-
-export function calaEntityHref(companyId: string): string {
-  return `/api/cala/entity/${encodeURIComponent(companyId)}`;
+async function json<T>(url: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, init);
+  } catch {
+    throw new ApiError(0, "network");
+  }
+  let body: unknown;
+  try {
+    body = await res.json();
+  } catch {
+    throw new ApiError(res.status, "bad_json");
+  }
+  if (!res.ok) {
+    const code = body && typeof body === "object" && typeof (body as { error?: unknown }).error === "string" ? (body as { error: string }).error : `http_${res.status}`;
+    throw new ApiError(res.status, code);
+  }
+  return body as T;
 }
 
 const post = (body: unknown): RequestInit => ({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
-export async function resolveCompany(name: string): Promise<Sourced<CompanyCandidate[]>> {
-  const live = await tryJson<{ candidates: CompanyCandidate[] }>("/api/company/resolve", post({ name }));
-  if (live && Array.isArray(live.candidates)) return { data: live.candidates, demo: false };
-  return { data: mockResolve(name), demo: true };
+export async function fetchNetwork(): Promise<NetworkData> {
+  const net = await json<NetworkData>("/api/network");
+  if (!Array.isArray(net.nodes) || !Array.isArray(net.edges)) throw new ApiError(200, "bad_shape");
+  return net;
 }
 
-export async function buildContext(body: ContextBuildBody): Promise<Sourced<{ doc: ContextDoc; markdown: string }>> {
-  const live = await tryJson<{ doc: ContextDoc; markdown: string }>("/api/context/build", post(body));
-  if (live && live.doc) return { data: live, demo: false };
-  const doc = mockContext(body);
-  return { data: { doc, markdown: contextMarkdown(doc) }, demo: true };
+export async function resolveCompany(name: string): Promise<ResolveResult> {
+  const r = await json<ResolveResult>("/api/company/resolve", post({ name }));
+  if (!Array.isArray(r.candidates)) throw new ApiError(200, "bad_shape");
+  if (r.budgetExhausted && !r.candidates.length) throw new ApiError(200, "budget_exhausted");
+  return r;
 }
 
-export async function fetchActions(calaIdOrSlug: string, investorIds: string[], company: string): Promise<Sourced<ActionCard[]>> {
-  const live = await tryJson<ActionCard[] | { actions: ActionCard[] }>("/api/actions", post({ calaIdOrSlug, investorIds }));
-  const list = Array.isArray(live) ? live : live?.actions;
-  if (list && list.length) return { data: list, demo: false };
-  return { data: mockActions(company, investorIds), demo: true };
+export async function runSimulate(body: SimulateBody): Promise<SimulateResponse> {
+  const r = await json<SimulateResponse>("/api/simulate", post(body));
+  if (!r.tree || !Array.isArray(r.realities) || !Array.isArray(r.highways) || !r.visionBasis || !r.start) throw new ApiError(200, "bad_shape");
+  return r;
 }
 
-export async function watchInvestor(calaIdOrSlug: string, investorId: string): Promise<void> {
-  await tryJson("/api/actions/watch", post({ calaIdOrSlug, investorId }));
+export async function buildContext(body: ContextBuildBody): Promise<{ doc: ContextDoc; markdown: string }> {
+  const r = await json<{ doc: ContextDoc; markdown: string }>("/api/context/build", post(body));
+  if (!r.doc) throw new ApiError(200, "bad_shape");
+  return r;
 }
 
-export async function fetchFeed(id: string, watchedNames: string[]): Promise<Sourced<WatchEvent[]>> {
-  const live = await tryJson<WatchEvent[] | { events: WatchEvent[] }>(`/api/actions/feed/${encodeURIComponent(id)}`);
-  const list = Array.isArray(live) ? live : live?.events;
-  if (list) return { data: list, demo: false };
-  return { data: mockFeed(watchedNames), demo: true };
+export async function fetchActions(docId: string, investorIds: string[]): Promise<{ actions: InvestorAction[]; unknown: string[] }> {
+  const r = await json<{ actions: InvestorAction[]; unknown?: string[] }>("/api/actions", post({ calaIdOrSlug: docId, investorIds }));
+  if (!Array.isArray(r.actions)) throw new ApiError(200, "bad_shape");
+  return { actions: r.actions, unknown: r.unknown ?? [] };
+}
+
+export async function watchInvestor(docId: string, investorId: string): Promise<void> {
+  await json("/api/actions/watch", post({ id: docId, investorId }));
+}
+
+export async function fetchFeed(docId: string): Promise<FeedItem[]> {
+  const r = await json<{ items: FeedItem[] }>(`/api/actions/feed/${encodeURIComponent(docId)}`);
+  if (!Array.isArray(r.items)) throw new ApiError(200, "bad_shape");
+  return r.items;
+}
+
+export function calaEntityHref(companyId: string): string {
+  return `/api/cala/entity/${encodeURIComponent(companyId)}`;
 }

@@ -80,7 +80,6 @@ export async function POST(req: Request) {
     return Response.json({ doc, markdown, stored, notes });
   } catch (e) {
     console.warn("context build:", e instanceof Error ? e.message : e);
-    const doc = mockDoc(input);
-    return Response.json({ doc, markdown: docToMarkdown(doc), mock: true, notes: ["Build failed; returned a placeholder doc."] });
+    return Response.json({ error: "build_failed" }, { status: 502 });
   }
 }

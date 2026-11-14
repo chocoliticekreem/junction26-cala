@@ -13,7 +13,7 @@ function mock(name: string, website?: string): ResolveResult {
         website: website ?? "https://example.com",
         hq: "London, United Kingdom",
         foundingDate: "2024",
-        description: "Mock candidate (E2E_MOCK=1 or no Cala key).",
+        description: "Mock candidate (E2E_MOCK=1).",
         confidence: website ? "website" : "name",
         score: website ? 1 : 0.5,
       },
@@ -44,7 +44,10 @@ export async function POST(req: Request) {
   const hq = str(body.hq, 80);
 
   const cala = getRouteCala();
-  if (!cala) return Response.json(mock(name, website));
+  if (!cala) {
+    if (process.env.E2E_MOCK === "1") return Response.json(mock(name, website));
+    return Response.json({ error: "no_cala" }, { status: 503 });
+  }
   try {
     return Response.json(await resolveCompany(cala, { name, website, hq }));
   } catch (e) {

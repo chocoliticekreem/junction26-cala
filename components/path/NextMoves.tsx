@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { STAGE_LABELS } from "@/lib/taxonomy";
-import { calaEntityHref, fetchActions, fetchFeed, watchInvestor } from "./api";
-import type { ActionCard, Decision, DecisionNode, WatchEvent } from "./types";
+import { calaEntityHref, errorMessage, fetchActions, fetchFeed, watchInvestor } from "./api";
+import type { Decision, DecisionNode, FeedItem, InvestorAction } from "./types";
 
 export type NextMovesProps = {
   tree: DecisionNode;
   selected?: Decision;
   onSelect: (d?: Decision) => void;
   leadIds: string[];
-  companyLabel: string;
-  companyId: string;
+  // Store id of the built company file; the action and watch routes read it. Undefined until built.
+  docId?: string;
 };
 
 const pct = (p: number) => `${Math.round(p * 100)}%`;
@@ -83,7 +83,7 @@ function Branch({ node, selected, onSelect, depth }: { node: DecisionNode; selec
   );
 }
 
-function Action({ card, companyId, onWatch, watched }: { card: ActionCard; companyId: string; onWatch: (c: ActionCard) => void; watched: boolean }) {
+function Action({ card, onWatch, watched }: { card: InvestorAction; onWatch: (c: InvestorAction) => void; watched: boolean }) {
   const [copied, setCopied] = useState(false);
   const [showSources, setShowSources] = useState(false);
   const copy = async () => {
@@ -99,15 +99,21 @@ function Action({ card, companyId, onWatch, watched }: { card: ActionCard; compa
     <li className="path-action" data-testid="action-card">
       <div className="path-action-head">
         <b>{card.name}</b>
-        {card.leadPartner && <span className="muted">{card.leadPartner}</span>}
+        {card.leadPartner && <span className="muted">{card.leadPartner.name}</span>}
         {card.events?.map((e) => (
           <span key={e.id} className="path-event" title={e.date ? `${e.name} · ${e.date}` : e.name}>
             ▦ {e.name}
           </span>
         ))}
         {card.precedent && (
-          <a className="path-precedent-chip" href={calaEntityHref(card.precedent.companyId)} target="_blank" rel="noreferrer" title="A company they led that took this path">
-            {card.precedent.name}
+          <a
+            className="path-precedent-chip"
+            href={card.precedent.companyCalaId ? calaEntityHref(card.precedent.companyCalaId) : undefined}
+            target="_blank"
+            rel="noreferrer"
+            title={`${card.precedent.led ? "Led" : "Joined"} ${card.precedent.company}'s ${card.precedent.round}${card.precedent.date ? ` · ${card.precedent.date}` : ""}`}
+          >
+            {card.precedent.company}
           </a>
         )}
       </div>
@@ -121,7 +127,7 @@ function Action({ card, companyId, onWatch, watched }: { card: ActionCard; compa
         <button type="button" className="btn" onClick={() => setShowSources((v) => !v)} aria-expanded={showSources}>
           Sources
         </button>
-        <button type="button" className={`btn ${watched ? "is-busy" : ""}`} onClick={() => onWatch(card)} disabled={watched} data-company={companyId}>
+        <button type="button" className={`btn ${watched ? "is-busy" : ""}`} onClick={() => onWatch(card)} disabled={watched}>
           {watched ? "Watching" : "Watch"}
         </button>
       </div>
@@ -151,30 +157,58 @@ function Action({ card, companyId, onWatch, watched }: { card: ActionCard; compa
   );
 }
 
-export default function NextMoves({ tree, selected, onSelect, leadIds, companyLabel, companyId }: NextMovesProps) {
-  const [actions, setActions] = useState<ActionCard[]>([]);
-  const [watched, setWatched] = useState<ActionCard[]>([]);
-  const [feed, setFeed] = useState<WatchEvent[]>([]);
+const fmtAmount = (n: number) => (n >= 1e6 ? `$${(n / 1e6).toFixed(1).replace(/\.0$/, "")}M` : `$${Math.round(n / 1e3)}k`);
+
+function feedLine(e: FeedItem): string {
+  const verb = e.led === true ? "led" : e.led === false ? "joined" : "was in";
+  const round = e.round === "unknown" ? "a round" : `the ${STAGE_LABELS[e.round]}`;
+  return `${e.investorName} ${verb} ${round} of ${e.company}${e.amountUsd ? ` (${fmtAmount(e.amountUsd)})` : ""}`;
+}
+
+type Leads = { key: string; actions: InvestorAction[]; unknown: string[]; error?: string };
+
+export default function NextMoves({ tree, selected, onSelect, leadIds, docId }: NextMovesProps) {
+  const [leads, setLeads] = useState<Leads | undefined>();
+  const [watched, setWatched] = useState<InvestorAction[]>([]);
+  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [feedError, setFeedError] = useState<string | undefined>();
   const branches = [...tree.children].sort((a, b) => b.reachVisionShare - a.reachVisionShare);
   const leadKey = leadIds.join("|");
+  const key = `${docId ?? ""}#${leadKey}`;
 
   useEffect(() => {
     let alive = true;
     const ids = leadKey ? leadKey.split("|") : [];
-    void (ids.length ? fetchActions(companyId, ids, companyLabel) : Promise.resolve({ data: [] as ActionCard[] })).then((r) => alive && setActions(r.data));
+    if (!ids.length || !docId) return;
+    fetchActions(docId, ids).then(
+      (r) => alive && setLeads({ key, actions: r.actions, unknown: r.unknown }),
+      (e) => alive && setLeads({ key, actions: [], unknown: ids, error: errorMessage(e) }),
+    );
     return () => {
       alive = false;
     };
-  }, [leadKey, companyId, companyLabel]);
+  }, [key, leadKey, docId]);
 
-  const watch = async (card: ActionCard) => {
+  // Stale answers (from a previous branch or reality) are not shown while the new one loads.
+  const current = leads?.key === key ? leads : undefined;
+  const actions = current?.actions ?? [];
+  const unknown = current?.unknown ?? [];
+  const actionsError = current?.error;
+  const leadsLoading = leadIds.length > 0 && !!docId && !current;
+
+  const watch = async (card: InvestorAction) => {
+    if (!docId) return;
     setWatched((w) => (w.some((x) => x.investorId === card.investorId) ? w : [...w, card]));
-    await watchInvestor(companyId, card.investorId);
-    const names = [...watched, card].map((c) => c.name);
-    const r = await fetchFeed(companyId, names);
-    setFeed(r.data);
+    setFeedError(undefined);
+    try {
+      await watchInvestor(docId, card.investorId);
+      setFeed(await fetchFeed(docId));
+    } catch (e) {
+      setFeedError(errorMessage(e));
+    }
   };
 
+  const leadsSection = leadIds.length > 0 && !!docId;
   return (
     <section className="path-moves" aria-label="Best next moves" data-testid="next-moves">
       <header className="path-section-head">
@@ -186,17 +220,28 @@ export default function NextMoves({ tree, selected, onSelect, leadIds, companyLa
           <Branch key={b.label} node={b} selected={selected} onSelect={onSelect} depth={1} />
         ))}
       </ul>
+      {leadsSection && (
+        <header className="path-section-head path-section-sub">
+          <span>Leads on this path</span>
+          {unknown.length > 0 && actions.length > 0 && <span className="muted">{unknown.length} without an investor file</span>}
+        </header>
+      )}
+      {leadsSection && actionsError && (
+        <p className="muted path-empty" role="status" data-testid="actions-error">
+          {actionsError}
+        </p>
+      )}
+      {leadsSection && !actionsError && actions.length === 0 && (
+        <p className="muted path-empty" data-testid={leadsLoading ? "actions-loading" : "actions-empty"}>
+          {leadsLoading ? "Loading…" : "No investor file for these leads yet; their rounds are in Cala, the outreach file is not."}
+        </p>
+      )}
       {actions.length > 0 && (
-        <>
-          <header className="path-section-head path-section-sub">
-            <span>Leads on this path</span>
-          </header>
-          <ul className="path-actions">
-            {actions.map((a) => (
-              <Action key={a.investorId} card={a} companyId={companyId} onWatch={watch} watched={watched.some((w) => w.investorId === a.investorId)} />
-            ))}
-          </ul>
-        </>
+        <ul className="path-actions">
+          {actions.map((a) => (
+            <Action key={a.investorId} card={a} onWatch={watch} watched={watched.some((w) => w.investorId === a.investorId)} />
+          ))}
+        </ul>
       )}
       {watched.length > 0 && (
         <div className="path-feed" data-testid="watch-feed">
@@ -205,10 +250,11 @@ export default function NextMoves({ tree, selected, onSelect, leadIds, companyLa
             <span className="muted">in-app alerts (email digest coming)</span>
           </header>
           <ul>
-            {feed.length === 0 && <li className="muted">Nothing yet</li>}
+            {feedError && <li className="muted">{feedError}</li>}
+            {!feedError && feed.length === 0 && <li className="muted">Nothing since the cohort cut-off</li>}
             {feed.map((e, i) => (
               <li key={i}>
-                <span className="font-mono muted">{e.at}</span> {e.text}
+                <span className="font-mono muted">{e.date}</span> {feedLine(e)}
               </li>
             ))}
           </ul>

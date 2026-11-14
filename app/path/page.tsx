@@ -2,19 +2,21 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import TopBar from "@/components/TopBar";
-import { buildContext, fetchNetwork, lookupCompany, resolveCompany, runSimulate } from "@/components/path/api";
+import { buildContext, errorMessage, fetchNetwork, resolveCompany, runSimulate } from "@/components/path/api";
 import CompanyFile from "@/components/path/CompanyFile";
 import Interview, { type InterviewStep } from "@/components/path/Interview";
-import { visionBasis as parseVisionBasis } from "@/components/path/mockSim";
 import NextMoves from "@/components/path/NextMoves";
 import PathMap, { KIND_COLOR, KIND_LABEL, edgeKey } from "@/components/path/PathMap";
 import Precedents from "@/components/path/Precedents";
 import Realities from "@/components/path/Realities";
-import { YOU_ID, type CompanyCandidate, type CompanyState, type ContextDoc, type Decision, type Highway, type InvestorKind, type NetworkData, type SimResult } from "@/components/path/types";
+import { YOU_ID, type CompanyCandidate, type ContextDoc, type Decision, type Highway, type InvestorKind, type NetworkData, type SimulateResponse, type Upload } from "@/components/path/types";
 import { loadReplay } from "@/lib/data";
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { mergeProfile } from "@/lib/mergeProfile";
+import { fmtUsd } from "@/lib/sim/util";
+import { parseVision } from "@/lib/sim/vision";
 import { isSttSupported } from "@/lib/stt";
+import { STAGE_LABELS } from "@/lib/taxonomy";
 import { usePitch } from "@/lib/usePitch";
 
 const REPLAY = loadReplay();
@@ -36,15 +38,16 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-// A reality only names its leads; the map needs ids. Names are unique in the network.
-function chainFor(names: (string | undefined)[], net: NetworkData): string[] {
-  const chain = [YOU_ID];
-  for (const n of names) {
-    if (!n) continue;
-    const hit = net.nodes.find((x) => x.name === n || x.name.startsWith(n));
-    if (hit) chain.push(hit.id);
-  }
-  return chain;
+// The engine's keyword read of the vision, shown while the founder types. The run's visionBasis
+// (LLM-parsed when a key is set) is what the results show.
+function visionTarget(text: string): string {
+  const v = parseVision(text);
+  const parts = [`Target: ${STAGE_LABELS[v.targetStage]}`];
+  if (v.targetValuationUsd) parts.push(`${fmtUsd(v.targetValuationUsd)} valuation`);
+  if (v.targetHeadcount) parts.push(`${v.targetHeadcount} people`);
+  if (v.targetFundingUsd) parts.push(`${fmtUsd(v.targetFundingUsd)} raised`);
+  parts.push(`${v.horizonYears}y`);
+  return parts.join(" · ");
 }
 
 export default function PathPage() {
@@ -56,26 +59,25 @@ export default function PathPage() {
   const [phase, setPhase] = useState<Phase>("company");
   const [companyName, setCompanyName] = useState("");
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
+  const [autoPick, setAutoPick] = useState<string | undefined>();
   const [resolving, setResolving] = useState(false);
+  const [resolveError, setResolveError] = useState<string | undefined>();
   const [candidate, setCandidate] = useState<CompanyCandidate | null>(null);
-  const [company, setCompany] = useState<CompanyState | undefined>();
   const [pitchText, setPitchText] = useState("");
   const [visionText, setVisionText] = useState("");
   const [network, setNetwork] = useState<NetworkData>(EMPTY_NET);
-  const [result, setResult] = useState<SimResult | undefined>();
+  const [networkError, setNetworkError] = useState<string | undefined>();
+  const [result, setResult] = useState<SimulateResponse | undefined>();
   const [context, setContext] = useState<{ doc: ContextDoc; markdown: string } | undefined>();
-  const [uploads, setUploads] = useState<{ name: string; text: string }[]>([]);
-  const [demo, setDemo] = useState({ network: false, sim: false, company: false, context: false });
+  const [contextError, setContextError] = useState<string | undefined>();
+  const [uploads, setUploads] = useState<Upload[]>([]);
   const [error, setError] = useState<string | undefined>();
   const [realityId, setRealityId] = useState<string | undefined>();
   const [decision, setDecision] = useState<Decision | undefined>();
   const epoch = useRef(0);
 
   useEffect(() => {
-    void fetchNetwork().then((r) => {
-      setNetwork(r.data);
-      setDemo((d) => ({ ...d, network: r.demo }));
-    });
+    fetchNetwork().then(setNetwork, (e) => setNetworkError(errorMessage(e)));
   }, []);
 
   // Candidate lookup as the name is typed.
@@ -85,16 +87,28 @@ export default function PathPage() {
     const id = window.setTimeout(() => {
       if (phase !== "company" || name.length < 2) {
         setCandidates([]);
+        setAutoPick(undefined);
         setResolving(false);
+        setResolveError(undefined);
         return;
       }
       setResolving(true);
-      void resolveCompany(name).then((r) => {
-        if (!alive) return;
-        setCandidates(r.data);
-        setDemo((d) => ({ ...d, company: r.demo }));
-        setResolving(false);
-      });
+      setResolveError(undefined);
+      resolveCompany(name).then(
+        (r) => {
+          if (!alive) return;
+          setCandidates(r.candidates);
+          setAutoPick(r.autoPick);
+          setResolving(false);
+        },
+        (e) => {
+          if (!alive) return;
+          setCandidates([]);
+          setAutoPick(undefined);
+          setResolveError(errorMessage(e));
+          setResolving(false);
+        },
+      );
     }, 300);
     return () => {
       alive = false;
@@ -108,43 +122,41 @@ export default function PathPage() {
   }, [q1.profile, pitchText]);
   const visionSpoken = q2.tokens.map((t) => t.text).join(" ").trim();
   const vision = visionText.trim() || visionSpoken;
-  const companyLabel = company?.name || candidate?.name || profile.company || "You";
-  const companyId = candidate?.calaId ?? company?.companyId ?? "early-idea";
+  const companyLabel = result?.start.companyName || candidate?.name || profile.company || "You";
 
-  const pick = useCallback(async (c: CompanyCandidate | null) => {
+  const pick = useCallback((c: CompanyCandidate | null) => {
     setCandidate(c);
     setPhase("pitch");
-    if (!c) {
-      setCompany(undefined);
-      return;
-    }
-    const r = await lookupCompany(c.name);
-    setCompany(r.data.found ? r.data : { found: true, name: c.name, founded: c.foundingDate, hq: c.hq, backers: [], companyId: c.calaId });
   }, []);
+
+  const contextBody = useCallback(
+    (u: Upload[]) => ({ calaId: candidate?.calaId, name: candidate?.name ?? companyName.trim(), website: candidate?.website, pitchProfile: profile, visionText: vision, uploads: u }),
+    [candidate, companyName, profile, vision],
+  );
 
   const simulate = useCallback(
     async (d?: Decision) => {
       const my = ++epoch.current;
       setError(undefined);
       if (!result) setPhase("simulating");
-      const body = { profile, visionText: vision, decision: d, companyName: company?.found ? company.name : undefined };
-      try {
-        const [sim, ctx] = await Promise.all([
-          runSimulate(body),
-          context ? Promise.resolve(undefined) : buildContext({ calaId: candidate?.calaId, website: candidate?.website, pitchProfile: profile, visionText: vision, uploads }),
-        ]);
-        if (my !== epoch.current) return;
-        setResult(sim.data);
-        if (ctx) setContext(ctx.data);
-        setDemo((x) => ({ ...x, sim: sim.demo, context: ctx ? ctx.demo : x.context }));
+      const body = { profile, visionText: vision, decision: d, companyName: candidate?.name };
+      const [sim, ctx] = await Promise.allSettled([runSimulate(body), context ? Promise.resolve(undefined) : buildContext(contextBody(uploads))]);
+      if (my !== epoch.current) return;
+      if (ctx.status === "fulfilled") {
+        if (ctx.value) {
+          setContext(ctx.value);
+          setContextError(undefined);
+        }
+      } else setContextError(errorMessage(ctx.reason));
+      if (sim.status === "fulfilled") {
+        setResult(sim.value);
         setPhase("results");
-      } catch (e) {
-        if (my !== epoch.current) return;
-        setError(e instanceof Error ? e.message : "Simulation failed");
+      } else {
+        setError(errorMessage(sim.reason));
         setPhase(result ? "results" : "vision");
       }
     },
-    [profile, vision, company, candidate, context, uploads, result],
+    [profile, vision, candidate, context, contextBody, uploads, result],
   );
 
   const reset = useCallback(() => {
@@ -154,12 +166,14 @@ export default function PathPage() {
     setPhase("company");
     setCompanyName("");
     setCandidates([]);
+    setAutoPick(undefined);
+    setResolveError(undefined);
     setCandidate(null);
-    setCompany(undefined);
     setPitchText("");
     setVisionText("");
     setResult(undefined);
     setContext(undefined);
+    setContextError(undefined);
     setUploads([]);
     setError(undefined);
     setRealityId(undefined);
@@ -167,13 +181,17 @@ export default function PathPage() {
   }, [q1, q2]);
 
   const addContext = useCallback(
-    async (u: { name: string; text: string }) => {
+    async (u: Upload) => {
       const next = [...uploads, u];
       setUploads(next);
-      const r = await buildContext({ calaId: candidate?.calaId, website: candidate?.website, pitchProfile: profile, visionText: vision, uploads: next });
-      setContext(r.data);
+      try {
+        setContext(await buildContext(contextBody(next)));
+        setContextError(undefined);
+      } catch (e) {
+        setContextError(errorMessage(e));
+      }
     },
-    [uploads, candidate, profile, vision],
+    [uploads, contextBody],
   );
 
   const selectDecision = useCallback(
@@ -187,15 +205,12 @@ export default function PathPage() {
 
   // Map inputs: a selected reality re-weights the highways along its chain; a selected branch
   // (already re-simulated by the engine) brightens its top paths.
-  const selectedReality = result?.realities?.find((r) => r.id === realityId);
+  const selectedReality = result?.realities.find((r) => r.title === realityId);
   const { highways, brightPaths, emphasis } = useMemo(() => {
     if (!result) return { highways: [] as Highway[], brightPaths: [] as string[][], emphasis: undefined as Set<string> | undefined };
     const base = result.highways;
     if (selectedReality) {
-      const chain = chainFor(
-        selectedReality.steps.map((s) => s.leadName),
-        network,
-      );
+      const chain = [YOU_ID, ...selectedReality.steps.map((s) => s.leadId).filter((x): x is string => !!x)];
       const keys = new Set<string>();
       for (let i = 1; i < chain.length; i++) keys.add(edgeKey(chain[i - 1], chain[i]));
       const top = Math.max(...base.map((h) => h.weight), 0.1);
@@ -211,20 +226,20 @@ export default function PathPage() {
     const chains = paths.map((p) => [YOU_ID, ...p.steps.map((s) => s.leadId).filter((x): x is string => !!x)]);
     const keys = node ? new Set(chains.flatMap((c) => c.slice(1).map((id, i) => edgeKey(c[i], id)))) : undefined;
     return { highways: base, brightPaths: chains, emphasis: keys };
-  }, [result, selectedReality, decision, network]);
+  }, [result, selectedReality, decision]);
 
   const leadIds = useMemo(() => {
     if (!result) return [];
-    if (selectedReality) return chainFor(selectedReality.steps.map((s) => s.leadName), network).slice(1, 4);
+    if (selectedReality) return selectedReality.steps.map((s) => s.leadId).filter((x): x is string => !!x).slice(0, 3);
     const node = decision ? result.tree.children.find((c) => JSON.stringify(c.decision) === JSON.stringify(decision)) : result.tree.children[0];
     const ids = new Set<string>();
     for (const p of node?.topPaths ?? []) for (const s of p.steps) if (s.leadId) ids.add(s.leadId);
     return [...ids].slice(0, 3);
-  }, [result, selectedReality, decision, network]);
+  }, [result, selectedReality, decision]);
 
   const mic = (on: boolean): "idle" | "listening" | "unsupported" => (!sttSupported ? "unsupported" : on ? "listening" : "idle");
   const mapPhase = phase === "results" ? "results" : phase === "simulating" ? "simulating" : phase === "company" ? "idle" : "interview";
-  const anyDemo = demo.sim || demo.network;
+  const backerIds = result?.start.existingInvestors.map((b) => b.id);
 
   return (
     <div className="shell path-shell" data-testid="path-page" data-phase={phase}>
@@ -240,20 +255,11 @@ export default function PathPage() {
       />
       <main className={`path-stage ${phase === "results" ? "is-results" : ""}`}>
         <section className="path-left">
-          {phase === "results" && result?.realities && (
-            <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} startLabel={companyLabel} />
+          {phase === "results" && result && (
+            <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} startLabel={companyLabel} horizonYears={result.vision.horizonYears || 5} />
           )}
           <div className="path-map-pane">
-            <PathMap
-              network={network}
-              highways={highways}
-              brightPaths={brightPaths}
-              emphasisEdges={emphasis}
-              backerIds={company?.backers.map((b) => b.id).filter((x): x is string => !!x)}
-              youLabel={companyLabel}
-              phase={mapPhase}
-              reducedMotion={reducedMotion}
-            />
+            <PathMap network={network} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} backerIds={backerIds} youLabel={companyLabel} phase={mapPhase} reducedMotion={reducedMotion} />
             <div className="path-legend" aria-label="Legend">
               {KINDS.map((k) => (
                 <span key={k}>
@@ -263,12 +269,17 @@ export default function PathPage() {
               <span>
                 <i className="path-legend-you" /> {companyLabel}
               </span>
-              <span className="muted">size = rounds led</span>
+              {networkError ? (
+                <span className="muted" data-testid="network-error">
+                  investor map: {networkError}
+                </span>
+              ) : (
+                <span className="muted">size = rounds led</span>
+              )}
             </div>
             {phase === "results" && result && (
               <p className="path-honesty font-mono" data-testid="honesty">
                 Evidence from {result.tree.sampleSize} real rounds in Cala, not a forecast · {result.runs.toLocaleString()} runs · as of {result.asOf}
-                {anyDemo && <span className="path-demo-tag">demo data</span>}
               </p>
             )}
             {phase === "simulating" && (
@@ -283,9 +294,11 @@ export default function PathPage() {
                 companyName={companyName}
                 onCompanyName={setCompanyName}
                 candidates={candidates}
+                autoPick={autoPick}
                 resolving={resolving}
-                onPick={(c) => void pick(c)}
-                company={company}
+                resolveError={resolveError}
+                onPick={pick}
+                company={candidate ?? undefined}
                 pitchTokens={q1.tokens}
                 pitchText={pitchText}
                 onPitchText={setPitchText}
@@ -301,13 +314,12 @@ export default function PathPage() {
                 onVisionText={setVisionText}
                 visionMicState={mic(q2.micOn)}
                 onVisionMic={q2.toggleMic}
-                visionBasis={vision ? parseVisionBasis(vision) : undefined}
+                visionTarget={vision ? visionTarget(vision) : undefined}
                 onSimulate={() => void simulate(decision)}
-                demo={demo.company}
               />
             )}
             {error && (
-              <p className="path-error" role="alert">
+              <p className="path-error" role="alert" data-testid="sim-error">
                 {error}
               </p>
             )}
@@ -315,17 +327,33 @@ export default function PathPage() {
         </section>
         {phase === "results" && result && (
           <aside className="path-rail">
-            {context && <CompanyFile doc={context.doc} markdown={context.markdown} onAddContext={(u) => void addContext(u)} demo={demo.context} />}
-            {result.visionBasis && (
-              <p className="path-vision-line" data-testid="vision-line">
-                <b>{result.visionBasis.split(".")[0]}</b>
-                <span className="muted" title={result.visionBasis}>
-                  {" "}
-                  · {vision}
-                </span>
-              </p>
+            {context ? (
+              <CompanyFile doc={context.doc} markdown={context.markdown} onAddContext={(u) => void addContext(u)} />
+            ) : (
+              <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
+                <header className="path-section-head">
+                  <span>Your company file</span>
+                </header>
+                <p className="muted path-empty">{contextError ?? "Building…"}</p>
+              </section>
             )}
-            <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} companyLabel={companyLabel} companyId={companyId} />
+            <p className="path-start-line" data-testid="start-line">
+              {result.start.companyName ? (
+                <>
+                  <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
+                  {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
+                </>
+              ) : (
+                <>
+                  <b>{companyLabel}</b> is not in the cohort · starts from your pitch at {STAGE_LABELS[result.start.stage]}
+                </>
+              )}
+            </p>
+            <p className="path-vision-line" data-testid="vision-line">
+              <b>{result.visionBasis.text}</b>
+              <span className="muted"> · {vision}</span>
+            </p>
+            <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
             <Precedents precedents={result.precedents} />
           </aside>
         )}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import ProfileChips from "../ProfileChips";
 import type { TranscriptToken } from "@/lib/usePitch";
 import type { FounderProfile } from "@/lib/types";
-import type { CompanyCandidate, CompanyState } from "./types";
+import type { CompanyCandidate } from "./types";
 
 export type InterviewStep = "company" | "pitch" | "vision";
 
@@ -13,9 +13,12 @@ export type InterviewProps = {
   companyName: string;
   onCompanyName: (v: string) => void;
   candidates: CompanyCandidate[];
+  // Candidate the resolve route says can be picked without asking (website or sole exact-name match).
+  autoPick?: string;
   resolving: boolean;
+  resolveError?: string;
   onPick: (c: CompanyCandidate | null) => void;
-  company?: CompanyState;
+  company?: CompanyCandidate;
   pitchTokens: TranscriptToken[];
   pitchText: string;
   onPitchText: (v: string) => void;
@@ -31,9 +34,9 @@ export type InterviewProps = {
   onVisionText: (v: string) => void;
   visionMicState: "idle" | "listening" | "unsupported";
   onVisionMic: () => void;
-  visionBasis?: string;
+  // The engine's keyword read of the vision (lib/sim/vision); the run's visionBasis replaces it.
+  visionTarget?: string;
   onSimulate: () => void;
-  demo: boolean;
 };
 
 const VISION_EXAMPLES = ["We become a unicorn", "Series B with 80 people", "£10m ARR, profitable"];
@@ -75,8 +78,10 @@ export default function Interview(p: InterviewProps) {
             className="path-company-form"
             onSubmit={(e) => {
               e.preventDefault();
-              if (p.candidates[0]) p.onPick(p.candidates[0]);
-              else if (!p.companyName.trim()) p.onPick(null);
+              const auto = p.candidates.find((c) => c.calaId === p.autoPick);
+              if (auto) p.onPick(auto);
+              else if (p.candidates[0]) p.onPick(p.candidates[0]);
+              else if (!p.resolving) p.onPick(null);
             }}
           >
             <input
@@ -92,25 +97,34 @@ export default function Interview(p: InterviewProps) {
               Not listed / early idea
             </button>
           </form>
-          {(p.candidates.length > 0 || p.resolving) && (
+          {(p.candidates.length > 0 || p.resolving || p.resolveError) && (
             <div className="path-candidates" data-testid="candidates">
-              <p className="path-candidates-head">
-                {p.resolving ? "Looking in Cala's graph…" : "Is this you?"}
-                {p.demo && <span className="path-demo-tag">demo data</span>}
-              </p>
+              <p className="path-candidates-head">{p.resolving ? "Looking in Cala's graph…" : p.resolveError ? p.resolveError : "Is this you?"}</p>
+              {p.resolveError && !p.resolving && (
+                <p className="muted path-candidates-hint" data-testid="resolve-error">
+                  Continue without a Cala match: Room starts from your pitch instead.
+                </p>
+              )}
               <ul>
                 {p.candidates.map((c) => (
                   <li key={c.calaId}>
-                    <button type="button" className="path-candidate" onClick={() => p.onPick(c)} data-testid="candidate">
+                    <button type="button" className={`path-candidate ${c.calaId === p.autoPick ? "is-auto" : ""}`} onClick={() => p.onPick(c)} data-testid="candidate">
                       <span className="path-candidate-name">{c.name}</span>
                       <span className="path-candidate-meta muted">{[c.hq, c.foundingDate].filter(Boolean).join(" · ")}</span>
                       {c.description && <span className="path-candidate-desc">{c.description}</span>}
-                      <span className="path-candidate-conf font-mono">{Math.round(c.confidence * 100)}%</span>
+                      <span className="path-candidate-conf font-mono" title={`Matched on ${c.confidence.replace("_", " + ")}`}>
+                        {c.calaId === p.autoPick ? "match" : c.confidence.replace("_", "+")}
+                      </span>
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
+          )}
+          {!p.resolving && !p.resolveError && p.candidates.length === 0 && p.companyName.trim().length >= 2 && (
+            <p className="muted path-candidates-hint" data-testid="no-candidates">
+              Not in Cala&apos;s graph. Press Enter to continue from your pitch.
+            </p>
           )}
         </div>
       )}
@@ -119,12 +133,11 @@ export default function Interview(p: InterviewProps) {
         <div className="path-q">
           <p className="hero-kicker">1 / 2</p>
           <h1 className="path-title">Tell us what {name} does.</h1>
-          {p.company?.found && (
+          {p.company && (
             <p className="path-found" data-testid="company-found">
               Found <b>{p.company.name}</b> in Cala&apos;s graph
-              {p.company.founded && <> · founded {p.company.founded}</>}
+              {p.company.foundingDate && <> · founded {p.company.foundingDate.slice(0, 4)}</>}
               {p.company.hq && <> · {p.company.hq}</>}
-              {p.company.backers.length > 0 && <> · backed by {p.company.backers.map((b) => b.name).join(", ")}</>}
             </p>
           )}
           <div className="path-listen">
@@ -166,13 +179,10 @@ export default function Interview(p: InterviewProps) {
               </button>
             ))}
           </div>
-          {vision && p.visionBasis && (
+          {vision && p.visionTarget && (
             <p className="path-vision-basis" data-testid="vision-basis">
-              <b>{p.visionBasis.split(".")[0]}</b>
-              <span className="muted" title={p.visionBasis}>
-                {" "}
-                · how it is judged
-              </span>
+              <b>{p.visionTarget}</b>
+              <span className="muted"> · the run states how it is judged</span>
             </p>
           )}
           <div className="hero-actions">

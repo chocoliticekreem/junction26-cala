@@ -15,7 +15,8 @@ export type RealitiesProps = {
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 
 // Diverging timelines from today to year N, best reality first. Each lane is a button; the
-// selected lane re-routes the particle highways on the map.
+// selected lane re-routes the particle highways on the map. A reality's title is its id: the
+// engine builds one lane per outcome class, so titles are unique within a result.
 export default function Realities({ realities, selectedId, onSelect, horizonYears = 5, startLabel }: RealitiesProps) {
   const sorted = [...realities].sort((a, b) => b.probability - a.probability);
   const years = Array.from({ length: horizonYears + 1 }, (_, i) => i);
@@ -39,17 +40,19 @@ export default function Realities({ realities, selectedId, onSelect, horizonYear
       </div>
       <ol className="path-lanes">
         {sorted.map((r, i) => {
-          const selected = r.id === selectedId;
-          const stalled = /stall|no series|acquired/i.test(r.outcome);
+          const selected = r.title === selectedId;
+          const stalled = r.outcome !== "reached_vision";
+          const lastYear = Math.min(horizonYears, Math.max(...r.steps.map((s) => s.year), 0));
           return (
-            <li key={r.id}>
+            <li key={r.title}>
               <button
                 type="button"
                 className={`path-lane ${selected ? "is-selected" : ""} ${stalled ? "is-stalled" : ""}`}
-                onClick={() => onSelect(selected ? undefined : r.id)}
+                onClick={() => onSelect(selected ? undefined : r.title)}
                 aria-pressed={selected}
                 data-testid="reality"
-                data-reality={r.id}
+                data-reality={r.title}
+                title={`${r.runs.toLocaleString()} runs · ${r.sampleSize} real companies behind it${r.lowConfidence ? " · low confidence" : ""}`}
               >
                 <span className="path-lane-head">
                   <b className="path-lane-prob font-mono" style={{ "--p": r.probability / maxP } as React.CSSProperties}>
@@ -57,13 +60,18 @@ export default function Realities({ realities, selectedId, onSelect, horizonYear
                   </b>
                   <span className="path-lane-name">
                     <span className="path-lane-rank font-mono">{i + 1}</span>
-                    {r.label}
+                    {r.title}
                   </span>
                 </span>
                 <span className="path-lane-track" style={{ "--cols": horizonYears } as React.CSSProperties}>
-                  <i className="path-lane-line" style={{ width: `${(Math.max(...r.steps.map((s) => s.year), 0) / horizonYears) * 100}%` }} />
+                  <i className="path-lane-line" style={{ width: `${(lastYear / horizonYears) * 100}%` }} />
                   {r.steps.map((s, j) => (
-                    <span key={j} className="path-step" style={{ left: `${(s.year / horizonYears) * 100}%` }} title={`${STAGE_LABELS[s.stage]} · ${s.leadName ?? "lead tbc"} · ${s.amountBand ?? ""}`}>
+                    <span
+                      key={j}
+                      className="path-step"
+                      style={{ left: `${(Math.min(s.year, horizonYears) / horizonYears) * 100}%` }}
+                      title={[s.label, `month ${Math.round(s.monthFromStart)}`, s.amountBand, s.headcountBand ? `${s.headcountBand} people` : undefined].filter(Boolean).join(" · ")}
+                    >
                       <i />
                       <span className="path-step-text">
                         <b>{STAGE_LABELS[s.stage]}</b>
@@ -73,7 +81,7 @@ export default function Realities({ realities, selectedId, onSelect, horizonYear
                   ))}
                 </span>
                 <span className="path-lane-outcome">
-                  <b>{r.outcome}</b>
+                  <b>{r.outcomeLine}</b>
                   {r.precedents.length > 0 && (
                     <span className="path-lane-precedents">
                       {r.precedents.map((p) => (

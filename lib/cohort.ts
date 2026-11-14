@@ -1,11 +1,18 @@
 // Server-only cohort loader. data/cohort.json (Track A's ingest) is read from disk at runtime so the
-// build does not depend on it existing; until it does (or while it is empty) the synthetic fixture
-// answers and usingCohortFixture() is true.
+// build does not depend on it existing. The synthetic fixture answers only under NODE_ENV=test or
+// E2E_MOCK=1; a real server with no cohort throws NoCohortError so routes answer 503 instead of
+// showing invented companies.
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import fixture from "@/data/cohort.fixture.json";
 import { fitModel } from "@/lib/sim/fit";
 import type { Cohort, CohortCompany, SimModel } from "@/lib/sim/types";
+
+export class NoCohortError extends Error {
+  constructor() {
+    super("no_cohort");
+  }
+}
 
 let cached: { cohort: Cohort; fixture: boolean } | undefined;
 let model: SimModel | undefined;
@@ -23,7 +30,12 @@ function readReal(): Cohort | undefined {
 function load() {
   if (cached) return cached;
   const real = readReal();
-  cached = real ? { cohort: real, fixture: false } : { cohort: fixture as unknown as Cohort, fixture: true };
+  if (real) {
+    cached = { cohort: real, fixture: false };
+    return cached;
+  }
+  if (process.env.NODE_ENV !== "test" && process.env.E2E_MOCK !== "1") throw new NoCohortError();
+  cached = { cohort: fixture as unknown as Cohort, fixture: true };
   return cached;
 }
 

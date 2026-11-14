@@ -3,7 +3,7 @@
 // route simply computes every time.
 import { createHash } from "node:crypto";
 import { getAnthropic } from "@/lib/anthropic";
-import { findCompanyByName, loadCohort, loadCohortModel, usingCohortFixture } from "@/lib/cohort";
+import { NoCohortError, findCompanyByName, loadCohort, loadCohortModel, usingCohortFixture } from "@/lib/cohort";
 import { narrate, parseVisionLlm } from "@/lib/sim/llm";
 import { simulate } from "@/lib/sim/simulate";
 import type { Decision, StartState, Vision } from "@/lib/sim/types";
@@ -55,7 +55,13 @@ export async function POST(req: Request) {
   const decision = parseDecision(body.decision);
   const companyName = typeof body.companyName === "string" ? body.companyName.slice(0, 200) : "";
 
-  const cohort = loadCohort();
+  let cohort;
+  try {
+    cohort = loadCohort();
+  } catch (e) {
+    if (e instanceof NoCohortError) return Response.json({ error: "no_cohort" }, { status: 503 });
+    throw e;
+  }
   const fixture = usingCohortFixture();
   const company = companyName ? findCompanyByName(cohort, companyName) : undefined;
   const useLlm = process.env.E2E_MOCK !== "1" && !!getAnthropic();
