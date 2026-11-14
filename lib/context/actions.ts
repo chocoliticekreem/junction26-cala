@@ -172,6 +172,7 @@ const ALLOWED_CAPS = new Set(
     "would could can happy looking given since as the this that it its your you if in at with on for and " +
     "but so glad saw noticed congrats congratulations re is are was a an to of from what how why when where " +
     "here there they their let me please sincerely yours any no not today currently quick short open " +
+    "intro introducing introduction reaching building " +
     STAGES.join(" ") +
     " pre-seed seed series"
   ).split(/\s+/),

@@ -1,8 +1,9 @@
 // Simulated futures for one candidate company, from its last real round before asOf.
 //
-// reconcile: this is a slimmed local copy of the founder simulator's run loop (Track B
-// lib/sim/simulate.ts), using the same rules and constants so a spotter pick and a founder-side
-// simulation of the same company agree:
+// A slimmed run loop next to the founder simulator's Engine (lib/sim/simulate.ts), kept separate on
+// purpose: it is conditioned on the months a candidate has already waited (smoothed survival below)
+// and it tracks one investor's presence per run, neither of which the Engine does. It shares the
+// Engine's rules and constants so a spotter pick and a founder-side simulation agree:
 //   raise vs stall  P(raise | sector, stage), Laplace + shrink to stage (base.ts), conditioned on
 //                   the months already elapsed since the last round: P' = P*S(E) / (1 - P + P*S(E)),
 //                   S(E) = share of real gaps longer than E, smoothed (count + 0.5) / (n + 1) so a
@@ -14,9 +15,7 @@
 //                   Pg(j) ~ (leads at stage + 0.25 * participations at stage + 0.1) x sectorFit(j)
 //   vision          unicorn-shaped = Series B+ with >= $100M raised (the simulator's proxy basis,
 //                   since simulated futures carry no valuations), within HORIZON_MONTHS
-// Not carried over (they need B's full agent fit): per-lead raise lift and co-investor fill-up.
-// Swap this file for Engine/prepare from lib/sim/simulate.ts once that is on main; the spotter only
-// needs per-run steps to count how often the investor appears.
+// Not carried over (they need the full agent fit): per-lead raise lift and co-investor fill-up.
 //
 // The investor appears on a path when, in one of the next ON_PATH_ROUNDS rounds, it is the drawn
 // lead, or joins as a participant with
@@ -26,6 +25,7 @@
 //   coPull  = sum over cap-table members m of w(m) * rounds(m, investor together) / rounds(m)
 import type { Sector, Stage } from "@/lib/taxonomy";
 import {
+  MONTH_MS,
   PROXY_FUNDING_USD,
   ROUND_STAGES,
   STALL_MONTHS,
@@ -183,7 +183,7 @@ export function simulateFutures(idx: SpotterIndex, row: CompanyRow, investorId: 
   const rnd = mulberry32(opts.seed ?? hashSeed(`${row.co.id}|${investorId}|${idx.asOf}`));
   const sector = row.co.sector;
   const last = row.eps[row.eps.length - 1];
-  const elapsed0 = Math.max(0, (idx.asOfMs - last.lastDateMs) / (30.44 * 86400000));
+  const elapsed0 = Math.max(0, (idx.asOfMs - last.lastDateMs) / MONTH_MS);
   const members0: Member[] = last.memberIds.map((id) => ({ id, w: id === last.leadId ? 1 : 0.5 }));
   const firstNext = ROUND_STAGES[Math.min(ROUND_STAGES.length - 1, stageIdx(last.stage) + 1)];
   const cdf0 = leadCdf(m, globalPrior(m, firstNext, sector), members0);

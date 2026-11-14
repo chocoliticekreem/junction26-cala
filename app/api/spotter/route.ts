@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { ROUTE_PREFIX, routeCacheGet, routeCacheSet } from "@/lib/routeCache";
+import { loadCohort, usingCohortFixture } from "@/lib/cohort";
 import { runSpotter, SpotterError, type SpotterResult } from "@/lib/sim/spotter";
-import { loadSpotterCohort, type Cohort } from "@/lib/sim/spotter/cohort";
+import type { Cohort } from "@/lib/sim/types";
 import type { Investor, Revealed } from "@/lib/types";
 
 const MAX_FIELD = 200;
@@ -72,9 +73,8 @@ export async function POST(req: Request) {
 
   if (process.env.E2E_MOCK === "1") return Response.json(mock(investorName || investorId, asOf ?? "2026-11-14"));
 
-  const loaded = loadSpotterCohort();
-  if (!loaded) return Response.json({ error: "no_cohort" }, { status: 503 });
-  const { cohort, fixture } = loaded;
+  const cohort = loadCohort();
+  const fixture = usingCohortFixture();
 
   const t0 = performance.now();
   const key = `${ROUTE_PREFIX}spotter:v1:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;

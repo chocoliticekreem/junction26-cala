@@ -115,7 +115,8 @@ export function prepare(start: StartState, vision: Vision, model: SimModel) {
       ? "pre-seed"
       : start.stage;
   const alreadyThere = co ? lastStageIdx >= targetIdx && fundedUsd >= (basis.fundingThresholdUsd ?? 0) : false;
-  return { sectors, basis, targetIdx, company: co, lastStageIdx, elapsed, members, lastLead, fundedUsd, firstStage, allExisting, alreadyThere };
+  const like = { tags: start.tags ?? co?.tags, text: start.description ?? co?.description };
+  return { sectors, basis, targetIdx, company: co, lastStageIdx, elapsed, members, lastLead, fundedUsd, firstStage, allExisting, alreadyThere, like };
 }
 
 export class Engine {

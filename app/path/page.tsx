@@ -122,6 +122,8 @@ export default function PathPage() {
   }, [q1.profile, pitchText]);
   const visionSpoken = q2.tokens.map((t) => t.text).join(" ").trim();
   const vision = visionText.trim() || visionSpoken;
+  const pitchSpoken = q1.tokens.map((t) => t.text).join(" ").trim();
+  const pitch = [pitchText.trim(), pitchSpoken].filter(Boolean).join(" ");
   const companyLabel = result?.start.companyName || candidate?.name || profile.company || "You";
 
   const pick = useCallback((c: CompanyCandidate | null) => {
@@ -139,7 +141,7 @@ export default function PathPage() {
       const my = ++epoch.current;
       setError(undefined);
       if (!result) setPhase("simulating");
-      const body = { profile, visionText: vision, decision: d, companyName: candidate?.name };
+      const body = { profile, pitchText: pitch || undefined, visionText: vision, decision: d, companyName: candidate?.name };
       const [sim, ctx] = await Promise.allSettled([runSimulate(body), context ? Promise.resolve(undefined) : buildContext(contextBody(uploads))]);
       if (my !== epoch.current) return;
       if (ctx.status === "fulfilled") {
@@ -156,7 +158,7 @@ export default function PathPage() {
         setPhase(result ? "results" : "vision");
       }
     },
-    [profile, vision, candidate, context, contextBody, uploads, result],
+    [profile, pitch, vision, candidate, context, contextBody, uploads, result],
   );
 
   const reset = useCallback(() => {
@@ -349,10 +351,26 @@ export default function PathPage() {
                 </>
               )}
             </p>
-            <p className="path-vision-line" data-testid="vision-line">
-              <b>{result.visionBasis.text}</b>
+            <p className="path-vision-line" data-testid="vision-line" title={result.visionBasis.text}>
+              <b>{result.vision.interpretation ?? result.visionBasis.text}</b>
               <span className="muted"> · {vision}</span>
+              {result.analysis === "keyword_fallback" && (
+                <span className="muted path-fallback" data-testid="keyword-fallback" title={result.analysisDetail?.fallbackReasons?.join("; ") || "The AI reader was unavailable; keyword rules read the text."}>
+                  {" "}
+                  · keyword fallback
+                </span>
+              )}
             </p>
+            {result.vision.interpretation && <p className="muted path-empty">{result.visionBasis.text}</p>}
+            {result.founder && result.founder.tags.length > 0 && (
+              <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
+                {result.founder.tags.map((t) => (
+                  <span key={t} className="chip" data-chip={`tag:${t}`}>
+                    <span className="chip-value">{t}</span>
+                  </span>
+                ))}
+              </div>
+            )}
             <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
             <Precedents precedents={result.precedents} />
           </aside>
