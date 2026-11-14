@@ -21,3 +21,4 @@ data/raw/
 data/cala-cache/
 tests/screenshots/
 next-env.d.ts
+.claude/worktrees/
