@@ -556,7 +556,12 @@ function buildNode(
 const OPTION_LABEL: Record<FirstChequeOption, string> = { angel: "Angel first", accelerator: "Accelerator first", fund: "Fund first" };
 const TIMING_LABEL: Record<TimingOption, string> = { now: "Raise now", later_6m: "Raise in 6 months" };
 
-export function simulate(start: StartState, vision: Vision, model: SimModel, opts: { runs?: number; seed?: number; decision?: Decision } = {}): SimResult {
+type L1 = { decision: Decision | null; label: string; forcedLeadIdx?: number; kindFilter?: InvestorKind[]; sampleSize: number };
+export type SimOptions = { runs?: number; seed?: number; decision?: Decision; naturalLead?: boolean };
+
+// The Monte Carlo runs behind simulate(), without the aggregation. The early spotter
+// (spotter.ts) reads these directly so its odds come from the same engine and seed.
+export function simulateRuns(start: StartState, vision: Vision, model: SimModel, opts: SimOptions = {}) {
   const runs = Math.max(1, Math.floor(opts.runs ?? 5000));
   const rnd = mulberry32(opts.seed ?? 20261114);
   const prep = prepare(start, vision, model);
@@ -580,9 +585,11 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   };
 
   // Level 1: next-lead options for a cohort company (forced lead), cheque type for a founder.
-  type L1 = { decision: Decision | null; label: string; forcedLeadIdx?: number; kindFilter?: InvestorKind[]; sampleSize: number };
-  let l1: L1[];
-  if (prep.company) {
+  // naturalLead: no level 1; every run draws its next lead from the engine (the spotter's mode).
+  let l1: L1[] = [];
+  if (opts.naturalLead) {
+    // One "Any first cheque" branch below.
+  } else if (prep.company) {
     const next = prep.firstStage;
     const seedSector = prep.sectors[0]?.[0] ?? model.cohort.companies[prep.company.id]?.sector ?? null;
     const from = prep.lastStageIdx >= 0 ? ROUND_STAGES[prep.lastStageIdx] : undefined;
@@ -628,7 +635,11 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
     const b = r % branches.length;
     outs.push(engine.run(branches[b], b, horizonMonths, rnd));
   }
+  return { runs, prep, l1, timings, outs, decisionStage, rootSampleSize: companies(stageTransitions.filter((t) => t.knowable)) };
+}
 
+export function simulate(start: StartState, vision: Vision, model: SimModel, opts: SimOptions = {}): SimResult {
+  const { runs, prep, l1, timings, outs, decisionStage, rootSampleSize } = simulateRuns(start, vision, model, opts);
   const startLabel = STAGE_LABELS[prep.company ? ROUND_STAGES[Math.max(0, prep.lastStageIdx)] : prep.firstStage];
   const node = (d: Decision | null, label: string, o: RunOutcome[], n: number, children: DecisionNode[]) =>
     buildNode(d, label, o, n, children, prep.basis, prep.targetIdx, startLabel);
@@ -641,7 +652,7 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   });
   l1Nodes.sort((x, y) => y.reachVisionShare - x.reachVisionShare || (x.medianMonthsToNextRound ?? 1e9) - (y.medianMonthsToNextRound ?? 1e9));
   const rootLabel = prep.company ? `${prep.company.name} today` : "You today";
-  const tree = node(null, rootLabel, outs, companies(stageTransitions.filter((t) => t.knowable)), l1Nodes);
+  const tree = node(null, rootLabel, outs, rootSampleSize, l1Nodes);
 
   const flows = new Map<string, number>();
   for (const o of outs) {

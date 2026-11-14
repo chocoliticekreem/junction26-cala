@@ -18,8 +18,19 @@
 // where base is the unicorn share of the whole reference set at depth k, smoothed
 // (unicorns + 0.5) / (n + 1) so a reference set without unicorns still ranks on the other terms. M = 1 (one perfect match
 // worth of prior) keeps one lucky neighbour from making a company look like a sure thing.
-// lift = shape / base. lowConfidence when the reference set has fewer than LOW_CONFIDENCE_N rows
-// or fewer than MIN_UNICORNS unicorns.
+// shape is a share of a reference set that over-represents unicorns (the cohort's network and
+// must-include companies were picked partly because they did well: at depth 3 about half the
+// reference set are unicorns), so it is NOT a probability and is never shown as one. The signal is a
+// lift, calibrated to the seed-sample companies (drawn without regard to outcome, calibration.ts):
+//   popBase = smoothed unicorn share of seed-sample companies with a known outcome at asOf,
+//             (unicorns + 0.5) / (known + 1)
+//   odds'   = odds(shape) x odds(popBase) / odds(base)     (prior shift for a case-enriched sample)
+//   lift    = p(odds') / popBase
+// i.e. how many times the outcome-blind base rate this path's nearest neighbours point to; 1 when
+// the neighbours look like the reference set as a whole. Without a seed sample (fixtures), lift =
+// shape / base and liftBasis = "reference".
+// lowConfidence when the reference set has fewer than LOW_CONFIDENCE_N rows or fewer than
+// MIN_UNICORNS unicorns.
 import type { Stage } from "@/lib/taxonomy";
 import type { InvestorKind } from "../types";
 import { LOW_CONFIDENCE_N, MONTH_MS, ROUND_STAGES, median, stageIdx, toMs, type CompanyRow, type SpotterIndex } from "./base";
@@ -52,6 +63,8 @@ export type ShapeScore = {
   shape: number;
   base: number;
   lift: number;
+  popBase?: number;
+  liftBasis: "seed-sample" | "reference";
   referenceSize: number;
   unicornsInReference: number;
   neighbours: Neighbour[];
@@ -150,6 +163,30 @@ function stepsText(idx: SpotterIndex, row: CompanyRow, k: number): string {
     .join(" → ");
 }
 
+const popBaseCache = new WeakMap<SpotterIndex, number | undefined>();
+
+export function seedSampleBase(idx: SpotterIndex): number | undefined {
+  if (popBaseCache.has(idx)) return popBaseCache.get(idx);
+  let known = 0;
+  let unicorns = 0;
+  for (const row of idx.rows.values()) {
+    if (row.co.sampledBy !== "seed-sample" || row.outcome === "open") continue;
+    known++;
+    if (row.outcome === "unicorn") unicorns++;
+  }
+  const out = known ? (unicorns + 0.5) / (known + 1) : undefined;
+  popBaseCache.set(idx, out);
+  return out;
+}
+
+const odds = (p: number) => p / (1 - p);
+
+export function calibratedLift(shape: number, base: number, popBase: number | undefined): number {
+  if (popBase === undefined || base <= 0 || base >= 1 || shape >= 1) return base > 0 ? shape / base : 1;
+  const o = (odds(shape) * odds(popBase)) / odds(base);
+  return o / (1 + o) / popBase;
+}
+
 const stageLabel = (s: Stage) => ({ "pre-idea": "Pre-idea", "pre-seed": "Pre-seed", seed: "Seed", "series-a": "Series A", "series-b-plus": "Series B+" })[s];
 
 export function unicornShape(idx: SpotterIndex, row: CompanyRow): ShapeScore {
@@ -171,6 +208,7 @@ export function unicornShape(idx: SpotterIndex, row: CompanyRow): ShapeScore {
     if (r.row.outcome === "unicorn") wu += w;
   }
   const shape = (wu + SHAPE_PRIOR_M * base) / (wt + SHAPE_PRIOR_M) || 0;
+  const popBase = seedSampleBase(idx);
   const toNeighbour = ({ r, d }: (typeof scored)[number]): Neighbour => ({
     companyId: r.row.co.id,
     name: r.row.co.name,
@@ -186,7 +224,9 @@ export function unicornShape(idx: SpotterIndex, row: CompanyRow): ShapeScore {
     depth,
     shape,
     base,
-    lift: shape / base,
+    lift: calibratedLift(shape, base, popBase),
+    popBase,
+    liftBasis: popBase === undefined ? "reference" : "seed-sample",
     referenceSize: size,
     unicornsInReference: unicorns,
     neighbours: [...nearUnicorns, ...nearStalled],

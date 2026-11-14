@@ -7,13 +7,19 @@
 //                  investor's own top sector/stage; sector fit is the larger of the sector share and
 //                  the tags+description similarity to the investor's portfolio, spotter/taste.ts). When fewer than MIN_CANDIDATES pass, the best
 //                  MIN_CANDIDATES by fit with fit > 0 are kept instead, so thin investors still get a list.
-//   3. shape       kNN of the early path against unicorns vs stalled companies (spotter/shape.ts)
-//   4. futures     FUTURE_RUNS simulated futures from the last real round (spotter/futures.ts):
-//                  P(unicorn-shaped), median months to next round, P(investor on its path)
-//   5. rank        score = fit^W_FIT * shape^W_SHAPE * pUnicorn'^W_SIM * (0.05 + pOnPath)^W_PATH
-//                  pUnicorn' = (unicorn runs + 0.5) / (runs + 1) so a zero never wipes a pick out.
-//                  Futures run only for the best MAX_SIMULATED by fit x shape (speed); the rest are
-//                  ranked below them.
+//   3. shape       kNN of the early path against unicorns vs stalled companies (spotter/shape.ts),
+//                  reported as a lift over the seed-sample base rate, never as a probability
+//   4. futures     the founder simulator's calibrated Monte Carlo from the company's real state
+//                  (spotter/futures.ts): pUnicorn = P($1B within 5 years), P(investor on its path).
+//                  Companies already past the unicorn funding bar are dropped (not early any more).
+//   5. rank        score = fit^W.fit * (lift / (1 + lift))^W.shape * pUnicorn'^W.sim * (0.05 + pOnPath)^W.path
+//                  pUnicorn' = (unicorn runs + 0.5) / (runs + 1) so a zero never wipes a pick out;
+//                  lift / (1 + lift) maps the lift into (0, 1), 0.5 at the base rate.
+//                  Weights: the calibrated pUnicorn carries the most (0.4); fit (0.25) keeps the list
+//                  in the investor's lane; pOnPath (0.2) favours rounds the investor can actually get
+//                  into; the shape lift (0.15) is a precedent signal on top. Each factor is in (0, 1],
+//                  so combined is too. Futures run only for the best MAX_SIMULATED by
+//                  fit x lift (speed); the rest are ranked below them.
 // Every component is returned so the UI can show why a company is on the list.
 import type { Sector, Stage } from "@/lib/taxonomy";
 import type { Revealed } from "@/lib/types";
@@ -41,9 +47,9 @@ export { spotterIndex } from "./spotter/base";
 export const CANDIDATE_WINDOW_MONTHS = 36;
 export const FIT_THRESHOLD = 0.3;
 export const MIN_CANDIDATES = 40;
-export const MAX_SIMULATED = 120;
+export const MAX_SIMULATED = 40;
 export const TOP_N = 20;
-export const WEIGHTS = { fit: 0.2, shape: 0.35, sim: 0.3, path: 0.15 } as const;
+export const WEIGHTS = { fit: 0.25, shape: 0.15, sim: 0.4, path: 0.2 } as const;
 
 export type SpotterPick = {
   rank: number;
@@ -59,9 +65,16 @@ export type SpotterPick = {
   scores: {
     combined: number;
     fit: number;
+    // kNN unicorn share inside the (unicorn-enriched) reference set and that set's own share.
+    // Inputs to the lift; not probabilities, do not show them as odds.
     shape: number;
     shapeBase: number;
+    // Calibrated lift over the seed-sample base rate (spotter/shape.ts). unicornLift is the same
+    // number under the name the UI shows ("3.2x base"); unicornBaseRate is that base rate.
     shapeLift: number;
+    unicornLift: number;
+    unicornBaseRate?: number;
+    // P(reaches a $1B valuation within 5 years), from the founder simulator's calibrated engine.
     pUnicorn?: number;
     pRaiseNext?: number;
     medianMonthsToNextRound?: number;
@@ -174,7 +187,9 @@ function buildPick(idx: SpotterIndex, taste: InvestorTaste, row: CompanyRow, fit
       shape: r3(shape.shape),
       shapeBase: r3(shape.base),
       shapeLift: Math.round(shape.lift * 100) / 100,
-      pUnicorn: fut && r3(fut.pUnicorn),
+      unicornLift: Math.round(shape.lift * 100) / 100,
+      unicornBaseRate: shape.popBase !== undefined ? r3(shape.popBase) : undefined,
+      pUnicorn: fut && Math.round(fut.pUnicorn * 10000) / 10000,
       pRaiseNext: fut && r3(fut.pRaiseNext),
       medianMonthsToNextRound: fut?.medianMonthsToNextRound !== undefined ? Math.round(fut.medianMonthsToNextRound) : undefined,
       pOnPath: fut && r3(fut.pOnPath),
@@ -206,14 +221,16 @@ export function rankSpotter(cohort: Cohort, q: SpotterQuery): { idx: SpotterInde
   const taste = tasteFromIndex(idx, investorId, { revealed: q.revealedFor?.(investorId) });
   const runs = q.runs ?? FUTURE_RUNS;
   const cands = spotterCandidates(idx, taste).map((c) => ({ ...c, shape: unicornShape(idx, c.row) }));
-  const pre = (c: (typeof cands)[number]) => c.fit ** WEIGHTS.fit * c.shape.shape ** WEIGHTS.shape;
+  const pre = (c: (typeof cands)[number]) => c.fit ** WEIGHTS.fit * (c.shape.lift / (1 + c.shape.lift)) ** WEIGHTS.shape;
   cands.sort((a, b) => pre(b) - pre(a) || a.row.co.id.localeCompare(b.row.co.id));
-  const ranked: Ranked[] = cands.map((c, i) => {
-    if (i >= MAX_SIMULATED) return { ...c, combined: 0 };
+  const ranked: Ranked[] = [];
+  cands.forEach((c, i) => {
+    if (i >= MAX_SIMULATED) return void ranked.push({ ...c, combined: 0 });
     const fut = simulateFutures(idx, c.row, investorId, { runs });
+    if (fut.alreadyThere) return;
     const pU = (fut.pUnicorn * fut.runs + 0.5) / (fut.runs + 1);
     const combined = pre(c) * pU ** WEIGHTS.sim * (0.05 + fut.pOnPath) ** WEIGHTS.path;
-    return { ...c, fut, combined };
+    ranked.push({ ...c, fut, combined });
   });
   ranked.sort((a, b) => b.combined - a.combined || pre(b) - pre(a) || a.row.co.id.localeCompare(b.row.co.id));
   return { idx, taste, ranked };
@@ -275,7 +292,9 @@ export function backtestSpotter(cohort: Cohort, investorName: string, asOf: stri
           ? "already a unicorn by asOf"
           : row.firstMs < idx.asOfMs - CANDIDATE_WINDOW_MONTHS * MONTH_MS
             ? `first round more than ${CANDIDATE_WINDOW_MONTHS} months before asOf`
-            : "below the sector/stage fit threshold";
+            : spotterCandidates(idx, taste).some((c) => c.row.co.id === co.id)
+              ? "already at Series B+ with the unicorn funding bar raised by asOf"
+              : "below the sector/stage fit threshold";
     return { name: co.name, rank: null, inTop20: false, reason };
   });
   return { investor: taste.name, asOf: idx.asOf, candidates: ranked.length, targets, top5: ranked.slice(0, 5).map((r) => r.row.co.name) };

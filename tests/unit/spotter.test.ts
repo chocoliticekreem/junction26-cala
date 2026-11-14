@@ -3,6 +3,9 @@ import fixture from "@/tests/fixtures/spotter-cohort.json";
 import { POST } from "@/app/api/spotter/route";
 import { backtestSpotter, investorTaste, rankSpotter, runSpotter, simulateFutures, spotterCandidates, spotterIndex, unicornShape } from "@/lib/sim/spotter";
 import { tasteFromIndex } from "@/lib/sim/spotter/taste";
+import { FUTURE_RUNS, simModel, UNICORN_VISION } from "@/lib/sim/spotter/futures";
+import { calibratedLift, seedSampleBase } from "@/lib/sim/spotter/shape";
+import { simulate } from "@/lib/sim/simulate";
 import { mulberry32, toMs } from "@/lib/sim/spotter/base";
 import type { Cohort, CohortCompany, CohortRound, InvestorKind } from "@/lib/sim/types";
 import type { Revealed } from "@/lib/types";
@@ -91,6 +94,36 @@ describe("unicorn shape", () => {
   });
 });
 
+describe("calibrated lift", () => {
+  it("is 1 at the reference base, grows with the neighbours' share, and falls back without a seed sample", () => {
+    expect(calibratedLift(0.5, 0.5, 0.05)).toBeCloseTo(1, 6);
+    expect(calibratedLift(0.7, 0.5, 0.05)).toBeGreaterThan(calibratedLift(0.6, 0.5, 0.05));
+    expect(calibratedLift(0.3, 0.5, 0.05)).toBeLessThan(1);
+    expect(calibratedLift(0.6, 0.3, undefined)).toBeCloseTo(2, 6);
+    // A neighbour share twice an enriched base is far less than twice the outcome-blind base rate.
+    expect(calibratedLift(0.8, 0.4, 0.05)).toBeLessThan(calibratedLift(0.8, 0.4, undefined) * 3);
+    expect(calibratedLift(0.8, 0.4, 0.05) * 0.05).toBeLessThan(0.5);
+  });
+
+  it("reads the base rate from seed-sample companies only", () => {
+    expect(seedSampleBase(spotterIndex(cohort))).toBeUndefined();
+    const tagged = structuredClone(cohort);
+    for (const c of Object.values(tagged.companies)) c.sampledBy = "seed-sample";
+    const idx = spotterIndex(tagged);
+    let known = 0;
+    let unicorns = 0;
+    for (const r of idx.rows.values()) {
+      if (r.outcome === "open") continue;
+      known++;
+      if (r.outcome === "unicorn") unicorns++;
+    }
+    expect(seedSampleBase(idx)).toBeCloseTo((unicorns + 0.5) / (known + 1), 6);
+    const shape = unicornShape(idx, idx.rows.get("c:good")!);
+    expect(shape.liftBasis).toBe("seed-sample");
+    expect(shape.lift).toBeCloseTo(calibratedLift(shape.shape, shape.base, shape.popBase), 6);
+  });
+});
+
 describe("simulated futures", () => {
   it("puts a likely next lead on the path far more often than an unrelated angel", () => {
     const idx = spotterIndex(cohort);
@@ -102,7 +135,19 @@ describe("simulated futures", () => {
     expect(index.pLeadNext).toBeLessThanOrEqual(index.pOnPath);
     expect(index.pRaiseNext).toBeGreaterThan(0);
     expect(index.pUnicorn).toBeGreaterThan(0);
-    expect(index.runs).toBe(500);
+    expect(index.runs).toBe(FUTURE_RUNS);
+  });
+
+  it("reads pUnicorn off the founder simulator's engine for the same company", () => {
+    const idx = spotterIndex(cohort);
+    const row = idx.rows.get("c:good")!;
+    const fut = simulateFutures(idx, row, "inv:index");
+    const start = { sectors: {}, stage: row.eps[row.eps.length - 1].stage, companyId: row.co.id };
+    const model = simModel(cohort, idx.asOf);
+    const natural = simulate(start, UNICORN_VISION, model, { runs: FUTURE_RUNS, naturalLead: true });
+    expect(fut.pUnicorn).toBeCloseTo(natural.tree.reachVisionShare, 3);
+    const founder = simulate(start, UNICORN_VISION, model, { runs: 4000 });
+    expect(Math.abs(fut.pUnicorn - founder.tree.reachVisionShare)).toBeLessThan(0.08);
   });
 
   it("is deterministic", () => {
@@ -120,6 +165,9 @@ describe("runSpotter", () => {
     const p = res.picks[0];
     expect(p.line).toMatch(/^Same first two steps as /);
     expect(p.scores.pOnPath).toBeGreaterThan(0);
+    expect(p.scores.unicornLift).toBe(p.scores.shapeLift);
+    expect(p.scores.pUnicorn).toBeCloseTo(simulateFutures(spotterIndex(cohort), spotterIndex(cohort).rows.get("c:good")!, "inv:index").pUnicorn, 3);
+    for (const x of res.picks) expect(x.scores.combined).toBeLessThanOrEqual(1);
     expect(p.company.latestRound.leadName).toBe("Seedcamp (fixture)");
     expect(p.actions.sharedCoInvestors.map((c) => c.id)).toContain("inv:seedcamp");
     expect(res.basis).toMatch(/^Evidence from \d+ real rounds in Cala, not a forecast$/);

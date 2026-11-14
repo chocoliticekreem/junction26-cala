@@ -51,7 +51,7 @@ function mock(name: string, asOf: string): SpotterResult & { mock: true } {
         latestRound: { id: `mock:r${rank}`, stage: "seed", label: "Seed", date: "2025-06-01", amountUsd: 2_000_000 },
         investors: [],
       },
-      scores: { combined: 0.5 / rank, fit: 0.8, shape: 0.4 / rank, shapeBase: 0.1, shapeLift: 4 / rank, pUnicorn: 0.2 / rank, pRaiseNext: 0.6, medianMonthsToNextRound: 14, pOnPath: 0.3 / rank, pLeadNext: 0.1 },
+      scores: { combined: 0.5 / rank, fit: 0.8, shape: 0.4 / rank, shapeBase: 0.1, shapeLift: 4 / rank, unicornLift: 4 / rank, unicornBaseRate: 0.054, pUnicorn: 0.2 / rank, pRaiseNext: 0.6, medianMonthsToNextRound: 14, pOnPath: 0.3 / rank, pLeadNext: 0.1 },
       line: "Mock precedent line",
       precedents: {
         unicorns: [{ companyId: "mock:u1", name: "Mock Unicorn", outcome: "unicorn", distance: 0.5, similarity: 0.5, steps: "Pre-seed → Seed +6 mo", sharedLeads: [] }],
@@ -64,7 +64,7 @@ function mock(name: string, asOf: string): SpotterResult & { mock: true } {
     asOf,
     basis: "Mock data, not Cala evidence",
     considered: { candidates: 3, simulated: 3, roundsInCohort: 0 },
-    weights: { fit: 0.2, shape: 0.35, sim: 0.3, path: 0.15 },
+    weights: { fit: 0.25, shape: 0.15, sim: 0.4, path: 0.2 },
     mock: true,
   };
 }
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
   const fixture = usingCohortFixture();
 
   const t0 = performance.now();
-  const key = `${ROUTE_PREFIX}spotter:v2:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
+  const key = `${ROUTE_PREFIX}spotter:v4:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
   const shared = await routeCacheGet(key);
   if (shared) return Response.json({ ...shared, cached: true, source: "valkey", latencyMs: Math.round(performance.now() - t0) });
 
