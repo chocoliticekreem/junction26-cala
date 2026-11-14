@@ -37,6 +37,11 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("company-found")).toContainText("Cala");
   await expect(page.getByTestId("candidates")).toHaveCount(0);
 
+  // A website makes the match certain: no "Is this you?" even after the name is re-resolved.
+  await page.getByTestId("company-website").fill("cala.ai");
+  await expect(page.getByTestId("company-found")).toContainText("Cala");
+  await expect(page.getByTestId("candidates")).toHaveCount(0);
+
   await page.getByTestId("pitch-text").fill("We are a seed stage B2B SaaS company building developer tools for investors, raising $5m.");
   await expect(page.getByTestId("pitch-read")).toContainText("Seed");
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "vision");
@@ -81,6 +86,7 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("my-company")).toHaveCount(1);
   await page.getByTestId("my-company").first().click();
   await expect(page.getByTestId("company-name")).toHaveValue("Cala");
+  await expect(page.getByTestId("company-website")).toHaveValue("cala.ai");
   await expect(page.getByTestId("pitch-text")).toHaveValue(/developer tools/);
   await expect(page.getByTestId("vision-text")).not.toHaveValue("");
   await expect(page.getByTestId("company-found")).toContainText("Cala");

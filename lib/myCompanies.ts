@@ -6,6 +6,7 @@ import type { CompanyCandidate } from "@/lib/context/types";
 
 export type SavedCompany = {
   name: string;
+  website?: string;
   candidate?: CompanyCandidate;
   pitch: string;
   vision: string;

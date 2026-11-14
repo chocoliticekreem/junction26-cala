@@ -2001,6 +2001,16 @@ a.deal-src:hover,
   box-shadow: 0 0 0 3px rgb(120 140 255 / 0.12);
 }
 
+.path-input-site {
+  flex: 0 1 190px;
+  font-size: 14px;
+  color: var(--fg-2);
+}
+
+.path-input-site::placeholder {
+  color: var(--fg-3);
+}
+
 .path-candidates {
   width: 100%;
   margin-top: 2px;

@@ -14,6 +14,8 @@ export type InterviewProps = {
   busy: boolean;
   companyName: string;
   onCompanyName: (v: string) => void;
+  website: string;
+  onWebsite: (v: string) => void;
   candidates: CompanyCandidate[];
   // Candidate the resolve route says can be picked without asking (website or sole exact-name match).
   autoPick?: string;
@@ -130,6 +132,16 @@ export default function Interview(p: InterviewProps) {
               autoFocus
               data-testid="company-name"
             />
+            <input
+              className="path-input path-input-site"
+              value={p.website}
+              onChange={(e) => p.onWebsite(e.target.value)}
+              placeholder="cala.ai"
+              aria-label="Website (optional)"
+              autoComplete="off"
+              spellCheck={false}
+              data-testid="company-website"
+            />
             <button
               type="button"
               className={`path-dropdown-btn ${menuOpen ? "is-open" : ""}`}
@@ -157,7 +169,7 @@ export default function Interview(p: InterviewProps) {
                       data-testid="my-company"
                     >
                       <b>{s.name}</b>
-                      <span className="muted">{s.candidate ? "in Cala" : "from pitch"}</span>
+                      <span className="muted">{s.candidate ? "in Cala" : s.website ? s.website : "from pitch"}</span>
                     </button>
                   </li>
                 ))}
@@ -235,7 +247,7 @@ export default function Interview(p: InterviewProps) {
           )}
           {!p.resolving && !p.resolveError && p.candidates.length === 0 && p.companyName.trim().length >= 2 && !p.company && (
             <p className="path-line muted" data-testid="no-candidates">
-              Not in Cala&apos;s graph yet · starting from your pitch
+              New to Cala&apos;s graph · starting from your pitch{p.website.trim() ? " and website" : ""}
             </p>
           )}
         </div>

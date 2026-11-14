@@ -51,8 +51,8 @@ export async function fetchNetwork(): Promise<NetworkData> {
   return net;
 }
 
-export async function resolveCompany(name: string): Promise<ResolveResult> {
-  const r = await json<ResolveResult>("/api/company/resolve", post({ name }));
+export async function resolveCompany(name: string, website?: string): Promise<ResolveResult> {
+  const r = await json<ResolveResult>("/api/company/resolve", post({ name, website: website || undefined }));
   if (!Array.isArray(r.candidates)) throw new ApiError(200, "bad_shape");
   if (r.budgetExhausted && !r.candidates.length) throw new ApiError(200, "budget_exhausted");
   return r;

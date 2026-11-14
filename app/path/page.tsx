@@ -71,6 +71,7 @@ export default function PathPage() {
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [companyName, setCompanyName] = useState("");
+  const [website, setWebsite] = useState("");
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [autoPick, setAutoPick] = useState<string | undefined>();
   const [resolving, setResolving] = useState(false);
@@ -103,6 +104,7 @@ export default function PathPage() {
   // change it inline.
   useEffect(() => {
     const name = companyName.trim();
+    const site = website.trim();
     let alive = true;
     const id = window.setTimeout(() => {
       if (name.length < 2) {
@@ -115,14 +117,17 @@ export default function PathPage() {
       }
       setResolving(true);
       setResolveError(undefined);
-      resolveCompany(name).then(
+      resolveCompany(name, site || undefined).then(
         (r) => {
           if (!alive) return;
           setCandidates(r.candidates);
           setAutoPick(r.autoPick);
           setResolving(false);
           if (presetFor.current === name) return;
-          setCandidate(r.candidates.find((c) => c.calaId === r.autoPick) ?? r.candidates[0] ?? null);
+          const auto = r.candidates.find((c) => c.calaId === r.autoPick);
+          setCandidate(auto ?? r.candidates[0] ?? null);
+          // A website or sole exact-name match needs no "Is this you?".
+          if (auto) setPicked(true);
         },
         (e) => {
           if (!alive) return;
@@ -138,7 +143,7 @@ export default function PathPage() {
       alive = false;
       window.clearTimeout(id);
     };
-  }, [companyName]);
+  }, [companyName, website]);
 
   const profile = useMemo(() => {
     const typed = pitchText.trim();
@@ -157,6 +162,12 @@ export default function PathPage() {
     setCompanyName(v);
   }, []);
 
+  const onWebsite = useCallback((v: string) => {
+    presetFor.current = null;
+    setPicked(false);
+    setWebsite(v);
+  }, []);
+
   const pick = useCallback(
     (c: CompanyCandidate | null) => {
       presetFor.current = companyName.trim();
@@ -172,6 +183,7 @@ export default function PathPage() {
       q1.reset();
       q2.reset();
       setCompanyName(s.name);
+      setWebsite(s.website ?? "");
       setCandidate(s.candidate ?? null);
       setPicked(true);
       setPitchText(s.pitch);
@@ -181,8 +193,8 @@ export default function PathPage() {
   );
 
   const contextBody = useCallback(
-    (u: Upload[]) => ({ calaId: candidate?.calaId, name: candidate?.name ?? companyName.trim(), website: candidate?.website, pitchProfile: profile, visionText: vision, uploads: u }),
-    [candidate, companyName, profile, vision],
+    (u: Upload[]) => ({ calaId: candidate?.calaId, name: candidate?.name ?? companyName.trim(), website: website.trim() || candidate?.website, pitchProfile: profile, visionText: vision, uploads: u }),
+    [candidate, companyName, website, profile, vision],
   );
 
   const simulate = useCallback(
@@ -191,7 +203,8 @@ export default function PathPage() {
       setError(undefined);
       if (!result) {
         setPhase("simulating");
-        saveMyCompany({ name: candidate?.name ?? (companyName.trim() || companyLabel), candidate: candidate ?? undefined, pitch, vision });
+        setPicked(true);
+        saveMyCompany({ name: candidate?.name ?? (companyName.trim() || companyLabel), website: website.trim() || undefined, candidate: candidate ?? undefined, pitch, vision });
         window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" }), 50);
       }
       const body = { profile, pitchText: pitch || undefined, visionText: vision, decision: d, companyName: candidate?.name };
@@ -211,7 +224,7 @@ export default function PathPage() {
         setPhase(result ? "results" : "idle");
       }
     },
-    [profile, pitch, vision, candidate, companyName, companyLabel, context, contextBody, uploads, result, reducedMotion],
+    [profile, pitch, vision, candidate, companyName, website, companyLabel, context, contextBody, uploads, result, reducedMotion],
   );
 
   const reset = useCallback(() => {
@@ -221,6 +234,7 @@ export default function PathPage() {
     q2.reset();
     setPhase("idle");
     setCompanyName("");
+    setWebsite("");
     setCandidates([]);
     setAutoPick(undefined);
     setResolveError(undefined);
@@ -317,6 +331,8 @@ export default function PathPage() {
           busy={phase === "simulating"}
           companyName={companyName}
           onCompanyName={onCompanyName}
+          website={website}
+          onWebsite={onWebsite}
           candidates={candidates}
           autoPick={autoPick}
           resolving={resolving}
