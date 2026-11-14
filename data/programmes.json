@@ -1,0 +1,202 @@
+[
+  {
+    "id": "prog-entrepreneur-first",
+    "name": "Entrepreneur First",
+    "kind": "accelerator",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": "any",
+    "description": "Talent investor that brings individuals together to find co-founders and build a company from before the idea stage.",
+    "url": "https://www.joinef.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-ewor",
+    "name": "EWOR",
+    "kind": "fellowship",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": "any",
+    "description": "Fellowship for young founders that combines early funding with a founder community and mentoring.",
+    "url": "https://www.ewor.io",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-seedcamp",
+    "name": "Seedcamp",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed"],
+    "sectors": "any",
+    "description": "London-founded European seed fund that invests in early-stage startups and runs a founder community and events.",
+    "url": "https://seedcamp.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-antler",
+    "name": "Antler",
+    "kind": "accelerator",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": "any",
+    "description": "Global early-stage investor that runs residency programmes where founders meet co-founders and build from the idea stage; has a London presence.",
+    "url": "https://www.antler.co",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-techstars",
+    "name": "Techstars",
+    "kind": "accelerator",
+    "stages": ["pre-seed", "seed"],
+    "sectors": "any",
+    "description": "Accelerator network that runs mentor-led programmes in several cities. Check the site for whether a London programme is currently open.",
+    "url": "https://www.techstars.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-founders-factory",
+    "name": "Founders Factory",
+    "kind": "accelerator",
+    "stages": ["pre-seed", "seed"],
+    "sectors": "any",
+    "description": "London-based venture builder and accelerator that works with corporate partners and invests in early-stage startups.",
+    "url": "https://foundersfactory.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-sfc-capital",
+    "name": "SFC Capital",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed"],
+    "sectors": "any",
+    "description": "UK early-stage investor backing startups with an application process open to founders.",
+    "url": "https://www.sfccapital.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-conception-x",
+    "name": "Conception X",
+    "kind": "programme",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": ["biotech/therapeutics", "medtech/devices", "deep tech/hardware"],
+    "description": "Cambridge-based programme that helps PhD students and researchers turn deep-science research into startups.",
+    "url": "https://www.conceptionx.org",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-cdl-oxford",
+    "name": "Creative Destruction Lab Oxford",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed"],
+    "sectors": ["deep tech/hardware", "biotech/therapeutics", "AI infrastructure"],
+    "description": "Objectives-based mentoring programme for science and technology startups, hosted at the Saïd Business School in Oxford.",
+    "url": "https://www.creativedestructionlab.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-imperial-enterprise-lab",
+    "name": "Imperial Enterprise Lab",
+    "kind": "programme",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": "any",
+    "description": "Imperial College London's enterprise hub offering startup programmes and support for students, staff and alumni.",
+    "url": "https://www.imperial.ac.uk/enterprise/",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-ucl-innovation-enterprise",
+    "name": "UCL Innovation & Enterprise",
+    "kind": "programme",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": "any",
+    "description": "UCL's enterprise team, which supports students, staff and alumni starting companies, including the Hatchery programme.",
+    "url": "https://www.ucl.ac.uk/innovation-enterprise/",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-carbon13",
+    "name": "Carbon13",
+    "kind": "accelerator",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": ["climate/energy"],
+    "description": "Venture builder and accelerator for early-stage climate and nature startups.",
+    "url": "https://www.carbon13.co",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-zinc",
+    "name": "Zinc",
+    "kind": "accelerator",
+    "stages": ["pre-idea", "pre-seed"],
+    "sectors": "any",
+    "description": "London-based venture builder that supports founders working on social and societal problems.",
+    "url": "https://www.zinc.vc",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-bethnal-green-ventures",
+    "name": "Bethnal Green Ventures",
+    "kind": "accelerator",
+    "stages": ["pre-seed"],
+    "sectors": "any",
+    "description": "London-based early-stage investor and accelerator for startups that use technology to tackle social and environmental problems.",
+    "url": "https://bethnalgreenventures.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-barclays-eagle-labs",
+    "name": "Barclays Eagle Labs",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed"],
+    "sectors": "any",
+    "description": "Barclays' startup support network offering workspace, events and business support for growing companies across the UK.",
+    "url": "https://labs.uk.barclays",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-google-for-startups-uk",
+    "name": "Google for Startups",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed", "series-a"],
+    "sectors": "any",
+    "description": "Google's programmes and resources for startups, with accelerator and mentoring offers that vary by cohort and region.",
+    "url": "https://startup.google.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-oxford-science-enterprises",
+    "name": "Oxford Science Enterprises",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed"],
+    "sectors": ["biotech/therapeutics", "medtech/devices", "deep tech/hardware"],
+    "description": "Investor and company builder for science-based ventures coming out of the University of Oxford.",
+    "url": "https://www.oxfordscienceenterprises.com",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-y-combinator",
+    "name": "Y Combinator",
+    "kind": "accelerator",
+    "stages": ["pre-seed", "seed"],
+    "sectors": "any",
+    "description": "US-based accelerator with an open application that accepts founders from any country, including the UK.",
+    "url": "https://www.ycombinator.com/apply",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-capital-enterprise",
+    "name": "Capital Enterprise",
+    "kind": "programme",
+    "stages": ["pre-idea", "pre-seed", "seed"],
+    "sectors": "any",
+    "description": "London organisation that runs free support programmes and investor introductions for early-stage London startups.",
+    "url": "https://capitalenterprise.org",
+    "checkedOn": "2026-11-14"
+  },
+  {
+    "id": "prog-level39",
+    "name": "Level39",
+    "kind": "programme",
+    "stages": ["pre-seed", "seed", "series-a"],
+    "sectors": ["fintech", "insurtech", "cybersecurity"],
+    "description": "Canary Wharf technology community focused on fintech, with workspace, events and corporate connections.",
+    "url": "https://www.level39.co",
+    "checkedOn": "2026-11-14"
+  }
+]
