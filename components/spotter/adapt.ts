@@ -1,6 +1,7 @@
 import type { SpotterResult } from "@/lib/sim/spotter";
+import type { HostEvent } from "@/lib/sim/spotter/host";
 import { SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
-import type { SpotterPick, SpotterPrecedent, SpotterResponse, SpotterShare } from "./types";
+import type { SpotterHost, SpotterPick, SpotterPrecedent, SpotterResponse, SpotterShare } from "./types";
 
 const pct = (x: number | undefined) => Math.round((x ?? 0) * 100);
 
@@ -77,6 +78,10 @@ function dedupe(picks: SpotterResult["picks"]): SpotterResult["picks"] {
   });
 }
 
+function adaptHost(h: HostEvent): SpotterHost {
+  return { ...h, companies: h.companies.map((c) => ({ ...c, stage: STAGE_LABELS[c.stage] ?? c.stage })) };
+}
+
 export function adaptSpotter(r: SpotterResult): SpotterResponse {
   const inv = r.investor;
   const [lo, hi] = inv.chequeBand ?? [];
@@ -97,6 +102,7 @@ export function adaptSpotter(r: SpotterResult): SpotterResponse {
       },
     },
     picks: dedupe(r.picks).map(adaptPick),
+    host: (r.host ?? []).map(adaptHost),
     asOf: r.asOf,
     basis: r.basis,
     considered: r.considered,

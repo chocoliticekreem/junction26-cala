@@ -32,6 +32,7 @@ import { simulateFutures, FUTURE_RUNS, type Futures } from "./spotter/futures";
 import { centroid, similarityIndex, textSimilarity } from "./similarity";
 import { companySteps, unicornShape, type Neighbour, type ShapeScore } from "./spotter/shape";
 import { tasteFit, tasteFromIndex, type InvestorTaste } from "./spotter/taste";
+import type { HostEvent } from "./spotter/host";
 
 export { investorTaste, type InvestorTaste } from "./spotter/taste";
 export { unicornShape } from "./spotter/shape";
@@ -92,6 +93,8 @@ export type SpotterResult = {
     lowConfidence: boolean;
   };
   picks: SpotterPick[];
+  // Events the fund could host (lib/sim/spotter/host.ts); filled by the API, not by runSpotter.
+  host?: HostEvent[];
   asOf: string;
   basis: string;
   considered: { candidates: number; simulated: number; roundsInCohort: number };
