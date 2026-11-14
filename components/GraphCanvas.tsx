@@ -4,20 +4,22 @@ import { forceCollide, forceManyBody } from "d3-force";
 import { useEffect, useMemo, useRef } from "react";
 import ForceGraph2D, { type ForceGraphMethods, type NodeObject } from "react-force-graph-2d";
 import {
-  angularTarget,
-  computeHalos,
+  buildSectorLayout,
+  computeRankedHalos,
   dominantSector,
   forceAngularTarget,
   forceRadialTarget,
-  HALO_RADIUS,
   initialPosition,
   R_MAX,
-  radialTarget,
-  sectorAngle,
+  R_MIN,
+  rankedRadius,
+  SECTOR_GAP,
+  sectorSpread,
   type GraphNode,
   type Halo,
+  type SectorLayout,
 } from "@/lib/physics";
-import { SECTOR_COLOR, SECTOR_SHORT, SECTORS, STAGE_LABELS, type Sector } from "@/lib/taxonomy";
+import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector } from "@/lib/taxonomy";
 import type { Deal, Match } from "@/lib/types";
 import type { GraphProps } from "./Graph";
 import { monoFont, uiFont } from "./canvasFont";
@@ -26,11 +28,20 @@ import { useSimHeat } from "./simHeat";
 const ACCENT = "#FF6A3D";
 const FOUNDER_ID = "__founder__";
 const TOP_N = 10;
+const NAMED_N = 5;
 const BASE_PX = 12;
 const EDGE_MS = 500;
 const EDGE_STAGGER_MS = 70;
 const HALO_EVERY = 4;
 const FIXTURE_SUFFIX = " (fixture)";
+// Rim labels hang off the ring horizontally, so the horizontal fit needs more room.
+const FIT_R_Y = R_MAX + 96;
+const FIT_R_X = R_MAX + 190;
+const TERRITORY_IN = R_MIN * 0.55;
+const TERRITORY_OUT = R_MAX + 38;
+const RIM_LABEL_R = R_MAX + 60;
+const RIM_LABEL_MIN = 3;
+const FLAT_RANGE = 15;
 
 type Props = GraphProps & { width: number; height: number; reducedMotion: boolean; padLeft: number; idle: boolean };
 
@@ -40,10 +51,8 @@ type Label = {
   n: GraphNode;
   name: string;
   score: string;
-  sector: string;
   nameW: number;
   scoreW: number;
-  sectorW: number;
   rect: Rect;
   ax: number;
   ay: number;
@@ -102,10 +111,26 @@ function glowSprite(color: string, alpha: number): HTMLCanvasElement {
   return c;
 }
 
+// Territory fills live in graph space (the canvas transform applies), so one gradient per
+// (sector, alpha step) serves every frame.
+const territoryCache = new Map<string, CanvasGradient>();
+function territoryFill(ctx: CanvasRenderingContext2D, sector: Sector, alpha: number): CanvasGradient {
+  const a = Math.round(alpha * 200) / 200;
+  const key = `${sector}|${a}`;
+  let g = territoryCache.get(key);
+  if (g) return g;
+  const color = SECTOR_COLOR[sector];
+  g = ctx.createRadialGradient(0, 0, TERRITORY_IN, 0, 0, TERRITORY_OUT);
+  g.addColorStop(0, withAlpha(color, 0));
+  g.addColorStop(0.35, withAlpha(color, a));
+  g.addColorStop(1, withAlpha(color, a * 0.3));
+  territoryCache.set(key, g);
+  return g;
+}
+
 // Widths are measured once at BASE_PX and scaled; canvas text width is linear in font size.
 const nameFont = () => `600 ${BASE_PX}px ${uiFont()}`;
 const scoreFont = () => `500 ${BASE_PX}px ${monoFont()}`;
-const sectorFont = () => `500 ${BASE_PX}px ${uiFont()}`;
 const widthCache = new Map<string, number>();
 function textWidth(ctx: CanvasRenderingContext2D, font: string, text: string): number {
   const key = `${font}|${text}`;
@@ -123,13 +148,18 @@ function overlaps(a: Rect, b: Rect, pad: number): boolean {
 }
 
 // Only targets change on a score update; d3 keeps positions and drifts them (spec 5.5).
+// A flat score band (nothing heard yet) keeps everyone on the outer ring.
 function applyMatches(byId: Map<string, GraphNode>, matches: Match[], snap: boolean) {
+  if (!matches.length) return;
+  const hi = matches[0].score;
+  const lo = matches[matches.length - 1].score;
+  const flat = hi - lo < FLAT_RANGE;
   matches.forEach((m, i) => {
     const n = byId.get(m.investorId);
     if (!n) return;
     n.score = m.score;
-    n.rank = i;
-    n.targetR = radialTarget(m.score);
+    n.rank = flat ? Infinity : i;
+    n.targetR = rankedRadius(m.score, i, matches.length, lo, hi, flat);
     if (snap) {
       n.x = Math.cos(n.targetA) * n.targetR;
       n.y = Math.sin(n.targetA) * n.targetR;
@@ -156,14 +186,60 @@ function dealYear(d: Deal): string {
   return d.date ? d.date.slice(0, 4) : "";
 }
 
-export default function GraphCanvas({ investors, matches, selectedId, onSelect, center, width, height, reducedMotion, padLeft, idle }: Props) {
+function buildNodes(investors: GraphProps["investors"], centerLabel: string): { nodes: GraphNode[]; layout: SectorLayout } {
+  const founder: GraphNode = {
+    id: FOUNDER_ID,
+    kind: "founder",
+    name: centerLabel,
+    sector: "other",
+    score: 100,
+    rank: -1,
+    targetR: 0,
+    targetA: 0,
+    fx: 0,
+    fy: 0,
+    x: 0,
+    y: 0,
+  };
+  const counts = new Map<Sector, number>();
+  const members = new Map<Sector, { id: string; S: Partial<Record<Sector, number>> }[]>();
+  for (const inv of investors) {
+    const s = dominantSector(inv.revealed.S);
+    counts.set(s, (counts.get(s) ?? 0) + 1);
+    const list = members.get(s) ?? [];
+    list.push({ id: inv.id, S: inv.revealed.S });
+    members.set(s, list);
+  }
+  const layout = buildSectorLayout(counts);
+  const angles = new Map<string, number>();
+  for (const [s, list] of members) for (const [id, a] of sectorSpread(layout, s, list)) angles.set(id, a);
+  const list = investors.map<GraphNode>((inv, i) => {
+    const n: GraphNode = {
+      id: inv.id,
+      kind: "investor",
+      name: inv.name,
+      sector: dominantSector(inv.revealed.S),
+      score: 50,
+      rank: Infinity,
+      targetR: rankedRadius(50, i, investors.length, 45, 55, true),
+      targetA: angles.get(inv.id) ?? 0,
+    };
+    const p = initialPosition(n, 0.12);
+    n.x = p.x;
+    n.y = p.y;
+    return n;
+  });
+  return { nodes: [founder, ...list], layout };
+}
+
+export default function GraphCanvas({ investors, matches, selectedId, onSelect, center, emphasis, width, height, reducedMotion, padLeft, idle }: Props) {
   const fg = useRef<ForceGraphMethods<NodeObject<GraphNode>> | undefined>(undefined);
   const hovered = useRef<string | undefined>(undefined);
   const haloAlpha = useRef(new Map<Sector, number>());
+  const territoryAlpha = useRef(new Map<Sector, number>());
   const haloCache = useRef<{ frame: number; halos: Halo[] }>({ frame: 0, halos: [] });
   const selectedAt = useRef(0);
   const forcesReady = useRef(false);
-  const ringR = useRef(R_MAX);
   const satBuf = useRef<Satellite[]>([]);
   const labelBuf = useRef<Label[]>([]);
   const obstacles = useRef<Rect[]>([]);
@@ -173,52 +249,14 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
 
   // Nodes are created once per investor set and then mutated in place so d3 keeps
   // positions and velocities across score updates.
-  const nodes = useMemo<GraphNode[]>(() => {
-    const founder: GraphNode = {
-      id: FOUNDER_ID,
-      kind: "founder",
-      name: center?.label ?? "You",
-      sector: "other",
-      score: 100,
-      rank: -1,
-      targetR: 0,
-      targetA: 0,
-      fx: 0,
-      fy: 0,
-      x: 0,
-      y: 0,
-    };
-    const list = investors.map<GraphNode>((inv) => {
-      const n: GraphNode = {
-        id: inv.id,
-        kind: "investor",
-        name: inv.name,
-        sector: dominantSector(inv.revealed.S),
-        score: 50,
-        rank: Infinity,
-        targetR: radialTarget(50),
-        targetA: angularTarget(inv.revealed.S),
-      };
-      const p = initialPosition(n);
-      n.x = p.x;
-      n.y = p.y;
-      return n;
-    });
-    return [founder, ...list];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [investors]);
+  const built = useMemo(() => buildNodes(investors, center?.label ?? "You"), [investors]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { nodes, layout } = built;
 
   const graphData = useMemo(() => ({ nodes, links: [] }), [nodes]);
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const matchById = useMemo(() => new Map(matches.map((m) => [m.investorId, m])), [matches]);
   const topIds = useMemo(() => matches.slice(0, TOP_N).map((m) => m.investorId), [matches]);
-  const topSet = useMemo(() => new Set(topIds), [topIds]);
   const topNodes = useMemo(() => topIds.map((id) => byId.get(id)).filter((n): n is GraphNode => Boolean(n)), [topIds, byId]);
-  const presentSectors = useMemo(() => {
-    const present = new Set<Sector>();
-    for (const n of nodes) if (n.kind === "investor") present.add(n.sector);
-    return SECTORS.filter((s) => present.has(s));
-  }, [nodes]);
   const founder = nodes[0];
 
   useEffect(() => {
@@ -232,34 +270,27 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     forcesReady.current = true;
     g.d3Force("link", null);
     g.d3Force("center", null);
-    g.d3Force("charge", scaled(forceManyBody().strength(-9).distanceMax(90)));
-    g.d3Force("collide", forceCollide<NodeObject<GraphNode>>().radius((n) => (n.kind === "founder" ? 46 : n.rank < TOP_N ? 30 : 11)).strength(0.9));
-    g.d3Force("radial", scaled(forceRadialTarget()));
-    g.d3Force("angular", scaled(forceAngularTarget()));
+    g.d3Force("charge", scaled(forceManyBody().strength(-6).distanceMax(60)));
+    g.d3Force("collide", forceCollide<NodeObject<GraphNode>>().radius((n) => (n.kind === "founder" ? 52 : n.rank < TOP_N ? 26 : 10)).strength(0.9));
+    g.d3Force("radial", scaled(forceRadialTarget(0.1)));
+    g.d3Force("angular", scaled(forceAngularTarget(0.09)));
   });
-
-  const fitRadius = useMemo(() => {
-    const scores = matches.map((m) => m.score);
-    const lowest = scores.length ? Math.min(...scores) : 0;
-    return Math.max(HALO_RADIUS * 1.6, radialTarget(lowest));
-  }, [matches]);
 
   useEffect(() => {
     applyMatches(byId, matches, reducedMotion);
     reheat();
   }, [matches, byId, reducedMotion, reheat]);
 
-  // The cloud fills the canvas: zoom tracks the outermost investor, and the centre shifts
+  // The ring is a fixed size, so the zoom only moves when the pane does; the centre shifts
   // right when a panel covers the left edge.
   useEffect(() => {
     const g = fg.current;
     if (!g) return;
-    ringR.current = fitRadius + 44;
-    const k = Math.min(width - padLeft, height) / (2 * (fitRadius + 70));
+    const k = Math.min((width - padLeft) / (2 * FIT_R_X), height / (2 * FIT_R_Y));
     const ms = reducedMotion ? 0 : 600;
     g.zoom(k, ms);
     g.centerAt(-padLeft / (2 * k), 0, ms);
-  }, [width, height, fitRadius, padLeft, reducedMotion]);
+  }, [width, height, padLeft, reducedMotion]);
 
   useEffect(() => {
     selectedAt.current = performance.now();
@@ -298,26 +329,55 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     ctx.drawImage(glowSprite(color, alpha), x - r, y - r, r * 2, r * 2);
   };
 
-  const paintPre = (ctx: CanvasRenderingContext2D, scale: number) => {
-    // Sector ring: dim labels on the outer rim for every sector that has investors.
-    ctx.save();
-    ctx.font = `500 ${11 / scale}px ${UI}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const rr = ringR.current;
-    for (const s of presentSectors) {
-      const a = sectorAngle(s);
-      ctx.fillStyle = withAlpha(SECTOR_COLOR[s], 0.42);
-      ctx.fillText(SECTOR_SHORT[s].toUpperCase(), Math.cos(a) * rr, Math.sin(a) * rr);
+  // Sector territories: a soft wedge per sector, brighter for sectors the pitch mentions,
+  // named once on the rim. These carry the sector names so node labels do not have to.
+  const paintTerritories = (ctx: CanvasRenderingContext2D, scale: number) => {
+    const inv = 1 / scale;
+    for (const [s, slot] of layout) {
+      const target = emphasis?.[s] ?? 0;
+      const cur = territoryAlpha.current.get(s) ?? 0;
+      const next = reducedMotion ? target : cur + (target - cur) * 0.06;
+      territoryAlpha.current.set(s, next);
+      const a0 = slot.angle - slot.half + SECTOR_GAP;
+      const a1 = slot.angle + slot.half - SECTOR_GAP;
+      if (a1 - a0 < 0.03) continue;
+      const base = idle ? 0.045 : 0.06;
+      const alpha = base + 0.16 * next;
+      ctx.fillStyle = territoryFill(ctx, s, alpha);
+      ctx.beginPath();
+      ctx.arc(0, 0, TERRITORY_OUT, a0, a1);
+      ctx.arc(0, 0, TERRITORY_IN, a1, a0, true);
+      ctx.closePath();
+      ctx.fill();
+
+      if (slot.count < RIM_LABEL_MIN) continue;
+      const color = SECTOR_COLOR[s];
+      const name = SECTOR_SHORT[s].toUpperCase();
+      const count = String(slot.count);
+      const namePx = 13 * inv;
+      const countPx = 11 * inv;
+      const nameW = textWidth(ctx, nameFont(), name) * (13 / BASE_PX) * inv;
+      const countW = textWidth(ctx, scoreFont(), count) * (11 / BASE_PX) * inv;
+      const gap = 6 * inv;
+      const total = nameW + gap + countW;
+      const cx = Math.cos(slot.angle);
+      const lx = cx * RIM_LABEL_R;
+      const ly = Math.sin(slot.angle) * RIM_LABEL_R;
+      const x0 = cx > 0.3 ? lx : cx < -0.3 ? lx - total : lx - total / 2;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.font = `600 ${namePx}px ${UI}`;
+      ctx.fillStyle = withAlpha(color, (idle ? 0.5 : 0.55) + 0.45 * next);
+      ctx.fillText(name, x0, ly);
+      ctx.font = `500 ${countPx}px ${MONO}`;
+      ctx.fillStyle = `rgb(233 236 244 / ${0.3 + 0.3 * next})`;
+      ctx.fillText(count, x0 + nameW + gap, ly);
     }
-    ctx.strokeStyle = "rgb(255 255 255 / 0.045)";
-    ctx.lineWidth = 1 / scale;
-    ctx.beginPath();
-    ctx.arc(0, 0, HALO_RADIUS, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(0, 0, rr - 22, 0, Math.PI * 2);
-    ctx.stroke();
+  };
+
+  const paintPre = (ctx: CanvasRenderingContext2D, scale: number) => {
+    ctx.save();
+    paintTerritories(ctx, scale);
     ctx.restore();
 
     if (idle) return;
@@ -325,7 +385,7 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     // Halos (membership recomputed every few frames; alpha eased every frame).
     const hc = haloCache.current;
     hc.frame += 1;
-    if (hc.frame % HALO_EVERY === 1) hc.halos = computeHalos(nodes);
+    if (hc.frame % HALO_EVERY === 1) hc.halos = computeRankedHalos(nodes);
     const halos = hc.halos;
     for (const h of halos) {
       const cur = haloAlpha.current.get(h.sector) ?? 0;
@@ -338,26 +398,26 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       const a = haloAlpha.current.get(h.sector) ?? 0;
       if (a <= 0) continue;
       const color = SECTOR_COLOR[h.sector];
-      drawGlow(ctx, h.cx, h.cy, h.r, color, 0.18 * a);
-      ctx.strokeStyle = withAlpha(color, 0.35 * a);
+      drawGlow(ctx, h.cx, h.cy, h.r * 1.15, color, 0.22 * a);
+      ctx.strokeStyle = withAlpha(color, 0.4 * a);
       ctx.lineWidth = 1 / scale;
       ctx.setLineDash([4 / scale, 6 / scale]);
       ctx.beginPath();
       ctx.arc(h.cx, h.cy, h.r, 0, Math.PI * 2);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.font = `600 ${12 / scale}px ${UI}`;
+      ctx.font = `600 ${13 / scale}px ${UI}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
       ctx.fillStyle = withAlpha(color, 0.95 * a);
-      ctx.fillText(`${SECTOR_SHORT[h.sector]} · ${h.count} investors`, h.cx, h.cy - h.r - 6 / scale);
+      ctx.fillText(`${SECTOR_SHORT[h.sector]} · ${h.count} investors`, h.cx, h.cy - h.r - 8 / scale);
     }
 
-    // Connectors to the founder for the top 10.
+    // Connectors to the founder for the top 10, fading with rank.
     for (const n of topNodes) {
       if (n.x === undefined || n.y === undefined) continue;
       const sel = n.id === selectedId;
-      const alpha = 0.08 + 0.45 * (n.score / 100);
+      const alpha = sel ? 0.9 : n.rank < NAMED_N ? 0.42 - n.rank * 0.05 : 0.12;
       ctx.strokeStyle = withAlpha(sel ? ACCENT : SECTOR_COLOR[n.sector], alpha);
       ctx.lineWidth = (sel ? 1.6 : 0.9) / scale;
       ctx.beginPath();
@@ -412,12 +472,13 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     const x = node.x ?? 0;
     const y = node.y ?? 0;
     if (node.kind === "founder") {
-      drawGlow(ctx, x, y, 70, "#FFE6C8", 0.5);
+      drawGlow(ctx, x, y, 74, "#FFE6C8", 0.5);
       ctx.fillStyle = "#FFF6EA";
       ctx.beginPath();
       ctx.arc(x, y, 9, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = `600 ${12 / scale}px ${UI}`;
+      if (idle) return;
+      ctx.font = `600 ${13 / scale}px ${UI}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "rgb(255 246 234 / 0.85)";
@@ -428,9 +489,10 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     const top = !idle && node.rank < TOP_N;
     const selected = node.id === selectedId;
     const hover = node.id === hovered.current;
-    const core = top ? 4.6 : 2.6;
-    drawGlow(ctx, x, y, top ? 20 : 8, color, top ? 0.55 : 0.28);
-    ctx.fillStyle = top || hover ? color : withAlpha(color, idle ? 0.6 : 0.78);
+    const dimmed = selectedId !== undefined && !selected && !top;
+    const core = top ? 4.8 : 2.8;
+    drawGlow(ctx, x, y, top ? 22 : 9, color, top ? 0.6 : dimmed ? 0.14 : 0.3);
+    ctx.fillStyle = top || hover ? color : withAlpha(color, idle ? 0.62 : dimmed ? 0.45 : 0.8);
     ctx.beginPath();
     ctx.arc(x, y, core, 0, Math.PI * 2);
     ctx.fill();
@@ -449,21 +511,20 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     }
   };
 
-  // Greedy label placement: selected first, then by rank; 8 directions on three rings. Each
-  // label tries name + score + sector, then name + score, then a compact "#rank" badge, so
-  // every top-10 node keeps a mark (spec 5.5). Selected always shows the full label.
+  // Greedy label placement for the named few: selected first, then the top NAMED_N;
+  // 8 directions on three rings. Name + score, or a compact "#rank" badge when nothing fits.
   const placeLabels = (ctx: CanvasRenderingContext2D, scale: number): Label[] => {
     const labels = labelBuf.current;
     labels.length = 0;
     const obs = obstacles.current;
     obs.length = 0;
     const inv = 1 / scale;
-    const lineH = 16 * inv;
-    const padX = 6 * inv;
-    const gap = 6 * inv;
+    const lineH = 18 * inv;
+    const padX = 7 * inv;
+    const gap = 7 * inv;
     const dotR = 7 * inv;
 
-    const founderW = textWidth(ctx, nameFont(), founder.name) * inv;
+    const founderW = textWidth(ctx, nameFont(), founder.name) * (13 / BASE_PX) * inv;
     obs.push({ x: -Math.max(founderW / 2, 12) - 4 * inv, y: -12 * inv, w: Math.max(founderW, 24) + 8 * inv, h: 12 * inv + 16 * inv + 6 + lineH });
     for (const n of topNodes) {
       if (n.x === undefined || n.y === undefined) continue;
@@ -477,8 +538,8 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     }
     for (const h of haloCache.current.halos) {
       if ((haloAlpha.current.get(h.sector) ?? 0) <= 0) continue;
-      const w = textWidth(ctx, nameFont(), `${SECTOR_SHORT[h.sector]} · ${h.count} investors`) * inv;
-      obs.push({ x: h.cx - w / 2, y: h.cy - h.r - 6 * inv - lineH, w, h: lineH });
+      const w = textWidth(ctx, nameFont(), `${SECTOR_SHORT[h.sector]} · ${h.count} investors`) * (13 / BASE_PX) * inv;
+      obs.push({ x: h.cx - w / 2, y: h.cy - h.r - 8 * inv - lineH, w, h: lineH });
     }
 
     const tryPlace = (n: GraphNode, w: number, h: number): { rect: Rect; ax: number; ay: number; leader: boolean } | null => {
@@ -506,20 +567,19 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       return null;
     };
 
-    const order = selectedId && topSet.has(selectedId) ? [byId.get(selectedId)!, ...topNodes.filter((n) => n.id !== selectedId)] : topNodes;
+    const named = topNodes.slice(0, NAMED_N);
+    const sel = selectedId ? byId.get(selectedId) : undefined;
+    const order = sel && sel.kind === "investor" ? [sel, ...named.filter((n) => n.id !== sel.id)] : named;
     for (const n of order) {
       if (n.x === undefined || n.y === undefined) continue;
       const selected = n.id === selectedId;
       const name = displayName(n.name);
       const score = String(Math.round(n.score));
-      const sector = SECTOR_SHORT[n.sector];
-      const nameW = textWidth(ctx, nameFont(), name) * inv;
+      const nameW = textWidth(ctx, nameFont(), name) * (13 / BASE_PX) * inv;
       const scoreW = textWidth(ctx, scoreFont(), score) * inv;
-      const sectorW = textWidth(ctx, sectorFont(), sector) * (11 / BASE_PX) * inv;
       const h = lineH;
-      const fullW = nameW + gap + scoreW + gap + sectorW + padX * 2;
-      const shortW = nameW + gap + scoreW + padX * 2;
-      const base = { n, name, score, sector, nameW, scoreW, sectorW, compact: false };
+      const fullW = nameW + gap + scoreW + padX * 2;
+      const base = { n, name, score, nameW, scoreW, compact: false };
       let placed: Label | null = null;
       const full = tryPlace(n, fullW, h);
       if (full) placed = { ...base, ...full };
@@ -527,15 +587,11 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
         const ax = n.x + RINGS[0] * inv;
         placed = { ...base, rect: { x: ax, y: n.y - h / 2, w: fullW, h }, ax, ay: n.y, leader: false };
       } else {
-        const short = tryPlace(n, shortW, h);
-        if (short) placed = { ...base, sector: "", sectorW: 0, ...short };
-        else {
-          const badge = `#${n.rank + 1}`;
-          const badgeW = textWidth(ctx, scoreFont(), badge) * (10 / BASE_PX) * inv + padX * 2;
-          const badgeH = 13 * inv;
-          const spot = tryPlace(n, badgeW, badgeH) ?? { rect: { x: n.x + dotR + 2 * inv, y: n.y - badgeH / 2, w: badgeW, h: badgeH }, ax: n.x, ay: n.y, leader: false };
-          placed = { ...base, score: badge, sector: "", sectorW: 0, compact: true, ...spot };
-        }
+        const badge = `#${n.rank + 1}`;
+        const badgeW = textWidth(ctx, scoreFont(), badge) * (10 / BASE_PX) * inv + padX * 2;
+        const badgeH = 13 * inv;
+        const spot = tryPlace(n, badgeW, badgeH) ?? { rect: { x: n.x + dotR + 2 * inv, y: n.y - badgeH / 2, w: badgeW, h: badgeH }, ax: n.x, ay: n.y, leader: false };
+        placed = { ...base, score: badge, compact: true, ...spot };
       }
       labels.push(placed);
       obs.push(placed.rect);
@@ -545,14 +601,14 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
 
   const paintPost = (ctx: CanvasRenderingContext2D, scale: number) => {
     const inv = 1 / scale;
-    const fontPx = 12 * inv;
-    const lineH = 16 * inv;
-    const padX = 6 * inv;
-    const gap = 6 * inv;
+    const fontPx = 13 * inv;
+    const lineH = 18 * inv;
+    const padX = 7 * inv;
+    const gap = 7 * inv;
 
     if (!idle) {
       const labels = placeLabels(ctx, scale);
-      const dim = selectedId ? 0.22 : 1;
+      const dim = selectedId ? 0.3 : 1;
       ctx.textBaseline = "middle";
       ctx.textAlign = "left";
       for (const l of labels) {
@@ -579,7 +635,7 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
           ctx.fillText(l.score, l.rect.x + padX, cy);
           continue;
         }
-        pill(ctx, l.rect.x, l.rect.y, l.rect.w, l.rect.h, 0.82 * a);
+        pill(ctx, l.rect.x, l.rect.y, l.rect.w, l.rect.h, 0.84 * a);
         if (selected) {
           ctx.strokeStyle = withAlpha(ACCENT, 0.7);
           ctx.lineWidth = 1 * inv;
@@ -588,25 +644,20 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
           ctx.stroke();
         }
         ctx.font = `600 ${fontPx}px ${UI}`;
-        ctx.fillStyle = selected ? ACCENT : rank < 3 ? `rgb(255 255 255 / ${0.96 * a})` : `rgb(255 255 255 / ${0.8 * a})`;
+        ctx.fillStyle = selected ? ACCENT : `rgb(255 255 255 / ${(rank < 3 ? 0.96 : 0.82) * a})`;
         ctx.fillText(l.name, l.rect.x + padX, cy);
-        ctx.font = `500 ${fontPx}px ${MONO}`;
-        ctx.fillStyle = selected ? ACCENT : rank < 3 ? withAlpha(ACCENT, a) : `rgb(255 255 255 / ${0.55 * a})`;
+        ctx.font = `500 ${12 * inv}px ${MONO}`;
+        ctx.fillStyle = selected || rank < 3 ? withAlpha(ACCENT, a) : `rgb(255 255 255 / ${0.55 * a})`;
         ctx.fillText(l.score, l.rect.x + padX + l.nameW + gap, cy);
-        if (l.sector) {
-          ctx.font = `500 ${11 * inv}px ${UI}`;
-          ctx.fillStyle = withAlpha(color, 0.9 * a);
-          ctx.fillText(l.sector, l.rect.x + padX + l.nameW + gap + l.scoreW + gap, cy);
-        }
       }
     }
 
     // Hover label for anything without a full placed label.
     const hid = hovered.current;
-    if (hid && (idle || !topSet.has(hid) || !labelBuf.current.some((l) => l.n.id === hid && !l.compact))) {
+    if (hid && (idle || !labelBuf.current.some((l) => l.n.id === hid && !l.compact))) {
       const n = byId.get(hid);
       if (n && n.x !== undefined && n.y !== undefined) {
-        const text = `${displayName(n.name)}  ·  ${SECTOR_SHORT[n.sector]}  ·  ${Math.round(n.score)}`;
+        const text = idle ? `${displayName(n.name)}  ·  ${SECTOR_SHORT[n.sector]}` : `${displayName(n.name)}  ·  ${SECTOR_SHORT[n.sector]}  ·  ${Math.round(n.score)}`;
         ctx.font = `500 ${fontPx}px ${UI}`;
         const w = ctx.measureText(text).width;
         pill(ctx, n.x + 4 * inv, n.y - lineH / 2, w + 10 * inv, lineH, 0.85);

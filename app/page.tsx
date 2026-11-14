@@ -96,20 +96,19 @@ export default function FounderPage() {
             selectedId={selectedInvestorId}
             onSelect={setSelectedInvestorId}
             center={{ label: profile.company ?? "You" }}
+            emphasis={profile.sectors}
             padLeft={selected ? 392 : 0}
             idle={!replaying && micState !== "listening" && tokens.length === 0}
+            onReplay={() => {
+              setSelectedInvestorId(undefined);
+              replay();
+            }}
+            onMic={toggleMic}
+            micState={micState}
           />
           {selected && (
             <ProfilePanel investor={selected} match={selectedMatch} onClose={() => setSelectedInvestorId(undefined)} />
           )}
-          <div className="graph-overlay">
-            <span>
-              <b>{INVESTORS.length}</b> investors active in London
-            </span>
-            <span>
-              distance = fit · colour = sector · <span className="k">accent</span> = about you
-            </span>
-          </div>
         </section>
         <aside className="rail">
           <TranscriptRail tokens={tokens} live={replaying || micState === "listening"} triggers={triggers} />

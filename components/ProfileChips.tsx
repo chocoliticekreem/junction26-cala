@@ -66,11 +66,11 @@ export default function ProfileChips({ profile, triggers = {} }: ProfileChipsPro
   return (
     <section className="rail-card" aria-label="What we heard" data-testid="profile-chips">
       <header className="rail-head">
-        <span>What we heard</span>
-        <span className="muted font-mono">{chips.length} signals</span>
+        <span>Heard</span>
+        <span className="muted font-mono">{chips.length}</span>
       </header>
       <div className="chips">
-        {chips.length === 0 && <span className="muted">Nothing yet.</span>}
+        {chips.length === 0 && <span className="muted">Nothing yet</span>}
         {chips.map((c) => (
           <span
             key={c.key}
@@ -83,7 +83,6 @@ export default function ProfileChips({ profile, triggers = {} }: ProfileChipsPro
           >
             <span className="chip-label">{c.label}</span>
             <span className="chip-value">{c.value}</span>
-            {c.trigger && <span className="chip-trigger font-mono">“{c.trigger}”</span>}
           </span>
         ))}
       </div>
