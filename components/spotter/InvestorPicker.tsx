@@ -4,9 +4,9 @@ import { useState } from "react";
 
 export type PickerOption = { id: string; name: string; kind?: string };
 
-type Props = { options: PickerOption[]; value: PickerOption | null; onChange: (o: PickerOption) => void; autoFocus?: boolean; loading?: boolean };
+type Props = { options: PickerOption[]; value: PickerOption | null; onChange: (o: PickerOption) => void; autoFocus?: boolean; loading?: boolean; placeholder?: string; id?: string };
 
-export default function InvestorPicker({ options, value, onChange, autoFocus, loading }: Props) {
+export default function InvestorPicker({ options, value, onChange, autoFocus, loading, placeholder = "Search funds…", id }: Props) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -21,9 +21,10 @@ export default function InvestorPicker({ options, value, onChange, autoFocus, lo
   return (
     <div className="sp-picker">
       <input
+        id={id}
         data-testid="spotter-picker"
         value={open ? q : (value?.name ?? "")}
-        placeholder="Which investor are you?"
+        placeholder={placeholder}
         autoFocus={autoFocus}
         onFocus={() => {
           setOpen(true);

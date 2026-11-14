@@ -4,7 +4,8 @@ export type SpotterShare = { label: string; share: number };
 export type SpotterTaste = {
   sectors: SpotterShare[];
   stages: SpotterShare[];
-  chequeBand: string;
+  entryStage?: string;
+  chequeBand?: string;
   leadShare: number;
 };
 
@@ -15,7 +16,7 @@ export type SpotterCompany = {
   name: string;
   sector: string;
   city?: string;
-  path: string;
+  rounds: string[];
   latestRound: { stage: string; date?: string; leadName?: string };
   investors: string[];
 };
@@ -28,9 +29,9 @@ export type SpotterPrecedent = { id: string; name: string; outcome: "unicorn" | 
 export type SpotterPick = {
   company: SpotterCompany;
   scores: SpotterScores;
-  line: string;
   precedents: SpotterPrecedent[];
   sampleSize: number;
+  runs: number;
   lowConfidence: boolean;
   actions: { sharedCoInvestors: string[] };
 };
@@ -40,6 +41,7 @@ export type SpotterResponse = {
   picks: SpotterPick[];
   asOf: string;
   basis: string;
+  considered: { candidates: number; simulated: number; roundsInCohort: number };
 };
 
 export type SpotterRequest = { investorId: string } | { investorName: string };
