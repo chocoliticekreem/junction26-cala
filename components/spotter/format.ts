@@ -1,5 +1,5 @@
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, isSector, isStage } from "@/lib/taxonomy";
-import type { SpotterInvestor, SpotterPick } from "./types";
+import type { SpotterEvent, SpotterInvestor, SpotterPick } from "./types";
 
 export function sectorColor(sector: string): string {
   if (isSector(sector)) return SECTOR_COLOR[sector];
@@ -44,4 +44,17 @@ export function whyItFits(pick: SpotterPick, investor: SpotterInvestor): string 
   const co = pick.actions.sharedCoInvestors;
   if (co.length) parts.push(`${co.slice(0, 2).join(" and ")} co-invested with you before`);
   return parts.join(" · ");
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// "Nov 18" from an ISO date.
+export function shortDate(iso: string): string {
+  const [, m, d] = iso.split("-").map(Number);
+  return m >= 1 && m <= 12 && d ? `${MONTHS[m - 1]} ${d}` : iso;
+}
+
+// "At Slush · Nov 18": the event tag on a pick.
+export function eventTag(event: SpotterEvent): string {
+  return `At ${event.name.replace(/\s+\d{4}$/, "")} · ${shortDate(event.date)}`;
 }

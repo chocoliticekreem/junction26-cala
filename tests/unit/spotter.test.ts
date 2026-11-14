@@ -57,6 +57,17 @@ describe("candidates", () => {
     expect(runSpotter(cohort, { investorId: "inv:index" }).picks.some((p) => p.company.id === "c:idx_port")).toBe(false);
   });
 
+  it("restricts to the given companies when `only` is set, never padding the list", () => {
+    const idx = spotterIndex(cohort);
+    const t = tasteFromIndex(idx, "inv:index");
+    const all = spotterCandidates(idx, t);
+    const keep = new Set(all.slice(0, 2).map((c) => c.row.co.id));
+    const some = spotterCandidates(idx, t, (c) => keep.has(c.id));
+    expect(some.map((c) => c.row.co.id).sort()).toEqual([...keep].sort());
+    expect(runSpotter(cohort, { investorId: "inv:index", only: (c) => keep.has(c.id) }).picks).toHaveLength(2);
+    expect(runSpotter(cohort, { investorId: "inv:index", only: () => false }).picks).toHaveLength(0);
+  });
+
   it("does not leak anything dated after asOf into a backtest", () => {
     const asOf = "2017-01-01";
     const asOfMs = toMs(asOf)!;
@@ -155,6 +166,14 @@ describe("POST /api/spotter", () => {
   it("validates input", async () => {
     expect((await call({})).status).toBe(400);
     expect((await call({ investorName: "Index", asOf: "2016" })).status).toBe(400);
+    expect((await call({ investorName: "Index", at: "Slush 2026!" })).status).toBe(400);
+  });
+
+  it("with at=slush-2026 the mock returns only attendees, each tagged with the event", async () => {
+    process.env.E2E_MOCK = "1";
+    const a = await (await call({ investorName: "Seedcamp", at: "slush-2026" })).json();
+    expect(a.picks.length).toBeLessThan(5);
+    expect(a.picks.every((p: { event?: { name: string } }) => p.event?.name === "Slush 2026")).toBe(true);
   });
 
   it("returns a deterministic mock under E2E_MOCK=1", async () => {

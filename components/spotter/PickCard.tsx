@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Source } from "@/lib/types";
-import { pct, roundLabel, sectorColor, sectorLabel, whyItFits } from "./format";
+import { pct, roundLabel, sectorColor, sectorLabel, shortDate, whyItFits } from "./format";
 import type { SpotterInvestor, SpotterPick } from "./types";
 
 type Props = { pick: SpotterPick; investor: SpotterInvestor; rank: number; asOf: string; onClose: () => void };
@@ -119,9 +119,20 @@ export default function PickCard({ pick, investor, rank, asOf, onClose }: Props)
 
       <div className="sp-block">
         <div className="sp-actions">
-          <a className="sp-action" href={`/?company=${encodeURIComponent(c.name)}`} data-testid="spotter-company-file">
-            <b>Company file ↗</b>
-            <small>{c.investors.length ? `${c.investors.length} investors on record` : "open in the founder flow"}</small>
+          <a className={`sp-action ${pick.event ? "is-event" : ""}`} href={`/?company=${encodeURIComponent(c.name)}`} data-testid="spotter-company-file">
+            {pick.event ? (
+              <>
+                <b>Meet at {pick.event.name} ↗</b>
+                <small>
+                  {shortDate(pick.event.date)} · {pick.event.place.split(",")[0]}
+                </small>
+              </>
+            ) : (
+              <>
+                <b>Company file ↗</b>
+                <small>{c.investors.length ? `${c.investors.length} investors on record` : "open in the founder flow"}</small>
+              </>
+            )}
           </a>
           <button type="button" className={`sp-action ${sourcesOpen ? "is-on" : ""}`} onClick={() => setSourcesOpen((o) => !o)} aria-expanded={sourcesOpen} data-testid="spotter-sources">
             <b>Sources</b>

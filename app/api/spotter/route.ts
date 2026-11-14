@@ -2,12 +2,16 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { ROUTE_PREFIX, routeCacheGet, routeCacheSet } from "@/lib/routeCache";
 import { loadCohort, usingCohortFixture } from "@/lib/cohort";
+import { eventFor, type EventTag } from "@/lib/events";
 import { runSpotter, SpotterError, type SpotterResult } from "@/lib/sim/spotter";
 import type { Cohort } from "@/lib/sim/types";
 import type { Investor, Revealed } from "@/lib/types";
 
 const MAX_FIELD = 200;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+// `at` is the event file in data/events; today only Slush 2026 is loaded (lib/events.ts).
+const EVENTS = ["slush-2026"];
+const MOCK_EVENT = { name: "Slush 2026", date: "2026-11-18", place: "Messukeskus, Helsinki" };
 
 let revealedById: Map<string, Revealed> | undefined;
 
@@ -26,7 +30,7 @@ function revealedFor(cohort: Cohort, investorId: string): Revealed | undefined {
   return revealedById.get(jsonId);
 }
 
-function mock(name: string, asOf: string): SpotterResult & { mock: true } {
+function mock(name: string, asOf: string, at: string | undefined): SpotterResult & { mock: true } {
   return {
     investor: {
       id: "mock:investor",
@@ -40,8 +44,9 @@ function mock(name: string, asOf: string): SpotterResult & { mock: true } {
       stageDist: { seed: 0.7, "series-a": 0.3 },
       lowConfidence: true,
     },
-    picks: [1, 2, 3, 4, 5].map((rank) => ({
+    picks: (at ? [1, 2, 3, 4] : [1, 2, 3, 4, 5]).map((rank) => ({
       rank,
+      ...(at || rank % 2 === 0 ? { event: MOCK_EVENT } : {}),
       company: {
         id: `mock:co${rank}`,
         name: `Mock Company ${rank}`,
@@ -69,35 +74,49 @@ function mock(name: string, asOf: string): SpotterResult & { mock: true } {
   };
 }
 
+function tag(e: EventTag | undefined): SpotterResult["picks"][number]["event"] {
+  return e ? { name: e.name, date: e.date, place: e.place } : undefined;
+}
+
 export async function POST(req: Request) {
   let investorId = "";
   let investorName = "";
   let asOf: string | undefined;
+  let at: string | undefined;
   try {
-    const body = (await req.json()) as { investorId?: unknown; investorName?: unknown; asOf?: unknown };
+    const body = (await req.json()) as { investorId?: unknown; investorName?: unknown; asOf?: unknown; at?: unknown };
     investorId = typeof body.investorId === "string" ? body.investorId.trim() : "";
     investorName = typeof body.investorName === "string" ? body.investorName.trim() : "";
     asOf = typeof body.asOf === "string" && body.asOf.trim() ? body.asOf.trim() : undefined;
+    at = typeof body.at === "string" && body.at.trim() ? body.at.trim() : undefined;
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
   if (!investorId && !investorName) return Response.json({ error: "missing_investor" }, { status: 400 });
   if (investorId.length > MAX_FIELD || investorName.length > MAX_FIELD) return Response.json({ error: "field_too_long" }, { status: 400 });
   if (asOf && !ISO_DATE.test(asOf)) return Response.json({ error: "invalid_asOf" }, { status: 400 });
+  if (at && !EVENTS.includes(at)) return Response.json({ error: "invalid_at" }, { status: 400 });
 
-  if (process.env.E2E_MOCK === "1") return Response.json(mock(investorName || investorId, asOf ?? "2026-11-14"));
+  if (process.env.E2E_MOCK === "1") return Response.json(mock(investorName || investorId, asOf ?? "2026-11-14", at));
 
   const cohort = loadCohort();
   const fixture = usingCohortFixture();
 
   const t0 = performance.now();
-  const key = `${ROUTE_PREFIX}spotter:v2:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
+  const key = `${ROUTE_PREFIX}spotter:v3:${cohort.asOf}:${asOf ?? "-"}:${at ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
   const shared = await routeCacheGet(key);
   if (shared) return Response.json({ ...shared, cached: true, source: "valkey", latencyMs: Math.round(performance.now() - t0) });
 
   try {
-    const result = runSpotter(cohort, { investorId: investorId || undefined, investorName: investorName || undefined, asOf, revealedFor: (id) => revealedFor(cohort, id) });
-    const body = { ...result, ...(fixture ? { basis: "Synthetic fixture data, not Cala evidence" } : {}), fixture, cached: false };
+    const result = runSpotter(cohort, {
+      investorId: investorId || undefined,
+      investorName: investorName || undefined,
+      asOf,
+      revealedFor: (id) => revealedFor(cohort, id),
+      only: at ? (c) => !!eventFor(c) : undefined,
+    });
+    const picks = result.picks.map((p) => ({ ...p, event: tag(eventFor(p.company)) }));
+    const body = { ...result, picks, ...(fixture ? { basis: "Synthetic fixture data, not Cala evidence" } : {}), fixture, cached: false };
     routeCacheSet(key, body);
     return Response.json({ ...body, source: "computed", latencyMs: Math.round(performance.now() - t0) });
   } catch (err) {

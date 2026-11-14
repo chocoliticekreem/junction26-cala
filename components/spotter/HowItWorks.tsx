@@ -49,6 +49,7 @@ export default function HowItWorks({ data }: { data: SpotterResponse }) {
           <p className="font-mono">
             {considered.roundsInCohort} real rounds in Cala · as of {asOf} · evidence, not a forecast
           </p>
+          <p className="font-mono">&ldquo;At Slush&rdquo; = on Cala&rsquo;s Slush 2026 event: 2,989 companies, source slush.org via Cala</p>
         </div>
       )}
     </div>
