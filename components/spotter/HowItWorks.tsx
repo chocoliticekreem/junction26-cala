@@ -24,7 +24,7 @@ export default function HowItWorks({ data }: { data: SpotterResponse }) {
     };
   }, [open]);
 
-  const { investor, considered, asOf } = data;
+  const { investor, considered, asOf, events } = data;
   return (
     <div className="sp-how" ref={host} onClick={(e) => e.stopPropagation()}>
       <button type="button" className={`sp-how-btn ${open ? "is-on" : ""}`} onClick={() => setOpen((o) => !o)} aria-expanded={open} data-testid="spotter-how">
@@ -49,8 +49,11 @@ export default function HowItWorks({ data }: { data: SpotterResponse }) {
           <p className="font-mono" data-testid="spotter-basis">
             {considered.roundsInCohort} real rounds in Cala · as of {asOf} · evidence, not a forecast
           </p>
-          <p className="font-mono">&ldquo;Host&rdquo; = your lane grouped by sector, weighted by your share of rounds there; groups under 3 are dropped</p>
-          <p className="font-mono">&ldquo;At Slush&rdquo; = on Cala&rsquo;s Slush 2026 event: 2,989 companies, source slush.org via Cala</p>
+          <p className="font-mono">&ldquo;Host your own&rdquo; = your lane grouped by sector, weighted by your share of rounds there; groups under 3 are dropped</p>
+          <p className="font-mono" data-testid="spotter-events-source">
+            Events = Cala Event entities with an attendee list
+            {events.length > 0 && `: ${events.map((e) => `${e.name} (${e.attendees.toLocaleString("en-US")} companies, ${e.source.name})`).join("; ")}`}
+          </p>
         </div>
       )}
     </div>

@@ -54,7 +54,7 @@ export function shortDate(iso: string): string {
   return m >= 1 && m <= 12 && d ? `${MONTHS[m - 1]} ${d}` : iso;
 }
 
-// "At Slush · Nov 18": the event tag on a pick.
-export function eventTag(event: SpotterEvent): string {
-  return `At ${event.name.replace(/\s+\d{4}$/, "")} · ${shortDate(event.date)}`;
+// "Slush · Nov 18": the event tag on a pick or an invite; the year is in the date already.
+export function eventTag(event: Pick<SpotterEvent, "name" | "date">): string {
+  return `${event.name.replace(/\s+\d{4}$/, "")} · ${shortDate(event.date)}`;
 }

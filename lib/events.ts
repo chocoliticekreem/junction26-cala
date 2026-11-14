@@ -1,6 +1,6 @@
-// Server-only. Events from Cala with their attendee lists (data/events/*.json, written once from
-// the Cala Event entity's incoming PARTICIPATES_IN_EVENT edges). Today: Slush 2026.
-import { readFileSync } from "node:fs";
+// Server-only. Events from Cala with their attendee lists: one data/events/<id>.json per Cala Event
+// entity that has incoming PARTICIPATES_IN_EVENT edges. Whatever files exist are the events shown.
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 export type CalaEvent = {
@@ -14,29 +14,53 @@ export type CalaEvent = {
 
 export type EventTag = { id: string; name: string; date: string; place: string };
 
-let slush: { event: CalaEvent; ids: Set<string>; names: Set<string> } | null | undefined;
+export type EventInfo = EventTag & { source: CalaEvent["source"]; attendees: number };
 
-function loadSlush() {
-  if (slush !== undefined) return slush;
+type Loaded = { event: CalaEvent; ids: Set<string>; names: Set<string> };
+
+let loaded: Loaded[] | undefined;
+
+function load(): Loaded[] {
+  if (loaded) return loaded;
+  const dir = path.join(process.cwd(), "data", "events");
+  let files: string[] = [];
   try {
-    const event = JSON.parse(readFileSync(path.join(process.cwd(), "data", "events", "slush-2026.json"), "utf8")) as CalaEvent;
-    slush = {
-      event,
-      ids: new Set(event.attendees.map((a) => a.id)),
-      names: new Set(event.attendees.map((a) => a.name.trim().toLowerCase())),
-    };
+    files = readdirSync(dir).filter((f) => f.endsWith(".json"));
   } catch {
-    slush = null;
+    files = [];
   }
-  return slush;
+  loaded = files
+    .flatMap((f) => {
+      try {
+        const event = JSON.parse(readFileSync(path.join(dir, f), "utf8")) as CalaEvent;
+        if (!event?.id || !Array.isArray(event.attendees) || event.attendees.length === 0) return [];
+        return [{ event, ids: new Set(event.attendees.map((a) => a.id)), names: new Set(event.attendees.map((a) => a.name.trim().toLowerCase())) }];
+      } catch {
+        return [];
+      }
+    })
+    .sort((a, b) => a.event.date.localeCompare(b.event.date));
+  return loaded;
 }
 
-// The event a company attends, matched by Cala entity id, else by exact name (the attendee list can
+function tagOf(e: CalaEvent): EventTag {
+  return { id: e.id, name: e.name, date: e.date, place: e.place };
+}
+
+// Every event with an attendee list, soonest first.
+export function listEvents(): EventInfo[] {
+  return load().map(({ event }) => ({ ...tagOf(event), source: event.source, attendees: event.attendees.length }));
+}
+
+// The events a company attends, matched by Cala entity id, else by exact name (an attendee list can
 // hold a sibling entity of the company we hold).
+export function eventsFor(company: { id: string; name: string }): EventTag[] {
+  const name = company.name.trim().toLowerCase();
+  return load()
+    .filter((l) => l.ids.has(company.id) || l.names.has(name))
+    .map((l) => tagOf(l.event));
+}
+
 export function eventFor(company: { id: string; name: string }): EventTag | undefined {
-  const s = loadSlush();
-  if (!s) return undefined;
-  if (!s.ids.has(company.id) && !s.names.has(company.name.trim().toLowerCase())) return undefined;
-  const { id, name, date, place } = s.event;
-  return { id, name, date, place };
+  return eventsFor(company)[0];
 }

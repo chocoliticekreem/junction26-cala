@@ -166,14 +166,17 @@ describe("POST /api/spotter", () => {
   it("validates input", async () => {
     expect((await call({})).status).toBe(400);
     expect((await call({ investorName: "Index", asOf: "2016" })).status).toBe(400);
-    expect((await call({ investorName: "Index", at: "Slush 2026!" })).status).toBe(400);
+    expect((await call({ investorName: "Index", event: "no-such-event" })).status).toBe(400);
   });
 
-  it("with at=slush-2026 the mock returns only attendees, each tagged with the event", async () => {
+  it("scoped to an event id the mock returns only attendees, each tagged with that event", async () => {
     process.env.E2E_MOCK = "1";
-    const a = await (await call({ investorName: "Seedcamp", at: "slush-2026" })).json();
+    const all = await (await call({ investorName: "Seedcamp" })).json();
+    expect(all.events).toHaveLength(1);
+    expect(all.events[0]).toMatchObject({ attending: 2, attendees: 4 });
+    const a = await (await call({ investorName: "Seedcamp", event: all.events[0].id })).json();
     expect(a.picks.length).toBeLessThan(5);
-    expect(a.picks.every((p: { event?: { name: string } }) => p.event?.name === "Slush 2026")).toBe(true);
+    expect(a.picks.every((p: { event?: { name: string } }) => p.event?.name === all.events[0].name)).toBe(true);
   });
 
   it("returns a deterministic mock under E2E_MOCK=1", async () => {

@@ -30,22 +30,23 @@ describe("hostEvents", () => {
     for (const [sector, ids] of bySector) if (ids.length < MIN_GROUP) expect(events.some((e) => e.sector === sector)).toBe(false);
   });
 
-  it("counts attendees with the given predicate and tags each invite", () => {
+  it("counts attendees with the given event lookup and tags each invite with its events", () => {
     const idx = spotterIndex(cohort);
     const lane = spotterCandidates(idx, tasteFromIndex(idx, "inv:index")).map((c) => c.row.co.id);
     const attending = new Set(lane.filter((_, i) => i % 2 === 0));
-    const events = hostEvents(cohort, { investorId: "inv:index", attending: (c) => attending.has(c.id) });
+    const ev = { id: "ev", name: "Some Summit 2026", date: "2026-11-18" };
+    const events = hostEvents(cohort, { investorId: "inv:index", eventsOf: (c) => (attending.has(c.id) ? [ev] : []) });
     for (const e of events) {
       const full = lane.filter((id) => idx.rows.get(id)!.co.sector === e.sector);
-      expect(e.atSlush).toBe(full.filter((id) => attending.has(id)).length);
-      for (const c of e.companies) expect(c.atSlush).toBe(attending.has(c.id));
+      expect(e.attending).toBe(full.filter((id) => attending.has(id)).length);
+      for (const c of e.companies) expect(c.events).toEqual(attending.has(c.id) ? [ev] : []);
     }
-    expect(hostEvents(cohort, { investorId: "inv:index" }).every((e) => e.atSlush === 0)).toBe(true);
+    expect(hostEvents(cohort, { investorId: "inv:index" }).every((e) => e.attending === 0)).toBe(true);
   });
 
   it("names the event from the sector, deterministically", () => {
-    expect(hostEventName("fintech")).toBe("Fintech founders breakfast · Slush week");
-    expect(hostEventName("applied AI/vertical SaaS")).toBe("Applied AI founders breakfast · Slush week");
+    expect(hostEventName("fintech")).toBe("Fintech founders breakfast");
+    expect(hostEventName("applied AI/vertical SaaS")).toBe("Applied AI founders breakfast");
   });
 
   it("rejects an unknown investor", () => {

@@ -39,19 +39,23 @@ export type SpotterPick = {
   actions: { sharedCoInvestors: string[] };
 };
 
-export type SpotterInvite = { id: string; name: string; stage: string; year?: string; atSlush: boolean };
+export type SpotterInvite = { id: string; name: string; stage: string; year?: string; events: { id: string; name: string; date: string }[] };
 
 // One event the fund could host: a sector lane from its taste, with the founders to invite.
-export type SpotterHost = { sector: string; name: string; count: number; atSlush: number; companies: SpotterInvite[] };
+export type SpotterHost = { sector: string; name: string; count: number; attending: number; companies: SpotterInvite[] };
+
+// A Cala event with an attendee list, and how many of the fund's fit companies attend.
+export type SpotterEventRow = { id: string; name: string; date: string; place: string; source: { name: string; url: string }; attendees: number; attending: number };
 
 export type SpotterResponse = {
   investor: SpotterInvestor;
   picks: SpotterPick[];
   host: SpotterHost[];
+  events: SpotterEventRow[];
   asOf: string;
   basis: string;
   considered: { candidates: number; simulated: number; roundsInCohort: number };
 };
 
-// `at` restricts the picks to companies attending that Cala event (today: "slush-2026").
-export type SpotterRequest = ({ investorId: string } | { investorName: string }) & { at?: string };
+// `event` restricts the picks to companies attending that Cala event (an id from the response's events).
+export type SpotterRequest = ({ investorId: string } | { investorName: string }) & { event?: string };

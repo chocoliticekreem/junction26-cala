@@ -103,6 +103,7 @@ export function adaptSpotter(r: SpotterResult): SpotterResponse {
     },
     picks: dedupe(r.picks).map(adaptPick),
     host: (r.host ?? []).map(adaptHost),
+    events: (r.events ?? []).map((e) => ({ id: e.id, name: e.name, date: e.date, place: e.place, source: { name: e.source.name, url: e.source.url }, attendees: e.attendees, attending: e.attending })),
     asOf: r.asOf,
     basis: r.basis,
     considered: r.considered,
