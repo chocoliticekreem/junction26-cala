@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("founder view renders the graph and ten matches", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/match");
   const canvas = page.locator('[data-testid="graph"] canvas').first();
   await expect(canvas).toBeVisible();
   const box = await canvas.boundingBox();
@@ -17,7 +17,7 @@ test("founder view renders the graph and ten matches", async ({ page }) => {
 
   await page.getByTestId("match-row").first().locator("button").click();
   await expect(page.getByTestId("profile-panel")).toBeVisible();
-  await expect(page.getByTestId("door-panel")).toBeVisible();
+  await expect(page.getByTestId("intro-email")).toBeVisible();
   await page.waitForTimeout(1500);
 
   await page.screenshot({ path: "tests/screenshots/founder-selected.png" });

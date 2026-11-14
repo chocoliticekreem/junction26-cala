@@ -3,7 +3,7 @@ import { stageIndex, type Sector } from "@/lib/taxonomy";
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-const ORDER: DoorKind[] = ["programme", "office_hours", "scout", "warm_intro", "room"];
+const ORDER: DoorKind[] = ["programme", "office_hours", "scout"];
 const MAX_PROGRAMMES = 2;
 
 const doorKind = (p: Programme): DoorKind =>
@@ -61,9 +61,16 @@ export function programmesFor(
   return [...own, ...open].slice(0, MAX_PROGRAMMES);
 }
 
-// Cheapest route in (spec F8): programme or open application, office hours, scout, warm intro,
-// then a room. There is deliberately no cold-email door.
-// The investor's own doors come before general open applications of the same kind.
+// A door is only worth showing when a founder can actually walk through it: the fund's own
+// programme, an open application, office hours or a scout network, each with a URL. Rooms are
+// cut from the product; partner-to-partner "warm intros" inside the same fund mean nothing.
+export function publicDoors(doors: Door[]): Door[] {
+  return doors.filter((d) => ORDER.includes(d.kind) && !!d.url);
+}
+
+// Cheapest real route in: programme or open application, office hours, then scout. The
+// investor's own doors come before general open applications of the same kind. There is
+// deliberately no cold-email door.
 export function doorsFor(inv: Investor, programmes: Programme[], founder?: FounderProfile): Door[] {
   const picked = programmesFor(inv, programmes, founder).map(({ programme: p, own }) => ({
     own,
@@ -73,14 +80,11 @@ export function doorsFor(inv: Investor, programmes: Programme[], founder?: Found
       url: p.url,
     } as Door,
   }));
-  const existing = inv.doors
-    .filter((d) => !picked.some((p) => p.door.url && p.door.url === d.url))
+  const existing = publicDoors(inv.doors)
+    .filter((d) => !picked.some((p) => p.door.url === d.url))
     .map((door) => ({ own: true, door }));
-  const all = [...picked, ...existing];
-  if (!all.some((x) => x.door.kind === "room")) {
-    all.push({ own: true, door: { kind: "room", label: "Ask to be considered for a curated room" } });
-  }
-  return all
+  return [...picked, ...existing]
+    .filter((x) => !!x.door.url)
     .map((x, i) => ({ ...x, i }))
     .sort(
       (a, b) =>

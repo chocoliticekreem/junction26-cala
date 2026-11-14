@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import FixtureBanner from "./FixtureBanner";
 import RoleSwitcher from "./RoleSwitcher";
@@ -17,20 +15,39 @@ export type TopBarProps = {
   showFixtureBanner: boolean;
 };
 
+// Comet on an orbit: the Scalaxy mark, a nod to Cala Comets.
+function CometMark() {
+  return (
+    <svg className="brand-mark" viewBox="0 0 28 28" aria-hidden>
+      <defs>
+        <linearGradient id="comet-tail" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="var(--accent)" stopOpacity="0" />
+          <stop offset="1" stopColor="var(--accent)" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="14" cy="15" rx="11.5" ry="4.5" fill="none" stroke="currentColor" strokeOpacity="0.35" strokeWidth="1" transform="rotate(-24 14 15)" />
+      <path d="M4 21 Q13 16 20 8" stroke="url(#comet-tail)" strokeWidth="2.6" strokeLinecap="round" fill="none" />
+      <circle cx="20.5" cy="7.5" r="3" fill="var(--founder)" />
+    </svg>
+  );
+}
+
 export default function TopBar({ inbox, subtitle, tools, onReplay, replaying, micState = "idle", onMic, showFixtureBanner }: TopBarProps) {
-  const pathname = usePathname();
   return (
     <header className="topbar">
       <div className="topbar-row">
         <div className="brand">
-          <span className="brand-mark" aria-hidden />
-          <span className="brand-name">Room</span>
+          <CometMark />
+          <span className="brand-name" aria-label="Scalaxy">
+            <span aria-hidden>s</span>
+            <span className="brand-cala" aria-hidden>
+              CALA
+            </span>
+            <span aria-hidden>xy</span>
+          </span>
           {subtitle && <span className="brand-sub">{subtitle}</span>}
         </div>
         <RoleSwitcher />
-        <Link href="/path" className={`path-nav ${pathname?.startsWith("/path") ? "is-active" : ""}`} data-testid="nav-path">
-          Path
-        </Link>
         <div className="topbar-actions">
           {inbox}
           {tools}

@@ -8,10 +8,10 @@ export default function RoleSwitcher() {
   const isInvestor = path?.startsWith("/investor") || path?.startsWith("/path/investor");
   return (
     <nav className="role-switch" aria-label="Role">
-      <Link href="/" className={!isInvestor ? "is-active" : ""} aria-current={!isInvestor ? "page" : undefined}>
+      <Link href="/" className={!isInvestor ? "is-active" : ""} aria-current={!isInvestor ? "page" : undefined} data-testid="nav-founder">
         Founder
       </Link>
-      <Link href="/investor" className={isInvestor ? "is-active" : ""} aria-current={isInvestor ? "page" : undefined}>
+      <Link href="/path/investor" className={isInvestor ? "is-active" : ""} aria-current={isInvestor ? "page" : undefined} data-testid="nav-investor">
         Investor
       </Link>
     </nav>

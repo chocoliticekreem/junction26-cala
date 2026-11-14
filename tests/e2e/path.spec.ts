@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// /path against the typed mock (E2E_MOCK=1, no engine routes): company -> pitch -> vision ->
-// simulate -> realities + tree + particle map -> flip a branch -> reset clears everything.
+// The Scalaxy founder flow against the typed mock (E2E_MOCK=1, no engine routes): one CTA with
+// company -> pitch -> vision -> simulate -> realities + tree + galaxy map -> flip a branch ->
+// the company is remembered in "My companies" -> reset clears everything.
 
 async function mapHasContent(page: Page): Promise<boolean> {
   return page.evaluate(() => {
@@ -20,28 +21,33 @@ async function mapHasContent(page: Page): Promise<boolean> {
   });
 }
 
-test("path: interview, simulate, flip a branch, reset", async ({ page }) => {
+test("founder flow: CTA, simulate, flip a branch, remembered company, reset", async ({ page }) => {
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
 
-  await page.goto("/path");
+  await page.goto("/");
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "company");
-  await expect(page.getByTestId("nav-path")).toHaveClass(/is-active/);
+  await expect(page.getByTestId("nav-founder")).toHaveClass(/is-active/);
+  await expect(page.locator(".brand-name")).toHaveText("sCALAxy");
 
   await page.getByTestId("company-name").fill("Cala");
   await expect(page.getByTestId("candidate").first()).toBeVisible();
   await page.getByTestId("candidate").first().click();
   await expect(page.getByTestId("company-found")).toContainText("Cala");
+  await expect(page.getByTestId("candidates")).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Type", exact: true }).click();
+  // A website makes the match certain: no "Is this you?" even after the name is re-resolved.
+  await page.getByTestId("company-website").fill("cala.ai");
+  await expect(page.getByTestId("company-found")).toContainText("Cala");
+  await expect(page.getByTestId("candidates")).toHaveCount(0);
+
   await page.getByTestId("pitch-text").fill("We are a seed stage B2B SaaS company building developer tools for investors, raising $5m.");
-  await expect(page.locator('[data-chip^="sector"]').first()).toBeVisible();
-  await page.getByTestId("next").click();
-
+  await expect(page.getByTestId("pitch-read")).toContainText("Seed");
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "vision");
   await page.getByTestId("vision-example").first().click();
-  await expect(page.getByTestId("vision-basis")).toContainText("Target");
+  await expect(page.getByTestId("vision-basis")).toContainText("Judged as");
+  await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "ready");
   await page.getByTestId("simulate").click();
 
   await expect(page.getByTestId("realities")).toBeVisible({ timeout: 20_000 });
@@ -74,6 +80,17 @@ test("path: interview, simulate, flip a branch, reset", async ({ page }) => {
   await expect(page.getByTestId("company-name")).toHaveValue("");
   await expect(page.getByTestId("realities")).toHaveCount(0);
   await expect(page.getByTestId("tree")).toHaveCount(0);
+
+  // The simulated company is remembered; picking it pre-fills the whole CTA.
+  await page.getByTestId("my-companies").click();
+  await expect(page.getByTestId("my-company")).toHaveCount(1);
+  await page.getByTestId("my-company").first().click();
+  await expect(page.getByTestId("company-name")).toHaveValue("Cala");
+  await expect(page.getByTestId("company-website")).toHaveValue("cala.ai");
+  await expect(page.getByTestId("pitch-text")).toHaveValue(/developer tools/);
+  await expect(page.getByTestId("vision-text")).not.toHaveValue("");
+  await expect(page.getByTestId("company-found")).toContainText("Cala");
+  await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "ready");
 
   expect(errors).toEqual([]);
 });

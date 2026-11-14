@@ -1,6 +1,6 @@
-# Room
+# Scalaxy
 
-Say your pitch out loud and watch London's investors sort themselves around you in real time, ranked by what they actually invested in (revealed thesis from Cala deal data), not what their websites claim. Each match shows the deals behind it, where a fund's stated thesis contradicts its deals, and the easiest door in. Investors see founders matched to their revealed thesis, express interest (double opt-in, verified both sides) and fill curated rooms.
+Name your company, say your pitch and where you are in five years. Scalaxy simulates thousands of futures through real rounds in Cala's graph: the realities ahead, the galaxy of investors and the highways between them, your company file, the best next moves and the real precedents behind every number. The older live matching view (investors ranked by revealed thesis as you pitch) lives at `/match`.
 
 Built at Junction 2026 for Cala's "Make Unicorns Real" challenge.
 

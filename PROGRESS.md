@@ -55,6 +55,15 @@
 - [x] **Submission pack.** docs/submission.md (PR #24): name "Room" 4/30, punchline 185/200, description 4,261/5,000 (measured), 2-minute demo script totalling 1:55, tech challenges: none claimed (ElevenLabs only after a verified live run with a key).
 - [x] **Peer review.** 3-minute flow in docs/DEMO.md and talking points for Innovation / Impact / Implementation in docs/submission.md.
 
+## Rebrand: Scalaxy (Sat 14 Nov, afternoon, branch scalaxy-ui)
+- Product name is **Scalaxy**, wordmark "sCALAxy" (CALA in the accent gradient, comet-on-orbit mark, app/icon.svg). "Room" is gone from every user-visible string; code identifiers stay.
+- Fonts via next/font/google: Bricolage Grotesque (display, opsz+wdth axes), Figtree (text), JetBrains Mono (numbers). cala.ai uses Waldenburg / Tiempos Headline / ABC Stefan, so none of those; no Inter/Geist. Canvases read `--font-text` / `--font-display` / `--font-mono` through components/canvasFont.ts.
+- Galaxy look: fixed starfield canvas (components/Starfield.tsx, 3 parallax tile layers + 40 twinkles, static under prefers-reduced-motion), CSS nebula washes on body, glass panels (`.glass`). PathMap: stars with twinkle and sparkle, same-sector constellation lines, comet tails on bright highways, founder core with an orbiting comet.
+- `/` is the founder flow (app/page.tsx re-exports app/path/page.tsx; /path stays). The old matching view moved to `/match` (out of the nav). Nav: Founder -> `/`, Investor -> `/path/investor`.
+- Founder CTA replaces the three-step interview and the transcript/heard rails: company field with "My companies" dropdown (localStorage, lib/myCompanies.ts: name, Cala candidate, last pitch, vision), inline "Is this you?" only when several candidates (best preselected), pitch area with the mic inside and spoken words flowing in the same box, one-line "Read as", five-year field with examples and "Judged as", one Simulate button. Results (realities, galaxy map, company file, next moves, precedents) render below and scroll into view.
+- Investor detail (components/ProfilePanel.tsx, /match): name + kind, one fit line, 3 evidence chips, "Draft intro email" (mailto) + Sources. Cala answer shows 3 extracted bullets with "Read Cala's full answer" rendered by components/Markdown.tsx (React elements only). Stated-vs-revealed bars only with a contradiction badge. Cache hit/miss counter moved to the results footer (components/CacheStats.tsx).
+- Doors: no "room" door, no partner-to-partner warm intro; lib/doors.ts `publicDoors` keeps programme / office hours / scout doors with a URL. No doors -> no section.
+
 ## In progress
 - Polish backlog 12.7.
 

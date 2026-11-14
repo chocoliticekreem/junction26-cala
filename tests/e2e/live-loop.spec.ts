@@ -16,7 +16,7 @@ test("live loop moves biotech into the top 3 within 2.5 s, three pitches in a ro
   });
   const times: number[] = [];
   for (let run = 1; run <= 3; run++) {
-    await page.goto("/");
+    await page.goto("/match");
     await expect(page.getByTestId("match-row")).toHaveCount(10);
     await page.waitForFunction(() => !!window.__roomPitch);
 

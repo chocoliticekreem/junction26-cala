@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 // Spec 12.5: press R, the biotech chip appears and a biotech investor enters the top 3
 // within the replay window. Runs offline: replay never calls the network.
 test("replay moves a biotech investor into the top 3", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/match");
   // Pressed straight after load, before hydration may have finished: the early key script
   // in app/layout.tsx must hand it to the page instead of dropping it.
   await page.keyboard.press("r");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import CacheStats from "@/components/CacheStats";
 import TopBar from "@/components/TopBar";
 import { buildContext, errorMessage, fetchNetwork, resolveCompany, runSimulate } from "@/components/path/api";
 import CompanyFile from "@/components/path/CompanyFile";
@@ -13,10 +14,12 @@ import { YOU_ID, type CompanyCandidate, type ContextDoc, type Decision, type Hig
 import { loadReplay } from "@/lib/data";
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { mergeProfile } from "@/lib/mergeProfile";
+import { getMyCompanies, getMyCompaniesServer, saveMyCompany, subscribeMyCompanies, type SavedCompany } from "@/lib/myCompanies";
 import { fmtUsd } from "@/lib/sim/util";
 import { parseVision } from "@/lib/sim/vision";
 import { isSttSupported } from "@/lib/stt";
-import { STAGE_LABELS } from "@/lib/taxonomy";
+import { SECTOR_SHORT, STAGE_LABELS, type Sector } from "@/lib/taxonomy";
+import type { FounderProfile } from "@/lib/types";
 import { usePitch } from "@/lib/usePitch";
 
 const REPLAY = loadReplay();
@@ -24,7 +27,7 @@ const EMPTY_NET: NetworkData = { nodes: [], edges: [] };
 const KINDS: InvestorKind[] = ["fund", "angel", "accelerator", "cvc"];
 const subscribeNever = () => () => {};
 
-type Phase = InterviewStep | "simulating" | "results";
+type Phase = "idle" | "simulating" | "results";
 
 function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
@@ -42,12 +45,22 @@ function useReducedMotion(): boolean {
 // (LLM-parsed when a key is set) is what the results show.
 function visionTarget(text: string): string {
   const v = parseVision(text);
-  const parts = [`Target: ${STAGE_LABELS[v.targetStage]}`];
+  const parts = [STAGE_LABELS[v.targetStage]];
   if (v.targetValuationUsd) parts.push(`${fmtUsd(v.targetValuationUsd)} valuation`);
   if (v.targetHeadcount) parts.push(`${v.targetHeadcount} people`);
   if (v.targetFundingUsd) parts.push(`${fmtUsd(v.targetFundingUsd)} raised`);
   parts.push(`${v.horizonYears}y`);
   return parts.join(" · ");
+}
+
+// One line of what the pitch gave the engine so far; replaces the old chip panel.
+function pitchRead(p: FounderProfile): string | undefined {
+  const sectors = (Object.entries(p.sectors) as [Sector, number][])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([s]) => SECTOR_SHORT[s]);
+  const parts = [p.stage ? STAGE_LABELS[p.stage] : undefined, ...sectors, p.raise ? `raising ${fmtUsd(p.raise)}` : undefined, p.geography].filter(Boolean);
+  return parts.length ? parts.join(" · ") : undefined;
 }
 
 export default function PathPage() {
@@ -56,13 +69,17 @@ export default function PathPage() {
   const sttSupported = useSyncExternalStore(subscribeNever, isSttSupported, () => false);
   const reducedMotion = useReducedMotion();
 
-  const [phase, setPhase] = useState<Phase>("company");
+  const [phase, setPhase] = useState<Phase>("idle");
   const [companyName, setCompanyName] = useState("");
+  const [website, setWebsite] = useState("");
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
   const [autoPick, setAutoPick] = useState<string | undefined>();
   const [resolving, setResolving] = useState(false);
   const [resolveError, setResolveError] = useState<string | undefined>();
   const [candidate, setCandidate] = useState<CompanyCandidate | null>(null);
+  // The founder answered "Is this you?"; the candidate list collapses to one line until the name changes.
+  const [picked, setPicked] = useState(false);
+  const saved = useSyncExternalStore(subscribeMyCompanies, getMyCompanies, getMyCompaniesServer);
   const [pitchText, setPitchText] = useState("");
   const [visionText, setVisionText] = useState("");
   const [network, setNetwork] = useState<NetworkData>(EMPTY_NET);
@@ -75,31 +92,42 @@ export default function PathPage() {
   const [realityId, setRealityId] = useState<string | undefined>();
   const [decision, setDecision] = useState<Decision | undefined>();
   const epoch = useRef(0);
+  // A saved company arrives with its Cala match; the lookup for that exact name must not undo it.
+  const presetFor = useRef<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchNetwork().then(setNetwork, (e) => setNetworkError(errorMessage(e)));
   }, []);
 
-  // Candidate lookup as the name is typed.
+  // Candidate lookup as the name is typed; the best candidate is preselected, the founder can
+  // change it inline.
   useEffect(() => {
     const name = companyName.trim();
+    const site = website.trim();
     let alive = true;
     const id = window.setTimeout(() => {
-      if (phase !== "company" || name.length < 2) {
+      if (name.length < 2) {
         setCandidates([]);
         setAutoPick(undefined);
         setResolving(false);
         setResolveError(undefined);
+        if (presetFor.current !== name) setCandidate(null);
         return;
       }
       setResolving(true);
       setResolveError(undefined);
-      resolveCompany(name).then(
+      resolveCompany(name, site || undefined).then(
         (r) => {
           if (!alive) return;
           setCandidates(r.candidates);
           setAutoPick(r.autoPick);
           setResolving(false);
+          if (presetFor.current === name) return;
+          const auto = r.candidates.find((c) => c.calaId === r.autoPick);
+          setCandidate(auto ?? r.candidates[0] ?? null);
+          // A website or sole exact-name match needs no "Is this you?".
+          if (auto) setPicked(true);
         },
         (e) => {
           if (!alive) return;
@@ -107,6 +135,7 @@ export default function PathPage() {
           setAutoPick(undefined);
           setResolveError(errorMessage(e));
           setResolving(false);
+          if (presetFor.current !== name) setCandidate(null);
         },
       );
     }, 300);
@@ -114,7 +143,7 @@ export default function PathPage() {
       alive = false;
       window.clearTimeout(id);
     };
-  }, [companyName, phase]);
+  }, [companyName, website]);
 
   const profile = useMemo(() => {
     const typed = pitchText.trim();
@@ -125,22 +154,59 @@ export default function PathPage() {
   const pitchSpoken = q1.tokens.map((t) => t.text).join(" ").trim();
   const pitch = [pitchText.trim(), pitchSpoken].filter(Boolean).join(" ");
   const companyLabel = result?.start.companyName || candidate?.name || companyName.trim() || result?.founder?.company || profile.company || "You";
+  const step: InterviewStep = !pitch ? (companyName.trim() ? "pitch" : "company") : !vision ? "vision" : "ready";
 
-  const pick = useCallback((c: CompanyCandidate | null) => {
-    setCandidate(c);
-    setPhase("pitch");
+  const onCompanyName = useCallback((v: string) => {
+    presetFor.current = null;
+    setPicked(false);
+    setCompanyName(v);
   }, []);
 
+  const onWebsite = useCallback((v: string) => {
+    presetFor.current = null;
+    setPicked(false);
+    setWebsite(v);
+  }, []);
+
+  const pick = useCallback(
+    (c: CompanyCandidate | null) => {
+      presetFor.current = companyName.trim();
+      setCandidate(c);
+      setPicked(true);
+    },
+    [companyName],
+  );
+
+  const loadSaved = useCallback(
+    (s: SavedCompany) => {
+      presetFor.current = s.name.trim();
+      q1.reset();
+      q2.reset();
+      setCompanyName(s.name);
+      setWebsite(s.website ?? "");
+      setCandidate(s.candidate ?? null);
+      setPicked(true);
+      setPitchText(s.pitch);
+      setVisionText(s.vision);
+    },
+    [q1, q2],
+  );
+
   const contextBody = useCallback(
-    (u: Upload[]) => ({ calaId: candidate?.calaId, name: candidate?.name ?? companyName.trim(), website: candidate?.website, pitchProfile: profile, visionText: vision, uploads: u }),
-    [candidate, companyName, profile, vision],
+    (u: Upload[]) => ({ calaId: candidate?.calaId, name: candidate?.name ?? companyName.trim(), website: website.trim() || candidate?.website, pitchProfile: profile, visionText: vision, uploads: u }),
+    [candidate, companyName, website, profile, vision],
   );
 
   const simulate = useCallback(
     async (d?: Decision) => {
       const my = ++epoch.current;
       setError(undefined);
-      if (!result) setPhase("simulating");
+      if (!result) {
+        setPhase("simulating");
+        setPicked(true);
+        saveMyCompany({ name: candidate?.name ?? (companyName.trim() || companyLabel), website: website.trim() || undefined, candidate: candidate ?? undefined, pitch, vision });
+        window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" }), 50);
+      }
       const body = { profile, pitchText: pitch || undefined, visionText: vision, decision: d, companyName: candidate?.name };
       const [sim, ctx] = await Promise.allSettled([runSimulate(body), context ? Promise.resolve(undefined) : buildContext(contextBody(uploads))]);
       if (my !== epoch.current) return;
@@ -155,22 +221,25 @@ export default function PathPage() {
         setPhase("results");
       } else {
         setError(errorMessage(sim.reason));
-        setPhase(result ? "results" : "vision");
+        setPhase(result ? "results" : "idle");
       }
     },
-    [profile, pitch, vision, candidate, context, contextBody, uploads, result],
+    [profile, pitch, vision, candidate, companyName, website, companyLabel, context, contextBody, uploads, result, reducedMotion],
   );
 
   const reset = useCallback(() => {
     epoch.current += 1;
+    presetFor.current = null;
     q1.reset();
     q2.reset();
-    setPhase("company");
+    setPhase("idle");
     setCompanyName("");
+    setWebsite("");
     setCandidates([]);
     setAutoPick(undefined);
     setResolveError(undefined);
     setCandidate(null);
+    setPicked(false);
     setPitchText("");
     setVisionText("");
     setResult(undefined);
@@ -180,6 +249,7 @@ export default function PathPage() {
     setError(undefined);
     setRealityId(undefined);
     setDecision(undefined);
+    window.scrollTo({ top: 0 });
   }, [q1, q2]);
 
   const addContext = useCallback(
@@ -240,141 +310,161 @@ export default function PathPage() {
   }, [result, selectedReality, decision]);
 
   const mic = (on: boolean): "idle" | "listening" | "unsupported" => (!sttSupported ? "unsupported" : on ? "listening" : "idle");
-  const mapPhase = phase === "results" ? "results" : phase === "simulating" ? "simulating" : phase === "company" ? "idle" : "interview";
   const backerIds = result?.start.existingInvestors.map((b) => b.id);
+  const showResults = phase !== "idle";
 
   return (
     <div className="shell path-shell" data-testid="path-page" data-phase={phase}>
       <TopBar
         inbox={null}
-        subtitle="Path"
+        subtitle="Founder path"
         showFixtureBanner={false}
         tools={
-          <button type="button" className="btn" onClick={reset} data-testid="new-simulation" title="Clear the pitch, vision and results">
+          <button type="button" className="btn" onClick={reset} data-testid="new-simulation" title="Clear the company, pitch, vision and results">
             New simulation
           </button>
         }
       />
-      <main className={`path-stage ${phase === "results" ? "is-results" : ""}`}>
-        <section className="path-left">
-          {phase === "results" && result && (
-            <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} startLabel={companyLabel} horizonYears={result.vision.horizonYears || 5} />
-          )}
-          <div className="path-map-pane">
-            <PathMap network={network} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} backerIds={backerIds} youLabel={companyLabel} phase={mapPhase} reducedMotion={reducedMotion} />
-            <div className="path-legend" aria-label="Legend">
-              {KINDS.map((k) => (
-                <span key={k}>
-                  <i style={{ background: KIND_COLOR[k] }} /> {KIND_LABEL[k]}
-                </span>
-              ))}
-              <span>
-                <i className="path-legend-you" /> {companyLabel}
-              </span>
-              {networkError ? (
-                <span className="muted" data-testid="network-error">
-                  investor map: {networkError}
-                </span>
-              ) : (
-                <span className="muted">size = rounds led</span>
+      <main className={`path-stage ${showResults ? "is-results" : ""}`}>
+        <Interview
+          step={step}
+          busy={phase === "simulating"}
+          companyName={companyName}
+          onCompanyName={onCompanyName}
+          website={website}
+          onWebsite={onWebsite}
+          candidates={candidates}
+          autoPick={autoPick}
+          resolving={resolving}
+          resolveError={resolveError}
+          company={candidate}
+          picked={picked}
+          onPick={pick}
+          onChangeCompany={() => setPicked(false)}
+          saved={saved}
+          onLoadSaved={loadSaved}
+          onNewCompany={reset}
+          pitchTokens={q1.tokens}
+          pitchText={pitchText}
+          onPitchText={setPitchText}
+          pitchRead={pitch ? pitchRead(profile) : undefined}
+          micState={mic(q1.micOn)}
+          onMic={q1.toggleMic}
+          onReplay={q1.replay}
+          replaying={q1.replaying}
+          visionTokens={q2.tokens}
+          visionText={visionText}
+          onVisionText={setVisionText}
+          visionMicState={mic(q2.micOn)}
+          onVisionMic={q2.toggleMic}
+          visionTarget={vision ? visionTarget(vision) : undefined}
+          onSimulate={() => void simulate(decision)}
+        />
+        {error && (
+          <p className="path-error" role="alert" data-testid="sim-error">
+            {error}
+          </p>
+        )}
+
+        {showResults && (
+          <div className="path-results" ref={resultsRef} data-testid="results">
+            <section className="path-left">
+              {phase === "results" && result && (
+                <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} startLabel={companyLabel} horizonYears={result.vision.horizonYears || 5} />
               )}
-            </div>
-            {phase === "results" && result && (
-              <p className="path-honesty font-mono" data-testid="honesty">
-                Evidence from {result.tree.sampleSize} real rounds in Cala, not a forecast · {result.runs.toLocaleString()} runs · as of {result.asOf}
-              </p>
-            )}
-            {phase === "simulating" && (
-              <div className="path-simulating" role="status" data-testid="simulating">
-                <p className="hero-kicker">Simulating</p>
-                <p className="path-sim-title">5,000 futures of {companyLabel}</p>
+              <div className="path-map-pane glass">
+                <PathMap network={network} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} backerIds={backerIds} youLabel={companyLabel} phase={phase} reducedMotion={reducedMotion} />
+                <div className="path-legend" aria-label="Legend">
+                  {KINDS.map((k) => (
+                    <span key={k}>
+                      <i style={{ background: KIND_COLOR[k] }} /> {KIND_LABEL[k]}
+                    </span>
+                  ))}
+                  <span>
+                    <i className="path-legend-you" /> {companyLabel}
+                  </span>
+                  {networkError ? (
+                    <span className="muted" data-testid="network-error">
+                      investor map: {networkError}
+                    </span>
+                  ) : (
+                    <span className="muted">size = rounds led</span>
+                  )}
+                </div>
+                {phase === "results" && result && (
+                  <p className="path-honesty font-mono" data-testid="honesty">
+                    Evidence from {result.tree.sampleSize} real rounds in Cala, not a forecast · {result.runs.toLocaleString()} runs · as of {result.asOf}
+                    <CacheStats />
+                  </p>
+                )}
+                {phase === "simulating" && (
+                  <div className="path-simulating" role="status" data-testid="simulating">
+                    <p className="hero-kicker">Simulating</p>
+                    <p className="path-sim-title">5,000 futures of {companyLabel}</p>
+                  </div>
+                )}
               </div>
-            )}
-            {phase !== "results" && phase !== "simulating" && (
-              <Interview
-                step={phase}
-                companyName={companyName}
-                onCompanyName={setCompanyName}
-                candidates={candidates}
-                autoPick={autoPick}
-                resolving={resolving}
-                resolveError={resolveError}
-                onPick={pick}
-                company={candidate ?? undefined}
-                pitchTokens={q1.tokens}
-                pitchText={pitchText}
-                onPitchText={setPitchText}
-                profile={profile}
-                triggers={q1.triggers}
-                micState={mic(q1.micOn)}
-                onMic={q1.toggleMic}
-                onReplay={q1.replay}
-                replaying={q1.replaying}
-                onNext={() => setPhase("vision")}
-                visionTokens={q2.tokens}
-                visionText={visionText}
-                onVisionText={setVisionText}
-                visionMicState={mic(q2.micOn)}
-                onVisionMic={q2.toggleMic}
-                visionTarget={vision ? visionTarget(vision) : undefined}
-                onSimulate={() => void simulate(decision)}
-              />
-            )}
-            {error && (
-              <p className="path-error" role="alert" data-testid="sim-error">
-                {error}
-              </p>
+            </section>
+            {phase === "results" && result && (
+              <aside className="path-rail">
+                {context ? (
+                  <CompanyFile doc={context.doc} markdown={context.markdown} onAddContext={(u) => void addContext(u)} />
+                ) : (
+                  <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
+                    <header className="path-section-head">
+                      <span>Your company file</span>
+                    </header>
+                    <p className="muted path-empty">{contextError ?? "Building…"}</p>
+                  </section>
+                )}
+                <p className="path-start-line" data-testid="start-line">
+                  {result.start.companyName ? (
+                    <>
+                      <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
+                      {result.start.stageNote && (
+                        <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                          i
+                        </span>
+                      )}
+                      {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
+                    </>
+                  ) : (
+                    <>
+                      <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
+                      {STAGE_LABELS[result.start.stage]}
+                      {result.start.stageNote && (
+                        <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                          i
+                        </span>
+                      )}
+                    </>
+                  )}
+                </p>
+                <p className="path-vision-line" data-testid="vision-line" title={result.visionBasis.text}>
+                  <b>{result.vision.interpretation ?? result.visionBasis.text}</b>
+                  <span className="muted"> · {vision}</span>
+                  {result.analysis === "keyword_fallback" && (
+                    <span className="muted path-fallback" data-testid="keyword-fallback" title={result.analysisDetail?.fallbackReasons?.join("; ") || "The AI reader was unavailable; keyword rules read the text."}>
+                      {" "}
+                      · keyword fallback
+                    </span>
+                  )}
+                </p>
+                {result.vision.interpretation && <p className="muted path-empty">{result.visionBasis.text}</p>}
+                {result.founder && result.founder.tags.length > 0 && (
+                  <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
+                    {result.founder.tags.map((t) => (
+                      <span key={t} className="chip" data-chip={`tag:${t}`}>
+                        <span className="chip-value">{t}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
+                <Precedents precedents={result.precedents} />
+              </aside>
             )}
           </div>
-        </section>
-        {phase === "results" && result && (
-          <aside className="path-rail">
-            {context ? (
-              <CompanyFile doc={context.doc} markdown={context.markdown} onAddContext={(u) => void addContext(u)} />
-            ) : (
-              <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
-                <header className="path-section-head">
-                  <span>Your company file</span>
-                </header>
-                <p className="muted path-empty">{contextError ?? "Building…"}</p>
-              </section>
-            )}
-            <p className="path-start-line" data-testid="start-line">
-              {result.start.companyName ? (
-                <>
-                  <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
-                  {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
-                </>
-              ) : (
-                <>
-                  <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
-                  {STAGE_LABELS[result.start.stage]}
-                </>
-              )}
-            </p>
-            <p className="path-vision-line" data-testid="vision-line" title={result.visionBasis.text}>
-              <b>{result.vision.interpretation ?? result.visionBasis.text}</b>
-              <span className="muted"> · {vision}</span>
-              {result.analysis === "keyword_fallback" && (
-                <span className="muted path-fallback" data-testid="keyword-fallback" title={result.analysisDetail?.fallbackReasons?.join("; ") || "The AI reader was unavailable; keyword rules read the text."}>
-                  {" "}
-                  · keyword fallback
-                </span>
-              )}
-            </p>
-            {result.vision.interpretation && <p className="muted path-empty">{result.visionBasis.text}</p>}
-            {result.founder && result.founder.tags.length > 0 && (
-              <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
-                {result.founder.tags.map((t) => (
-                  <span key={t} className="chip" data-chip={`tag:${t}`}>
-                    <span className="chip-value">{t}</span>
-                  </span>
-                ))}
-              </div>
-            )}
-            <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
-            <Precedents precedents={result.precedents} />
-          </aside>
         )}
       </main>
     </div>
