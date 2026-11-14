@@ -33,9 +33,18 @@ npm run ingest -- --dry-run      # plan only, no calls
 npm run ingest -- --limit 5      # small real run
 npm run ingest                   # full run, checkpointed and resumable
 npm run ingest -- --build        # rebuild data/investors.json from the raw cache
+
+# Entity graph: FundingRound deals (is_lead, source_rank), then Cala Event participants
+npm run ingest-rounds -- --dry-run          # plan + measured cost estimate, no calls
+npm run ingest-rounds -- --event-investors --limit 0  # rounds of event participants named as investors
+npm run ingest-rounds -- --limit 15         # demo top-15 first, then by score
+npm run ingest-rounds -- --ids zinc,4bio-capital
+npm run ingest-rounds -- --merge            # checkpoint -> data/investors.json, no calls
+npm run ingest-events -- --event <id> [--event <id>]  # Cala Event participants -> investors' events
+npm run ingest-events -- --merge            # cached events -> data/investors.json (run after ingest-rounds)
 ```
 
-See `docs/CALA.md` for the endpoints, relationship names and caveats.
+`ingest-rounds` stops at `--budget` live call attempts in total across runs (default 426, counted in `data/raw/rounds/usage.json`; failed attempts count too, so on 14 Nov 340 counted for 300 successful calls) and paces requests 5 s apart. `ingest-events` shares that budget file. See `docs/CALA.md` for the endpoints, relationship names and caveats.
 
 ### Live Cala credits
 

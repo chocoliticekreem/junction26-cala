@@ -245,6 +245,24 @@ function capitalize(s: string): string {
   return s ? s[0].toUpperCase() + s.slice(1) : s;
 }
 
+// "led 2 biotech pre-seed rounds since 2025": counted rounds it led (Cala FundingRound is_lead) in
+// the sector shared with the pitch, narrowed to the founder's stage when any match it.
+function leadFragment(f: FounderProfile, inv: Investor, c: Computed, now: Date): string | undefined {
+  const s = bestSharedSector(c);
+  if (!s) return undefined;
+  const led = countedDeals(inv.deals, now)
+    .map((x) => x.deal)
+    .filter((d) => d.isLead && d.sector === s);
+  if (!led.length) return undefined;
+  const atStage = f.stage ? led.filter((d) => d.round === f.stage) : [];
+  const pick = atStage.length ? atStage : led;
+  const since = Math.min(...pick.map((d) => Number((d.date as string).slice(0, 4))));
+  const what = [s === "other" ? "" : sectorLabel(s), atStage.length ? stageLabel(f.stage as Stage) : ""]
+    .filter(Boolean)
+    .join(" ");
+  return `led ${pick.length} ${what ? `${what} ` : ""}round${pick.length === 1 ? "" : "s"} since ${since}`;
+}
+
 function reasonFor(f: FounderProfile, inv: Investor, c: Computed, now: Date): string {
   const top = c.terms
     .filter((t) => t.known && t.contrib > 0)
@@ -256,9 +274,11 @@ function reasonFor(f: FounderProfile, inv: Investor, c: Computed, now: Date): st
       .filter(Boolean)
       .join("; "),
   );
+  const lead = leadFragment(f, inv, c, now);
+  const full = lead ? (line ? `${line}; ${lead}` : capitalize(lead)) : line;
   const onlyOther = Object.keys(c.fs).length > 0 && Object.keys(c.fs).every((s) => s === "other");
-  if (onlyOther && f.stage) return `Sector unclear, matched on stage; ${line}`;
-  return line;
+  if (onlyOther && f.stage) return `Sector unclear, matched on stage; ${full}`;
+  return full;
 }
 
 function dealTime(d: Deal): number {
