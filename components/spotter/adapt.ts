@@ -43,7 +43,7 @@ function adaptPick(p: SpotterResult["picks"][number]): SpotterPick {
       name: p.company.name,
       sector: p.company.sector,
       city: cityOf(p.company.hq),
-      path: p.company.path,
+      rounds: p.company.path.split(" → ").filter(Boolean),
       latestRound: { stage: p.company.latestRound.stage, date: p.company.latestRound.date, leadName: p.company.latestRound.leadName },
       investors: p.company.investors.map((i) => i.name),
     },
@@ -54,9 +54,9 @@ function adaptPick(p: SpotterResult["picks"][number]): SpotterPick {
       youOnPath: pct(p.scores.pOnPath),
       total: Math.min(100, pct(p.scores.combined)),
     },
-    line: p.line,
-    precedents: [...p.precedents.unicorns.slice(0, 4), ...p.precedents.stalled.slice(0, 2)].map(precedent),
+    precedents: [...p.precedents.unicorns.slice(0, 3), ...p.precedents.stalled.slice(0, 1)].map(precedent),
     sampleSize: p.sample.referenceSize,
+    runs: p.sample.runs,
     lowConfidence: p.lowConfidence,
     actions: { sharedCoInvestors: p.actions.sharedCoInvestors.map((c) => c.name) },
   };
@@ -90,12 +90,14 @@ export function adaptSpotter(r: SpotterResult): SpotterResponse {
       taste: {
         sectors: shares(inv.sectorDist, (s: Sector) => SECTOR_SHORT[s] ?? s, 4),
         stages: shares(inv.stageDist, (s: Stage) => STAGE_LABELS[s] ?? s, 3),
-        chequeBand: lo !== undefined && hi !== undefined ? `${fmtUsd(lo)}–${fmtUsd(hi)}` : "n/a",
+        entryStage: inv.entryStage ? (STAGE_LABELS[inv.entryStage] ?? inv.entryStage) : undefined,
+        chequeBand: lo !== undefined && hi !== undefined ? `${fmtUsd(lo)}–${fmtUsd(hi)}` : undefined,
         leadShare: inv.leadShare,
       },
     },
     picks: dedupe(r.picks).map(adaptPick),
     asOf: r.asOf,
     basis: r.basis,
+    considered: r.considered,
   };
 }

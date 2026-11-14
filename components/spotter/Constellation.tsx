@@ -23,14 +23,15 @@ const EASE = "600ms cubic-bezier(0.22, 1, 0.36, 1)";
 // the space that is left so no node hides under it. Node and label sizes never change.
 function frame(w: number, h: number, selected: boolean): Frame {
   const cy = h / 2;
-  if (!selected) return { cx: w / 2, cy, minR: 104, maxR: Math.max(170, Math.min(w, h) / 2 - 48), sep: 96, compact: false };
+  // Side labels run ~150px past a node, so the outer ring stops short of the pane edges.
+  if (!selected) return { cx: w / 2, cy, minR: 104, maxR: Math.max(170, Math.min(w / 2 - 170, h / 2 - 48)), sep: 108, compact: false };
   const panelW = w < 860 ? 340 : 372;
   const left = panelW + 32;
   const avail = Math.max(260, w - left - 24);
-  // Under ~460px of room the side labels cannot fit; dimmed nodes then drop them (hover still tells).
-  const compact = avail < 460;
-  const maxR = Math.max(130, Math.min(avail / 2 - (compact ? 30 : 64), h / 2 - 48));
-  return { cx: left + avail / 2, cy, minR: Math.min(88, maxR * 0.45), maxR, sep: compact ? 64 : 82, compact };
+  // Under ~640px of room the side labels collide; dimmed nodes then drop them (hover still tells).
+  const compact = avail < 640;
+  const maxR = Math.max(130, Math.min(avail / 2 - (compact ? 30 : 110), h / 2 - 48));
+  return { cx: left + avail / 2, cy, minR: Math.min(88, maxR * 0.45), maxR, sep: compact ? 64 : 92, compact };
 }
 
 // Rank sets the distance from "you"; a golden-angle spiral spreads the angles, then a short
@@ -101,7 +102,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
   return (
     <div ref={host} className="sp-pane" data-testid="spotter-constellation" onClick={() => onSelect(undefined)}>
       {size.w > 0 && (
-        <svg viewBox={`0 0 ${size.w} ${size.h}`} role="img" aria-label={`${picks.length} companies on a unicorn-shaped path, ranked for ${investorName}`}>
+        <svg viewBox={`0 0 ${size.w} ${size.h}`} role="img" aria-label={`${picks.length} picks for ${investorName}, closest to you ranked highest`}>
           <defs>
             {placed.map(({ pick }) => (
               <radialGradient key={pick.company.id} id={`glow-${pick.company.id}`}>
@@ -120,12 +121,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
             {RINGS.map((score) => {
               const rr = f.minR + (1 - score / 100) * (f.maxR - f.minR);
               return (
-                <g key={score}>
-                  <circle className="sp-ring" r={rr} style={{ transition: grow }} />
-                  <text className="sp-ring-label" x={rr * 0.7071 + 6} y={-rr * 0.7071 - 4}>
-                    {score}
-                  </text>
-                </g>
+                <circle key={score} className="sp-ring" r={rr} style={{ transition: grow }} />
               );
             })}
           </g>
@@ -188,7 +184,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
                   style={{ "--delay": reducedMotion ? "0ms" : `${120 + i * 70}ms` } as React.CSSProperties}
                   tabIndex={0}
                   role="button"
-                  aria-label={`${pick.company.name}, rank ${p.rank}, unicorn odds ${pct(pick.scores.unicornOdds)}, you on path ${pct(pick.scores.youOnPath)}`}
+                  aria-label={`${pick.company.name}, rank ${p.rank}, unicorn-like odds ${pct(pick.scores.unicornOdds)}, you on its path ${pct(pick.scores.youOnPath)}`}
                   data-testid={`spotter-node-${pick.company.id}`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -226,8 +222,8 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
 
       {hover && (
         <div className="sp-tip" style={{ left: hover.x, top: hover.y - hover.r - 8 }}>
-          <b>{hover.pick.company.name}</b> · unicorn odds {pct(hover.pick.scores.unicornOdds)} ·{" "}
-          <span style={{ color: "#FF6A3D" }}>you on path {pct(hover.pick.scores.youOnPath)}</span> · n={hover.pick.sampleSize}
+          <b>{hover.pick.company.name}</b> · unicorn-like odds {pct(hover.pick.scores.unicornOdds)} ·{" "}
+          <span style={{ color: "var(--accent)" }}>you&rsquo;re on its path {pct(hover.pick.scores.youOnPath)}</span>
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import { usingFixtures } from "@/lib/data";
 import Constellation from "@/components/spotter/Constellation";
+import HowItWorks from "@/components/spotter/HowItWorks";
 import InvestorPicker, { type PickerOption } from "@/components/spotter/InvestorPicker";
 import PickCard from "@/components/spotter/PickCard";
 import PickList from "@/components/spotter/PickList";
@@ -35,6 +36,13 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
+// Three named funds plus the busiest other one in the cohort, so the first click is one of four.
+function quickPicks(options: PickerOption[]): PickerOption[] {
+  const named = QUICK.map((name) => options.find((o) => o.name === name)).filter((o): o is PickerOption => !!o);
+  const extra = options.find((o) => !QUICK.includes(o.name));
+  return extra ? [...named, extra].slice(0, 4) : named;
+}
+
 export default function SpotterPage() {
   const investorsState = useInvestorOptions();
   const options: PickerOption[] = investorsState.status === "ok" ? investorsState.options : [];
@@ -59,47 +67,48 @@ export default function SpotterPage() {
   const picks = data?.picks ?? [];
   const selectedIndex = picks.findIndex((p) => p.company.id === selectedId);
   const selected = selectedIndex >= 0 ? picks[selectedIndex] : null;
-  const quick = QUICK.map((name) => options.find((o) => o.name === name)).filter((o): o is PickerOption => !!o);
+  const quick = quickPicks(options);
   const noCohort = state.status === "no_cohort" || investorsState.status === "no_cohort";
+  const picker = <InvestorPicker options={options} value={investor} onChange={pickInvestor} loading={investorsState.status === "loading"} placeholder={investor ? "Switch fund…" : "Search funds…"} id="spotter-fund" />;
 
   return (
     <div className="shell">
-      <TopBar
-        subtitle="Early spotter · companies on a unicorn-shaped path"
-        inbox={null}
-        tools={<InvestorPicker options={options} value={investor} onChange={pickInvestor} loading={investorsState.status === "loading"} />}
-        showFixtureBanner={FIXTURES}
-      />
+      <TopBar subtitle="Early spotter · for funds" inbox={null} tools={investor ? picker : undefined} showFixtureBanner={FIXTURES} />
       <main className="sp-stage">
-        <section className="sp-pane-wrap relative min-h-0" aria-label="Unicorn-path constellation" data-selected={selected ? "" : undefined}>
+        <section className="sp-pane-wrap relative min-h-0" aria-label="Your picks, mapped" data-selected={selected ? "" : undefined}>
           {picks.length > 0 && (
             <Constellation investorName={data?.investor.name ?? ""} picks={picks} selectedId={selectedId} onSelect={setSelectedId} reducedMotion={reducedMotion} />
           )}
-          {picks.length > 0 && (
+          {data && picks.length > 0 && (
             <div className="sp-title">
-              <b>{picks.length} companies on a unicorn-shaped path</b>
-              <span>
-                ranked for <span className="k">{data?.investor.name}</span>
-              </span>
+              <b>
+                {picks.length} picks for <span className="k">{data.investor.name}</span>
+              </b>
+              <span>young companies in your lane, not yet in your portfolio</span>
+              <HowItWorks data={data} />
             </div>
           )}
-          {picks.length > 0 && (
+          {data && picks.length > 0 && (
             <div className="sp-legend">
               <span>
-                closer = <b>stronger path</b> · glow = <b>unicorn odds</b> · <span className="k">ring</span> = you on its path
+                closer to you = <b>higher rank</b> · glow = <b>unicorn-like odds</b> · <span className="k">orange ring</span> = you&rsquo;re on its path
               </span>
               <span className="sp-honesty font-mono" data-testid="spotter-basis">
-                {data?.basis} · as of {data?.asOf}
+                {data.considered.roundsInCohort} real rounds in Cala · as of {data.asOf}
               </span>
             </div>
           )}
-          {selected && <PickCard key={selected.company.id} pick={selected} rank={selectedIndex + 1} onClose={() => setSelectedId(undefined)} />}
+          {selected && data && <PickCard key={selected.company.id} pick={selected} investor={data.investor} rank={selectedIndex + 1} asOf={data.asOf} onClose={() => setSelectedId(undefined)} />}
 
           {state.status === "idle" && !noCohort && (
             <div className="sp-idle" data-testid="spotter-idle">
-              <p className="hero-kicker">Early spotter</p>
-              <h1 className="hero-title">Who is on a unicorn-shaped path?</h1>
-              <p className="hero-sub">Pick an investor. The map ranks early companies by how much their path looks like one that went all the way, and how often you were on it.</p>
+              <p className="hero-kicker">Early spotter · for funds</p>
+              <h1 className="hero-title">Your next breakout, before the round.</h1>
+              <p className="hero-sub">Pick your fund. We learn your taste from your real rounds in Cala, then rank young companies outside your portfolio whose first rounds look like past unicorns&rsquo;.</p>
+              <div className="sp-ask">
+                <label htmlFor="spotter-fund">Which fund are you?</label>
+                {picker}
+              </div>
               <div className="sp-quick">
                 {quick.map((o) => (
                   <button key={o.id} type="button" className="hero-btn" onClick={() => pickInvestor(o)} data-testid={`spotter-quick-${o.id}`}>
@@ -110,7 +119,7 @@ export default function SpotterPage() {
               </div>
               {investorsState.status === "error" && (
                 <p className="sp-idle-note" role="alert" data-testid="spotter-investors-error">
-                  Could not load the investor list. {investorsState.message}
+                  Could not load the fund list. {investorsState.message}
                 </p>
               )}
             </div>
@@ -118,6 +127,7 @@ export default function SpotterPage() {
           {state.status === "loading" && (
             <div className="sp-loading" data-testid="spotter-loading" aria-live="polite">
               <div className="sp-loading-orb" />
+              <span>Learning {investor?.name}&rsquo;s taste and ranking its lane…</span>
             </div>
           )}
           {noCohort && (
@@ -127,7 +137,7 @@ export default function SpotterPage() {
           )}
           {state.status === "ok" && picks.length === 0 && (
             <div className="sp-error" data-testid="spotter-empty">
-              <span>No company on a unicorn-shaped path matches {data?.investor.name} yet.</span>
+              <span>No young company in {data?.investor.name}&rsquo;s lane yet.</span>
             </div>
           )}
           {state.status === "error" && (
@@ -143,20 +153,11 @@ export default function SpotterPage() {
         <aside className="sp-rail">
           {data && <TasteStrip investor={data.investor} sectorColor={tasteColor} />}
           {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => setSelectedId((cur) => (cur === id ? undefined : id))} />}
-          {!data && state.status !== "loading" && (
-            <section className="sp-card">
-              <div className="sp-card-head">
-                <span>Your taste</span>
-                <span className="muted">from your real deals</span>
-              </div>
-              <p className="muted text-[12.5px]">Pick an investor to see sector and stage mix, round band and lead share.</p>
-            </section>
-          )}
           {picks.length === 0 && (
             <section className="sp-card" aria-hidden>
               <div className="sp-card-head">
-                <span>On a unicorn-shaped path</span>
-                <span className="muted">{state.status === "loading" ? "ranking…" : "waiting for you"}</span>
+                <span>Ranked picks</span>
+                <span className="muted">{state.status === "loading" ? "ranking…" : "pick a fund first"}</span>
               </div>
               <div className="matches-idle" style={{ position: "static", inset: "auto" }}>
                 <ul>
