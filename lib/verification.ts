@@ -34,11 +34,14 @@ function emailDomain(email: string | undefined): string | undefined {
   return m ? m[1].toLowerCase() : undefined;
 }
 
-function hostOf(url: string | undefined): string | undefined {
-  if (!url) return undefined;
+// Safe for scheme-less values such as "seedcamp.com"; undefined for anything unparseable.
+export function hostOf(url: string | undefined): string | undefined {
+  const raw = url?.trim();
+  if (!raw) return undefined;
   try {
-    const u = new URL(url);
+    const u = new URL(/^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`);
     if (u.protocol !== "http:" && u.protocol !== "https:") return undefined;
+    if (!u.hostname.includes(".")) return undefined;
     return u.hostname.toLowerCase().replace(/^www\./, "");
   } catch {
     return undefined;

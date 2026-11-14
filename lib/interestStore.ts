@@ -13,7 +13,7 @@ import {
   requestSeat,
   sendMessage,
   upsertVerification,
-  SEED_ROOM,
+  getSeedRoom,
   type InterestStore,
   type Result,
 } from "@/lib/engine";
@@ -62,20 +62,48 @@ function writeKey(key: string, value: unknown) {
   listeners.forEach((l) => l());
 }
 
+const EXPIRY_CHECK_MS = 60_000;
+
+function runExpiry() {
+  const s = readKey<InterestStore>(INTEREST_KEY, emptyStore);
+  const expired = expireStale(s, new Date());
+  if (expired !== s && JSON.stringify(expired) !== JSON.stringify(s)) writeKey(INTEREST_KEY, expired);
+}
+
+// A tab left open past the 14-day mark (or woken from the background) still expires requests.
+let expiryTimer: number | undefined;
+const onVisibility = () => {
+  if (document.visibilityState === "visible") runExpiry();
+};
+
+function startExpiryChecks() {
+  expiryTimer = window.setInterval(runExpiry, EXPIRY_CHECK_MS);
+  document.addEventListener("visibilitychange", onVisibility);
+}
+
+function stopExpiryChecks() {
+  window.clearInterval(expiryTimer);
+  expiryTimer = undefined;
+  document.removeEventListener("visibilitychange", onVisibility);
+}
+
 function subscribe(cb: () => void) {
   listeners.add(cb);
+  if (listeners.size === 1) startExpiryChecks();
   const onStorage = (e: StorageEvent) => {
     if (e.key === null || e.key.startsWith("room.")) cb();
   };
   window.addEventListener("storage", onStorage);
   return () => {
     listeners.delete(cb);
+    if (listeners.size === 0) stopExpiryChecks();
     window.removeEventListener("storage", onStorage);
   };
 }
 
 const SERVER_STORE = emptyStore();
-const SERVER_ROOMS: Room[] = [SEED_ROOM];
+let serverRooms: Room[] | undefined;
+const getServerRooms = () => (serverRooms ??= [getSeedRoom()]);
 
 let expiredOnce = false;
 
@@ -83,10 +111,7 @@ function readStore(): InterestStore {
   const s = readKey<InterestStore>(INTEREST_KEY, emptyStore);
   if (!expiredOnce && typeof window !== "undefined") {
     expiredOnce = true;
-    const expired = expireStale(s, new Date());
-    if (expired !== s && JSON.stringify(expired) !== JSON.stringify(s)) {
-      queueMicrotask(() => writeKey(INTEREST_KEY, expired));
-    }
+    queueMicrotask(runExpiry);
   }
   return s;
 }
@@ -95,7 +120,8 @@ let roomsCache: { source: Room[]; value: Room[] } | null = null;
 function readRooms(): Room[] {
   const rooms = readKey<Room[]>(ROOMS_KEY, () => []);
   if (roomsCache?.source === rooms) return roomsCache.value;
-  const value = rooms.some((r) => r.id === SEED_ROOM.id) ? rooms : [SEED_ROOM, ...rooms];
+  const seed = getSeedRoom();
+  const value = rooms.some((r) => r.id === seed.id) ? rooms : [seed, ...rooms];
   roomsCache = { source: rooms, value };
   return value;
 }
@@ -150,7 +176,7 @@ export function useInterestStore() {
 }
 
 export function useRooms() {
-  const rooms = useSyncExternalStore(subscribe, readRooms, () => SERVER_ROOMS);
+  const rooms = useSyncExternalStore(subscribe, readRooms, getServerRooms);
   const addRoom = useCallback((room: Room) => {
     const current = readRooms();
     writeKey(ROOMS_KEY, [...current.filter((r) => r.id !== room.id), room]);

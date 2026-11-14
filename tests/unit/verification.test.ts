@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { verifyFounder, verifyInvestor } from "@/lib/verification";
+import { hostOf, verifyFounder, verifyInvestor } from "@/lib/verification";
 import { founder, investor } from "./helpers";
 
 const inv = investor("acme", []); // partner "Zoë Brontë-Smith", website https://acme.example
@@ -44,5 +44,26 @@ describe("verifyFounder", () => {
     const found = verifyFounder(founder({ website: "https://a.io", email: "a@a.io" }), { calaFound: true });
     expect(found.checks).toHaveLength(3);
     expect(found.checks[2]).toMatchObject({ name: "Found on Cala", passed: true });
+  });
+});
+
+describe("hostOf", () => {
+  it("parses scheme-less, www and full URLs without throwing", () => {
+    expect(hostOf("seedcamp.com")).toBe("seedcamp.com");
+    expect(hostOf("www.seedcamp.com/about")).toBe("seedcamp.com");
+    expect(hostOf("https://WWW.Seedcamp.com")).toBe("seedcamp.com");
+    expect(hostOf(" http://a.io ")).toBe("a.io");
+  });
+
+  it("returns undefined for empty, non-web or unparseable values", () => {
+    expect(hostOf(undefined)).toBeUndefined();
+    expect(hostOf("")).toBeUndefined();
+    expect(hostOf("mailto:a@a.io")).toBeUndefined();
+    expect(hostOf("not a url")).toBeUndefined();
+  });
+
+  it("matches a fund email against a scheme-less fund website", () => {
+    const v = verifyInvestor({ name: "Zoë Brontë-Smith", email: "zoe@acme.example" }, { ...inv, website: "acme.example" });
+    expect(v.checks.every((c) => c.passed)).toBe(true);
   });
 });

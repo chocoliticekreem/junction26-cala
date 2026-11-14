@@ -155,6 +155,38 @@ const SECTOR_RES = SECTOR_TERMS.map(([sector, strong, weak]) => ({
   weak: weak.length ? new RegExp(`\\b(?:${weak.join("|")})\\b`, "gi") : null,
 }));
 
+// Off-taxonomy pitches (spec 9.1) emit sector "other" so cards can say "sector unclear,
+// matched on stage" instead of forcing a wrong label.
+const OFF_TAXONOMY_TERMS = [
+  "defen[cs]e(?: tech)?",
+  "defen[cs]etech",
+  "military",
+  "agri-?tech",
+  "agriculture",
+  "agricultural",
+  "farming",
+  "gaming",
+  "games? studio",
+  "video games?",
+  "legal ?tech",
+  "law ?tech",
+  "space ?tech",
+  "space (?:industry|startup|company|launch)",
+  "satellites?",
+  "food (?:&|and) beverage",
+  "f&b",
+  "fashion",
+  "media (?:company|startup|brand|publisher)",
+  "publishing",
+  "hr ?tech",
+  "hr",
+  "recruit(?:ing|ment)",
+  "gov ?tech",
+  "sports?",
+];
+const OFF_TAXONOMY_RE = new RegExp(`\\b(?:${OFF_TAXONOMY_TERMS.join("|")})\\b`, "gi");
+const OFF_TAXONOMY_CONFIDENCE = 0.6;
+
 const STAGE_PATTERNS: { stage: Stage; re: RegExp; confidence: number }[] = [
   { stage: "pre-idea", re: /\b(?:pre[- ]?idea|idea[- ]stage|just an idea)\b/gi, confidence: 0.85 },
   { stage: "pre-seed", re: /\bpre[- ]?seed\b/gi, confidence: 0.9 },
@@ -291,13 +323,20 @@ const isRevenue = (text: string, m: Money) =>
   REVENUE_BEFORE.test(text.slice(Math.max(0, m.index - 25), m.index));
 
 function detectSectors(text: string, ex: Extraction, triggers: Record<string, string>) {
+  const offTaxonomy = text.match(OFF_TAXONOMY_RE);
   for (const { sector, strong, weak } of SECTOR_RES) {
     const strongHits = [...text.matchAll(strong)];
     const weakHits = weak ? [...text.matchAll(weak)] : [];
+    // An off-taxonomy word ("gaming") outranks a taxonomy label heard only through weak terms.
+    if (offTaxonomy && strongHits.length === 0) continue;
     const score = strongHits.length + 0.5 * weakHits.length;
     if (score === 0) continue;
     ex.sectors.push({ label: sector, confidence: Math.min(0.95, 0.45 + 0.2 * score) });
     triggers[sector] = (strongHits[0] ?? weakHits[0])[0];
+  }
+  if (offTaxonomy) {
+    ex.sectors.push({ label: "other", confidence: OFF_TAXONOMY_CONFIDENCE });
+    triggers.other = offTaxonomy[0];
   }
   ex.sectors.sort((a, b) => b.confidence - a.confidence);
   if (ex.sectors.length) triggers.sectors = triggers[ex.sectors[0].label];
