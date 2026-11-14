@@ -10,7 +10,7 @@
 // 5/10) and (2) calibration of the predicted P(next round within 24 months of it) against what
 // happened (Brier score, reliability bins), for the calibrated model and the uncorrected
 // cohort-only model side by side.
-import { buildEpisodes, droppedInvestors, fitModel, type FitOptions } from "./fit";
+import { buildEpisodes, droppedInvestors, fitModel, labelSizeBands, type FitOptions } from "./fit";
 import { toPrecedent } from "./precedents";
 import { Engine, prepare } from "./simulate";
 import type { Cohort, Episode, Precedent, SimModel, StartState, Vision } from "./types";
@@ -36,8 +36,10 @@ function ranking(counts: Map<string, number>): string[] {
 const DAY_MS = 86400000;
 const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
+// Effective stages (stageSize.ts), as in fitModel, so an anchor "seed" is the same round the fitted
+// model calls seed. Bands use every dated round: sizes only, no outcomes.
 function fullEpisodes(cohort: Cohort): Record<string, Episode[]> {
-  return buildEpisodes(cohort, Infinity, droppedInvestors(cohort));
+  return buildEpisodes(cohort, Infinity, droppedInvestors(cohort), labelSizeBands(cohort, Infinity));
 }
 
 function isAcceleratorLed(cohort: Cohort, e: Episode | undefined): boolean {
