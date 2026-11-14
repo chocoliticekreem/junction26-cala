@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FounderProfile, Interest, Investor, Verification } from "@/lib/types";
 import { verifyFounder, verifyInvestor, type InterestStore } from "@/lib/engine";
 import { Button, Label } from "@/components/ui";
+import { hostOf } from "@/lib/verification";
 
 export type VerificationChecklistProps = {
   interest: Interest;
@@ -140,7 +141,7 @@ export function InvestorVerifyForm({ investor, onVerified }: { investor: Investo
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [result, setResult] = useState<Verification | null>(null);
-  const domain = investor.website ? new URL(investor.website).hostname.replace(/^www\./, "") : "fund domain";
+  const domain = hostOf(investor.website) ?? "fund domain";
 
   const submit = () => {
     const v = verifyInvestor({ name, email }, investor);

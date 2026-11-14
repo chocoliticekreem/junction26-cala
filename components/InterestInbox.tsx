@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Deal, FounderProfile, Interest, Investor } from "@/lib/types";
 import { SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
-import { loadInvestors, rankFounders } from "@/lib/engine";
+import { errorMessage, loadInvestors, rankFounders } from "@/lib/engine";
+import { countedDeals } from "@/lib/revealed";
 import { useInterestStore, useLiveProfile } from "@/lib/interestStore";
 import { VerificationChecklist } from "@/components/VerificationChecklist";
 import { ChatThread } from "@/components/ChatThread";
@@ -70,17 +71,23 @@ function topSector(f: FounderProfile): Sector | undefined {
   return (Object.entries(f.sectors) as [Sector, number][]).sort((a, b) => b[1] - a[1])[0]?.[0];
 }
 
-function evidenceLine(inv: Investor, f: FounderProfile): { line: string; deals: Deal[] } {
+// Counts only deals inside the 24-month revealed-thesis window, like the scorer does.
+export function evidenceLine(
+  inv: Investor,
+  f: FounderProfile,
+  now: Date = new Date(),
+): { line: string; deals: Deal[] } {
   const sector = topSector(f);
-  const deals = inv.deals.filter((d) => !sector || d.sector === sector);
+  const recent = countedDeals(inv.deals, now).map((c) => c.deal);
+  const deals = recent.filter((d) => !sector || d.sector === sector);
   const stageDeals = f.stage ? deals.filter((d) => d.round === f.stage) : deals;
   const use = stageDeals.length >= 2 ? stageDeals : deals;
   const since = dealsSince(use);
   const stageWord = stageDeals.length >= 2 && f.stage ? `${STAGE_LABELS[f.stage].toLowerCase()} ` : "";
-  const sectorWord = sector ? SECTOR_SHORT[sector].toLowerCase() : "";
+  const sectorWord = sector ? `${SECTOR_SHORT[sector].toLowerCase()} ` : "";
   const line = use.length
-    ? `backed ${use.length} ${stageWord}${sectorWord} compan${use.length === 1 ? "y" : "ies"}${since ? ` since ${since}` : ""}`
-    : `no ${sectorWord} deals in the last 24 months`;
+    ? `backed ${use.length} ${stageWord}${sectorWord}compan${use.length === 1 ? "y" : "ies"}${since ? ` since ${since}` : ""}`
+    : `no ${sectorWord}deals in the last 24 months`;
   return { line, deals: use.slice(0, 3) };
 }
 
@@ -136,7 +143,7 @@ export function InterestInbox({ founderId, founder, open, onClose }: InterestInb
               onVerify={upsertVerification}
               onSend={(text) => {
                 const r = send(req.id, "founder", text);
-                return r.ok ? { ok: true } : { ok: false, error: r.error };
+                return r.ok ? { ok: true } : { ok: false, error: errorMessage(r.error) };
               }}
             />
           );

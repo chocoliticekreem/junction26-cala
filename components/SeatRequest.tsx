@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { SeatRequest as SeatRequestRecord } from "@/lib/types";
+import { errorMessage } from "@/lib/engine";
 import { useInterestStore } from "@/lib/interestStore";
 import { Button, Chip } from "@/components/ui";
 
@@ -39,7 +40,7 @@ export function SeatRequest({ roomId, founderId }: SeatRequestProps) {
         title={otherOpen ? "You already have one open seat request" : undefined}
         onClick={() => {
           const r = requestSeat(roomId, fid);
-          setError(r.ok ? null : r.error);
+          setError(r.ok ? null : errorMessage(r.error));
         }}
         dataTestId="request-seat"
       >

@@ -23,6 +23,13 @@ const FIXTURES = usingFixtures();
 
 const subscribeNever = () => () => {};
 
+declare global {
+  interface Window {
+    __roomReplayQueued?: boolean;
+    __roomReady?: boolean;
+  }
+}
+
 export default function FounderPage() {
   const pitch = usePitch(REPLAY);
   const { tokens, profile, triggers, replaying, micOn, replay, toggleMic } = pitch;
@@ -49,13 +56,21 @@ export default function FounderPage() {
       if (e.key === "Escape") setSelectedInvestorId(undefined);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.__roomReady = true;
+    if (window.__roomReplayQueued) {
+      window.__roomReplayQueued = false;
+      replay();
+    }
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.__roomReady = false;
+    };
   }, [replay]);
 
   const selectedRaw = selectedInvestorId ? INVESTORS.find((i) => i.id === selectedInvestorId) : undefined;
   const selected = useMemo(
-    () => (selectedRaw ? { ...selectedRaw, doors: doorsFor(selectedRaw, PROGRAMMES) } : undefined),
-    [selectedRaw],
+    () => (selectedRaw ? { ...selectedRaw, doors: doorsFor(selectedRaw, PROGRAMMES, profile) } : undefined),
+    [selectedRaw, profile],
   );
   const selectedMatch = selectedInvestorId ? matches.find((m) => m.investorId === selectedInvestorId) : undefined;
 

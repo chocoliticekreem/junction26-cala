@@ -44,6 +44,11 @@ export default function ProfileChips({ profile, triggers = {} }: ProfileChipsPro
   const [fresh, setFresh] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    // An empty profile means a reset (replay or new mic session): chips may flash again.
+    if (!chipKeys) {
+      seen.current.clear();
+      return;
+    }
     const newly = chipKeys.split("|").filter((k) => k && !seen.current.has(k));
     if (newly.length === 0) return;
     for (const k of newly) seen.current.add(k);

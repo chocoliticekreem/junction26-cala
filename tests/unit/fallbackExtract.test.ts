@@ -68,6 +68,30 @@ describe("fallbackExtract", () => {
     expect(fallbackExtract("hello everyone, thanks for having me").sectors).toEqual([]);
   });
 
+  it("labels off-taxonomy pitches as other so cards can say sector unclear", () => {
+    for (const text of [
+      "We build defence tech for naval operators",
+      "An agritech platform for farmers",
+      "We're a games studio making mobile titles",
+      "Legal tech for small firms",
+      "A space company launching cubesats",
+      "A food & beverage brand",
+      "HR platform for recruiting teams",
+      "Govtech for local councils",
+      "A sports analytics startup",
+    ]) {
+      const e = fallbackExtract(text);
+      expect(e.sectors.map((s) => s.label), text).toEqual(["other"]);
+      expect(e.sectors[0].confidence).toBeGreaterThan(0.4);
+      expect(e.sectors[0].confidence).toBeLessThan(0.8);
+    }
+  });
+
+  it("keeps a strongly heard taxonomy label next to other", () => {
+    const e = fallbackExtract("Defence cybersecurity: threat detection for the military");
+    expect(e.sectors.map((s) => s.label)).toEqual(expect.arrayContaining(["cybersecurity", "other"]));
+  });
+
   it("runs in under 5ms on a pitch-length chunk", () => {
     const text = "We are a London biotech building CRISPR therapeutics, raising a £1.5m pre-seed. ".repeat(5);
     fallbackExtract(text);

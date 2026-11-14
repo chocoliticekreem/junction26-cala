@@ -114,6 +114,8 @@ type Computed = {
   S: Partial<Record<Sector, number>>;
   G: Partial<Record<Stage, number>>;
   fs: Partial<Record<Sector, number>>;
+  w: DebriefStats["weights"];
+  stats?: DebriefStats;
 };
 
 function compute(f: FounderProfile, inv: Investor, stats?: DebriefStats): Computed {
@@ -151,13 +153,7 @@ function compute(f: FounderProfile, inv: Investor, stats?: DebriefStats): Comput
     { key: "debriefAdj", contrib: w.debrief * debriefAdj, known: !!stats && stats.n > 0 },
   ];
   const total = terms.reduce((a, t) => a + t.contrib, 0);
-  return { score: Math.round(total * 1000) / 10, breakdown, terms, S, G, fs };
-}
-
-export function formatUsd(n: number): string {
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(1).replace(/\.0$/, "")}m`;
-  if (n >= 1e3) return `$${Math.round(n / 1e3)}k`;
-  return `$${Math.round(n)}`;
+  return { score: Math.round(total * 1000) / 10, breakdown, terms, S, G, fs, w, stats };
 }
 
 // Raise is stored in USD; the founder said it in pounds, so the investor reads it back in pounds.
@@ -216,15 +212,21 @@ function phrase(term: Term, f: FounderProfile, inv: Investor, c: Computed, now: 
     }
     case "chequeFit": {
       const [lo, hi] = inv.revealed.chequeBand;
-      const band = `rounds of ${formatUsd(lo)}-${formatUsd(hi)}`;
+      const band = `rounds of ${formatGbp(lo)}-${formatGbp(hi)}`;
       return c.breakdown.chequeFit >= 0.99 ? `${band} fit your raise` : band;
     }
     case "activity": {
       const n = counted.filter((x) => x.months <= 12).length;
       return `${n} deal${n === 1 ? "" : "s"} in the last 12 months`;
     }
-    case "debriefAdj":
-      return "positive room debriefs";
+    case "debriefAdj": {
+      const n = c.stats?.n ?? 0;
+      const adj = c.stats?.adj ?? NEUTRAL;
+      if (n <= 0) return "";
+      return adj > 0.55
+        ? `room debriefs lean positive (seeded, ${n})`
+        : `mixed room debriefs (seeded, ${n})`;
+    }
   }
 }
 
@@ -237,7 +239,12 @@ function reasonFor(f: FounderProfile, inv: Investor, c: Computed, now: Date): st
     .filter((t) => t.known && t.contrib > 0)
     .sort((a, b) => b.contrib - a.contrib)
     .slice(0, 2);
-  const line = capitalize(top.map((t) => phrase(t, f, inv, c, now)).join("; "));
+  const line = capitalize(
+    top
+      .map((t) => phrase(t, f, inv, c, now))
+      .filter(Boolean)
+      .join("; "),
+  );
   const onlyOther = Object.keys(c.fs).length > 0 && Object.keys(c.fs).every((s) => s === "other");
   if (onlyOther && f.stage) return `Sector unclear, matched on stage; ${line}`;
   return line;
@@ -251,7 +258,7 @@ function dealTime(d: Deal): number {
 // The 2-3 counted deals that contribute most to sectorFit + stageFit; newest first on ties.
 // Topped up with the newest remaining deals so a card always has two chips when it can.
 function evidenceFor(f: FounderProfile, inv: Investor, c: Computed, now: Date): Deal[] {
-  const w = BASE_WEIGHTS;
+  const w = c.w;
   const counted = new Set(countedDeals(inv.deals, now).map((x) => x.deal));
   const contribution = (d: Deal) => {
     if (!counted.has(d)) return 0;

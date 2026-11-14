@@ -159,6 +159,66 @@ describe("debriefs", () => {
   });
 });
 
+describe("reason lines", () => {
+  const d = (fit: Debrief["fit"], tag: Debrief["tag"] = "team"): Debrief => ({
+    roomId: "r",
+    founderId: "f",
+    investorId: "bio",
+    fit,
+    again: true,
+    tag,
+    seeded: true,
+  });
+  // Unknown sector, stage and raise leave activity and debriefs as the only known terms.
+  const blank = founder();
+
+  it("says debriefs lean positive only when the posterior is above 0.55", () => {
+    const stats = debriefStats([d("yes"), d("yes"), d("yes")], "bio");
+    const m = scoreInvestor(blank, bioPreSeed, stats, NOW);
+    expect(m.reason).toContain("room debriefs lean positive (seeded, 3)");
+  });
+
+  it("calls neutral or negative debriefs mixed, never positive", () => {
+    for (const fits of [["yes", "no"], ["no", "no"]] as Debrief["fit"][][]) {
+      const stats = debriefStats(fits.map((f) => d(f)), "bio");
+      expect(stats.adj).toBeLessThanOrEqual(0.55);
+      const m = scoreInvestor(blank, bioPreSeed, stats, NOW);
+      expect(m.reason).not.toContain("positive");
+      expect(m.reason).toContain(`mixed room debriefs (seeded, ${fits.length})`);
+    }
+  });
+
+  it("never mentions debriefs when there are none", () => {
+    const m = scoreInvestor(blank, bioPreSeed, debriefStats([], "bio"), NOW);
+    expect(m.reason).not.toContain("debrief");
+  });
+
+  it("states cheque bands in pounds", () => {
+    const chequeOnly = founder({ raise: 1.2e6, confidence: { raise: 1 } });
+    const inv = investor("chq", repeat(4, (i) => deal("fintech", "unknown", 20 + i * 30, 1.27e6)));
+    const m = scoreInvestor(chequeOnly, inv, undefined, NOW);
+    expect(m.reason).toContain("£1m");
+    expect(m.reason).not.toContain("$");
+  });
+
+  it("picks evidence with the debrief-shifted weights", () => {
+    // Founder: fintech seed. One deal matches the sector only, one the stage only, both equally
+    // weighted by base weights would favour sector (0.4 vs 0.3); stage-tag debriefs flip it.
+    const mixed = founder({ id: "mx", sectors: { fintech: 1 }, stage: "seed" });
+    const inv = investor("ev", [
+      deal("fintech", "series-b-plus", 30),
+      deal("biotech/therapeutics", "seed", 40),
+      deal("biotech/therapeutics", "seed", 50),
+      deal("fintech", "series-b-plus", 60),
+    ]);
+    const base = scoreInvestor(mixed, inv, undefined, NOW);
+    expect(base.evidence[0].sector).toBe("fintech");
+    const stageHeavy = { adj: 0.5, n: 3, weights: { ...BASE_WEIGHTS, sector: 0.25, stage: 0.45 } };
+    const shifted = scoreInvestor(mixed, inv, stageHeavy, NOW);
+    expect(shifted.evidence[0].round).toBe("seed");
+  });
+});
+
 describe("rankFounders", () => {
   it("ranks the founder pool for an investor", () => {
     const fintechFounder = founder({ id: "f2", sectors: { fintech: 1 }, stage: "series-a" });

@@ -13,6 +13,7 @@ import {
   rankFounders,
   suggestRooms,
   usingFixtures,
+  errorMessage,
 } from "@/lib/engine";
 import { LIVE_FOUNDER_ID, useInterestStore, useLiveProfile, useRooms } from "@/lib/interestStore";
 import type { OrbitGroupBy } from "@/lib/orbit";
@@ -292,7 +293,7 @@ export default function InvestorPage() {
                           counterpartName={f.name ?? f.company ?? "founder"}
                           onSend={(text) => {
                             const r = send(c.id, "investor", text);
-                            return r.ok ? { ok: true } : { ok: false, error: r.error };
+                            return r.ok ? { ok: true } : { ok: false, error: errorMessage(r.error) };
                           }}
                         />
                       ) : (
@@ -327,7 +328,7 @@ export default function InvestorPage() {
               onSelect={setSelectedFounderId}
               onInterested={(fid) => {
                 const r = express(inv.id, fid);
-                setError(r.ok ? null : r.error);
+                setError(r.ok ? null : errorMessage(r.error));
               }}
             />
           )}
