@@ -10,6 +10,9 @@
 - 05:52 PR #3 Core engine: scoring (spec 5.3), revealed vector + contradiction (5.2), keyword extractor, merge, interest state machine, verification, room builder, 200 fixture investors. 87 unit tests.
 - 05:58 PR #4 Investor view, rooms, seat requests, debrief panel, interest inbox, verification, chat, two-window sync.
 - 06:05 PR #5 Founder view: force graph, transcript rail, chips, top 10, evidence edges, profile panel, doors; live loop for replay + mic (fallback extractor on every chunk, one-in-flight LLM).
+- 06:25 PR #7 E2E specs: investor feed, full two-window interest flow (cap, decline), screenshots spec.
+- 06:35 PR #8 Founder graph polish: label collision avoidance, integer scores, per-chip triggers + transcript highlight, evidence draw-on, contradiction micro-chart, idle hint; 60 fps measured with 200 nodes.
+- 06:45 PR #9 Investor view: founders orbit the selected investor (group-by halos), shared top bar, pounds formatting, mobile layout; fixed investor persona reset on reload.
 - E2E: founder-smoke, replay (biotech chip + biotech investor in top 3), interest two-window flow, room seat flow: 4/4 green.
 
 ## In progress
@@ -17,8 +20,8 @@
 
 ## Next
 - Merge Track C, rebuild `data/investors.json` from real Cala data, check the fixture banner disappears and contradictions are real.
-- Investor e2e spec + screenshot spec (12.5), mic test, adversarial review.
-- Polish: label overlap in the dense cluster, integer scores, chip trigger per sector.
+- Mic test (manual in Chrome; headless has no Web Speech), adversarial review, fixes.
+- Polish backlog 12.7 after DoD.
 
 ## Decisions
 - Disabled Next 16 `cacheComponents`/`partialPrefetching` from the scaffold: app is client-heavy, avoids Suspense-boundary build errors.
@@ -30,6 +33,7 @@
 - Programme doors only attach to an investor when the programme is that investor's own (explicit link or name match). No cold-email door anywhere.
 - Interest: decline is final for a pair; expired can be renewed; accept goes straight to `chat_open` or `pending_verification`.
 - Track worktrees live in `.claude/worktrees/` (gitignored).
+- Full e2e suite: 14/14 green on main after PR #9.
 
 ## Elapsed
-- 06:07 — 35 min.
+- 06:50 — 1 h 18 min.
