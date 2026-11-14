@@ -19,7 +19,8 @@
     "build-replay": "tsx scripts/build-replay.ts",
     "prewarm": "tsx scripts/prewarm.ts",
     "build-snapshot": "tsx scripts/build-snapshot.ts",
-    "seed-valkey": "tsx scripts/seed-valkey.ts"
+    "seed-valkey": "tsx scripts/seed-valkey.ts",
+    "verify-data": "tsx scripts/verify-data.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

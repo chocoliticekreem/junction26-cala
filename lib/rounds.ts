@@ -94,6 +94,24 @@ function precisionOf(raw: unknown): Deal["datePrecision"] {
   return p === "day" || p === "month" || p === "year" ? p : undefined;
 }
 
+// event_date (first close) when it is a real date, else announcement_date. Cala sometimes stores a
+// year-only event_date as YYYY-01-01 with no precision (Cala's own pre-seed: event 2025-01-01,
+// announced 2026-05-11); a Jan-1 event date more than 6 months before the announcement is that pin.
+export function pickRoundDate(
+  eventRaw: unknown,
+  announcedRaw: unknown,
+  precisionRaw?: unknown,
+): { date?: string; precision?: Deal["datePrecision"] } {
+  const event = isoDay(eventRaw);
+  const announced = isoDay(announcedRaw);
+  const precision = precisionOf(precisionRaw);
+  const pinned = !!event && precision !== "day" && /-01-01$/.test(event);
+  if (event && announced && pinned && Date.parse(announced) - Date.parse(event) > 183 * 86_400_000)
+    return { date: announced, precision: "day" };
+  if (event) return precision ? { date: event, precision } : { date: event };
+  return announced ? { date: announced } : {};
+}
+
 const SYMBOL: Record<string, string> = { USD: "$", GBP: "£", EUR: "€" };
 
 function formatAmount(value: number, units: string): string {
@@ -128,15 +146,9 @@ export function parseFundingRound(e: CalaEntity): ParsedRound {
     if (units in FX_TO_USD) out.amountUsd = Math.round(value * FX_TO_USD[units as keyof typeof FX_TO_USD]);
   }
 
-  const event = isoDay(valueOf(e, "event_date"));
-  const announced = isoDay(valueOf(e, "announcement_date"));
-  if (event) {
-    out.date = event;
-    const p = precisionOf(valueOf(e, "event_date__precision"));
-    if (p) out.datePrecision = p;
-  } else if (announced) {
-    out.date = announced;
-  }
+  const picked = pickRoundDate(valueOf(e, "event_date"), valueOf(e, "announcement_date"), valueOf(e, "event_date__precision"));
+  if (picked.date) out.date = picked.date;
+  if (picked.precision) out.datePrecision = picked.precision;
 
   for (const edge of e.relationships?.incoming?.PARTICIPATES_IN_FUNDING_ROUND ?? []) {
     const props = edge.properties ?? {};

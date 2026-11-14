@@ -2,6 +2,7 @@ import { mockDoc } from "@/lib/context/build";
 import { docToMarkdown } from "@/lib/context/doc";
 import { CTX_PREFIX, storeGet, validStoreId } from "@/lib/context/store";
 import type { ContextDoc } from "@/lib/context/types";
+import { contextTrust } from "@/lib/verify/load";
 
 export async function GET(_req: Request, ctx: RouteContext<"/api/context/[id]">) {
   const { id } = await ctx.params;
@@ -12,5 +13,6 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/context/[id]">)
   }
   const doc = await storeGet<ContextDoc>(CTX_PREFIX + id.toLowerCase());
   if (!doc) return Response.json({ error: "not_found" }, { status: 404 });
-  return Response.json({ doc, markdown: docToMarkdown(doc) });
+  const { trust, unconfirmed } = contextTrust(doc);
+  return Response.json({ doc, markdown: docToMarkdown(doc), verification: { trust, unconfirmed } });
 }

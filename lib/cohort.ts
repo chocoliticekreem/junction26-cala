@@ -6,6 +6,8 @@ import path from "node:path";
 import fixture from "@/data/cohort.fixture.json";
 import { fitModel } from "@/lib/sim/fit";
 import type { Cohort, CohortCompany, SimModel } from "@/lib/sim/types";
+import { cohortTrust } from "@/lib/verify/load";
+import type { Trust } from "@/lib/verify/types";
 
 let cached: { cohort: Cohort; fixture: boolean } | undefined;
 let model: SimModel | undefined;
@@ -58,4 +60,13 @@ export function findCompanyByName(cohort: Cohort, name: string): CohortCompany |
   if (exact.length) return exact.sort((a, b) => b.roundIds.length - a.roundIds.length)[0];
   const prefix = all.filter((c) => normName(c.name).startsWith(`${q} `));
   return prefix.length === 1 ? prefix[0] : undefined;
+}
+
+let trust: Record<string, Trust> | undefined;
+
+// Trust per round id (data/verify.json, else assessed from the round's own sources), so the
+// simulator and UI can drop conflicts and mark unverified rounds. See lib/verify/rules.ts.
+export function loadCohortTrust(): Record<string, Trust> {
+  trust ??= cohortTrust(loadCohort());
+  return trust;
 }
