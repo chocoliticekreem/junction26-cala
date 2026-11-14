@@ -78,11 +78,10 @@ export default function MatchList({ matches, investors, selectedId, onSelect, li
     <section className="rail-card rail-grow" aria-label="Top matches" data-testid="match-list" data-idle={idle || undefined}>
       <header className="rail-head">
         <span>Top {rows.length}</span>
-        <span className="muted">{idle ? "waiting for your pitch" : "ranked on revealed deals"}</span>
+        <span className="muted">{idle ? "forms as you speak" : "by revealed deals"}</span>
       </header>
       {idle && (
         <div className="matches-idle" data-testid="match-idle" aria-hidden>
-          <p>Your top 10 forms as you speak</p>
           <ul>
             {[0, 1, 2, 3].map((i) => (
               <li key={i} style={{ animationDelay: `${i * 140}ms` }}>

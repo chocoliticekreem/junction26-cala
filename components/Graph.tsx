@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import type { Sector } from "@/lib/taxonomy";
 import type { Investor, Match } from "@/lib/types";
 
 export type GraphProps = {
@@ -10,9 +11,13 @@ export type GraphProps = {
   selectedId?: string;
   onSelect: (id?: string) => void;
   center?: { label: string };
+  emphasis?: Partial<Record<Sector, number>>;
   reducedMotion?: boolean;
   padLeft?: number;
   idle?: boolean;
+  onReplay?: () => void;
+  onMic?: () => void;
+  micState?: "idle" | "listening" | "unsupported";
 };
 
 const GraphCanvas = dynamic(() => import("./GraphCanvas"), {
@@ -20,10 +25,13 @@ const GraphCanvas = dynamic(() => import("./GraphCanvas"), {
   loading: () => <div className="absolute inset-0" aria-hidden />,
 });
 
+const HERO_FADE_MS = 700;
+
 export default function Graph(props: GraphProps) {
   const wrap = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [systemReduced, setSystemReduced] = useState(false);
+  const [heroFaded, setHeroFaded] = useState(!props.idle);
 
   useEffect(() => {
     const el = wrap.current;
@@ -44,6 +52,17 @@ export default function Graph(props: GraphProps) {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
+  // The hero stays mounted through its fade-out so the pitch starting feels like a reveal.
+  useEffect(() => {
+    if (props.idle) return;
+    const id = window.setTimeout(() => setHeroFaded(true), HERO_FADE_MS);
+    return () => window.clearTimeout(id);
+  }, [props.idle]);
+  if (props.idle && heroFaded) setHeroFaded(false);
+  const heroMounted = props.idle || !heroFaded;
+
+  const mic = props.micState ?? "idle";
+
   return (
     <div ref={wrap} className="relative h-full w-full overflow-hidden" data-testid="graph">
       {size.width > 0 && size.height > 0 && (
@@ -56,12 +75,29 @@ export default function Graph(props: GraphProps) {
           idle={props.idle ?? false}
         />
       )}
-      {props.idle && (
-        <div className="graph-idle" data-testid="graph-idle">
-          <p className="graph-idle-title">Raising pre-seed or seed in London?</p>
-          <p className="graph-idle-sub">Pitch out loud. Investors rank themselves by the deals they actually did, sourced from Cala.</p>
-          <p className="graph-hint" data-testid="graph-hint">
-            Press <kbd>R</kbd> to replay a pitch, or the mic to pitch live
+      {heroMounted && (
+        <div className={`hero ${props.idle ? "" : "is-leaving"}`} data-testid="graph-idle">
+          <p className="hero-kicker">Raising pre-seed or seed in London?</p>
+          <h1 className="hero-title">
+            Who actually backs
+            <br />
+            startups like yours?
+          </h1>
+          <p className="hero-sub">Pitch out loud. Investors rank themselves by the deals they did, not the thesis they wrote.</p>
+          <div className="hero-actions">
+            {props.onReplay && (
+              <button type="button" className="hero-btn hero-btn-primary" onClick={props.onReplay}>
+                Replay a pitch <kbd>R</kbd>
+              </button>
+            )}
+            {props.onMic && (
+              <button type="button" className="hero-btn" onClick={props.onMic} disabled={mic === "unsupported"} title={mic === "unsupported" ? "Speech recognition needs Chrome" : undefined}>
+                <i aria-hidden /> Pitch live
+              </button>
+            )}
+          </div>
+          <p className="hero-hint graph-hint" data-testid="graph-hint">
+            {mic === "unsupported" ? "Live mic needs Chrome. Replay works everywhere." : "Press R any time to replay"}
           </p>
         </div>
       )}

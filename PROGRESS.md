@@ -55,7 +55,7 @@
 - Human items for Anson are in BLOCKED.md (real-mic check, quotes, optional audio, auth before any deploy).
 
 ## Findings
-- Real London pre-seed biotech money is thin: for the biotech pre-seed demo pitch the top scores on real data are 56-62 (Zinc, 4BIO Capital, Syncona) versus 80+ on fixtures, so the biotech halo (>= 5 investors inside 0.35 R_max) does not form for the replay (top scores 62.3 / 56.0 / 55.9; 5 needed inside the radius). Kept the spec rule; not tuned away: it is the honest picture and a talking point.
+- Real London pre-seed biotech money is thin: for the biotech pre-seed demo pitch the top scores on real data are 56-62 (Zinc, 4BIO Capital, Syncona) versus 80+ on fixtures, so the spec halo (>= 5 investors inside 0.35 R_max, absolute radius curve) never formed for the replay. Founder redesign (Anson: "I can't see the clustering") replaced it: radius comes from the score's place in the current set blended with rank, sectors own arcs sized by investor count, and the halo rule is >= 3 investors ranked in the top 12 inside the inner band. "Biotech · 6 investors" now forms on real data. Investor view keeps the spec physics.
 - Cala: funds link to portfolio via INVESTED_IN (no round/date/amount) and to rounds via PARTICIPATES_IN_CORPORATE_EVENT; useful deal rows came from one dot-notation knowledge query per investor. Uncached query/search takes 40-70 s; 3-4 concurrent is the safe rate.
 
 ## Decisions
@@ -70,6 +70,7 @@
 - Track worktrees live in `.claude/worktrees/` (gitignored).
 - Interest gets a `withdrawn` state (not in 4.1's list) so investors can free their cap from founders who never answer; founders don't see withdrawn requests.
 - Live-extract queue appends pending text instead of dropping it (deviation from 5.6 'newest replaces queued'; no words lost, still one request in flight).
+- Founder graph deviates from 5.5 on Anson's feedback: ranked/stretched radius instead of the absolute curve, count-weighted sector arcs with gaps and filled territories, only the top 5 named on canvas (6-10 glow), halo relaxed as above. Idle state is a centred hero with Replay / Pitch live buttons; top-bar subtitle and the bottom legend are gone; evidence chips show for the top 3, hover and selection only.
 
 ## Elapsed
 - 09:07 — 3 h 35 min. DoD met (bar the human mic check), CHALLENGE.md self-check answered; continuing polish.
