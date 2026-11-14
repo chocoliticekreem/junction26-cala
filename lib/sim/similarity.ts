@@ -99,6 +99,70 @@ export function similarity(
   return TEXT_W * textSimilarity(idx, q, company.id) + (1 - TEXT_W) * (sectorWeights[company.sector] ?? 0);
 }
 
+// Coarse domain families over the broad sectors: a precedent from the founder's family is a fair
+// comparison, one from another family (a consumer app for an AI-infrastructure start) is not.
+const FAMILY_OF: Record<Sector, string> = {
+  "AI infrastructure": "software",
+  "developer tools": "software",
+  "B2B SaaS (other)": "software",
+  "applied AI/vertical SaaS": "software",
+  cybersecurity: "software",
+  "biotech/therapeutics": "health",
+  "medtech/devices": "health",
+  healthtech: "health",
+  fintech: "money",
+  insurtech: "money",
+  "crypto/web3": "money",
+  consumer: "consumer",
+  marketplaces: "consumer",
+  edtech: "consumer",
+  proptech: "physical",
+  mobility: "physical",
+  "climate/energy": "physical",
+  "deep tech/hardware": "physical",
+  other: "other",
+};
+
+export function sectorFamily(s: Sector): string {
+  return FAMILY_OF[s] ?? "other";
+}
+
+// Text similarity at or above which a company counts as the same domain: STRONG_TEXT_SIM on its
+// own, FAMILY_TEXT_SIM when it is also in one of the founder's sector families. Calibrated on the
+// real cohort: ~70 of 486 companies clear 0.04 for an AI-infrastructure pitch, and generic word
+// overlap ("AI", "agents") keeps unrelated fintech/edtech below 0.1. Below STRONG_TEXT_SIM a match
+// also needs MIN_SHARED_TERMS distinct words in common: one incidental word ("self-knowledge" in a
+// wellness app vs "knowledge graph") is not a shared domain.
+export const FAMILY_TEXT_SIM = 0.04;
+export const STRONG_TEXT_SIM = 0.1;
+export const MIN_SHARED_TERMS = 2;
+
+export type TextMatch = { sim: number; shared: number };
+
+export function textMatch(idx: SimilarityIndex, q: Vec, companyId: string): TextMatch {
+  const v = idx.vecs.get(companyId);
+  if (!v || !q.size) return { sim: 0, shared: 0 };
+  let shared = 0;
+  for (const w of q.keys()) if (v.has(w)) shared++;
+  return { sim: cosine(q, v), shared };
+}
+
+// 0 = same domain, 1 = same sector family (looser), 2 = unrelated. Without founder text, tier 0
+// is the founder's own sectors.
+export function domainTier(
+  company: { sector: Sector },
+  founderSectors: ReadonlySet<Sector>,
+  text: TextMatch | undefined,
+): 0 | 1 | 2 {
+  if (!founderSectors.size && !text) return 0;
+  const families = new Set([...founderSectors].map(sectorFamily));
+  const inFamily = families.has(sectorFamily(company.sector));
+  if (!text) return founderSectors.has(company.sector) ? 0 : inFamily ? 1 : 2;
+  if (text.sim >= STRONG_TEXT_SIM) return 0;
+  if (text.shared < MIN_SHARED_TERMS) return 2;
+  return inFamily ? (text.sim >= FAMILY_TEXT_SIM ? 0 : 1) : 2;
+}
+
 // Mean of the given companies' vectors, re-normalised: an investor's portfolio as one "document".
 export function centroid(idx: SimilarityIndex, ids: Iterable<string>): Vec {
   const sum: Vec = new Map();

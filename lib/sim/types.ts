@@ -120,6 +120,9 @@ export type Precedent = {
   reachedVision: boolean;
   // Text similarity (tags + description) to the founder, 0..1; present when the founder gave any.
   similarity?: number;
+  // True when no closer same-domain company was left and this one only shares the sector family
+  // (or less): shown as a looser comparison.
+  fallback?: boolean;
   // source: the round's first sourced URL, else "Cala knowledge query" (query rows carry no URL).
   path: { stage: Stage; leadName?: string; date?: string; roundId: string; source?: { name: string; url?: string } }[];
 };
@@ -173,6 +176,8 @@ export type Reality = {
   // Chip-length form of outcomeLine ("Stalls · no round in 24 mo"); older cached runs lack it.
   outcomeShort?: string;
   precedents: { companyId: string; name: string; roundIds: string[] }[];
+  // True when at least one named precedent is a looser, out-of-domain match.
+  precedentsFallback?: boolean;
   sampleSize: number;
   lowConfidence: boolean;
 };
