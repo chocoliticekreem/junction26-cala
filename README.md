@@ -36,6 +36,15 @@ npm run ingest -- --build        # rebuild data/investors.json from the raw cach
 
 See `docs/CALA.md` for the endpoints, relationship names and caveats.
 
+### Live Cala credits
+
+Every live Cala call costs one credit. The `/api/cala/*` routes cache successful responses in memory and on disk (`data/cala-cache/`, shared with the ingest), so a repeat click or a restart is free. Real calls count in `data/.cala-live-usage.json`; at `CALA_LIVE_BUDGET` (default 150) the routes return `budgetExhausted: true` with a "lookup paused" message instead of calling Cala. Delete the file to reset the count.
+
+```bash
+npm run prewarm                  # cache the panel's requests for the demo investors (max 15 calls)
+npm run prewarm -- zinc syncona  # or chosen investor ids; --dry-run lists the requests
+```
+
 ## Test
 
 ```bash

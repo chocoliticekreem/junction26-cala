@@ -1,4 +1,4 @@
-import { CalaError, UUID_RE, entitySources, getRouteCala } from "@/lib/cala";
+import { CalaBudgetError, CalaError, UUID_RE, entitySources, getRouteCala } from "@/lib/cala";
 
 function mock(id: string) {
   return {
@@ -12,6 +12,22 @@ function mock(id: string) {
     sources: [{ name: "mock", url: "https://cala.ai" }],
     cached: false,
     mock: true,
+  };
+}
+
+function budgetExhausted(id: string) {
+  return {
+    entity: {
+      id,
+      name: "Live Cala lookup paused",
+      entity_type: "Company",
+      description: "The live Cala credit budget for this demo is used up. Deals above come from the cached ingest.",
+      properties: {},
+    },
+    sources: [],
+    cached: false,
+    mock: true,
+    budgetExhausted: true,
   };
 }
 
@@ -37,6 +53,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/cala/entity/[id
       cached: cala.stats.cacheHits > hitsBefore,
     });
   } catch (err) {
+    if (err instanceof CalaBudgetError) return Response.json(budgetExhausted(id));
     const status = err instanceof CalaError && err.status === 404 ? 404 : 502;
     console.warn("cala entity:", err instanceof Error ? err.message : err);
     return Response.json({ error: status === 404 ? "not_found" : "upstream_error" }, { status });
