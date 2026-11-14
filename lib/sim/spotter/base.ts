@@ -1,39 +1,16 @@
 // Shared primitives for the spotter, built once per (cohort, asOf) and memoised.
-// reconcile: toMs, mulberry32, leadOf, stageFromLabel and the episode builder are local copies of
-// Track B's lib/sim/util.ts and lib/sim/fit.ts (buildEpisodes), kept behaviour-identical so the
-// spotter and the founder simulator read the same rounds the same way. Swap for imports on merge.
-import { isStage, type Sector, type Stage } from "@/lib/taxonomy";
-import type { Cohort, CohortCompany, CohortParticipant, CohortRound, InvestorKind } from "./cohort";
+// Round reading (dates, stages, leads, episodes) and the shared thresholds come from the founder
+// simulator (lib/sim/util.ts, lib/sim/fit.ts) so both read the same rounds the same way. Only the
+// lead's investor kind is added per episode (the shape score reads it).
+import type { Sector, Stage } from "@/lib/taxonomy";
+import { buildEpisodes as buildSimEpisodes } from "../fit";
+import type { Cohort, CohortCompany, Episode as SimEpisode, InvestorKind } from "../types";
+import { LOW_CONFIDENCE_N, MONTH_MS, PROXY_FUNDING_USD, ROUND_STAGES, STALL_MONTHS, leadOf, median, monthsBetween, mulberry32, roundStageIndex, toMs } from "../util";
+import { UNICORN_USD } from "../vision";
 
-export const ROUND_STAGES: Stage[] = ["pre-seed", "seed", "series-a", "series-b-plus"];
-export const MONTH_MS = 30.44 * 86400000;
-// Same thresholds as the founder simulator (Track B util.ts).
-export const STALL_MONTHS = 24;
-export const LOW_CONFIDENCE_N = 20;
-export const UNICORN_USD = 1_000_000_000;
-// Simulated futures have no valuations, so "unicorn-shaped" = Series B+ with this much raised.
-export const PROXY_FUNDING_USD = 100_000_000;
+export { LOW_CONFIDENCE_N, MONTH_MS, PROXY_FUNDING_USD, ROUND_STAGES, STALL_MONTHS, UNICORN_USD, median, monthsBetween, mulberry32, toMs };
 
-export const stageIdx = (s: Stage) => ROUND_STAGES.indexOf(s);
-
-export function toMs(date: string | undefined): number | undefined {
-  if (!date) return undefined;
-  const ms = Date.parse(date.length === 4 ? `${date}-07-01` : date.length === 7 ? `${date}-15` : date);
-  return Number.isFinite(ms) ? ms : undefined;
-}
-
-export const monthsBetween = (a: number, b: number) => (b - a) / MONTH_MS;
-
-export function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export const stageIdx = roundStageIndex;
 
 export function hashSeed(s: string): number {
   let h = 2166136261;
@@ -41,89 +18,18 @@ export function hashSeed(s: string): number {
   return h >>> 0;
 }
 
-export function median(xs: number[]): number | undefined {
-  if (!xs.length) return undefined;
-  const s = [...xs].sort((a, b) => a - b);
-  const m = (s.length - 1) / 2;
-  return (s[Math.floor(m)] + s[Math.ceil(m)]) / 2;
-}
+export type Episode = SimEpisode & { leadKind: InvestorKind };
 
-const KIND_RANK: Record<InvestorKind, number> = { fund: 0, cvc: 1, accelerator: 2, angel: 3, unknown: 4 };
-
-export function leadOf(round: CohortRound): CohortParticipant | undefined {
-  const ps = round.participants;
-  if (!ps.length) return undefined;
-  const flagged = ps.find((p) => p.isLead);
-  if (flagged) return flagged;
-  if (ps.length === 1) return ps[0];
-  return [...ps].sort((a, b) => KIND_RANK[a.kind] - KIND_RANK[b.kind])[0];
-}
-
-const LABEL_STAGE: [RegExp, Stage][] = [
-  [/pre[- ]?seed|angel|accelerator|incubator|friends/i, "pre-seed"],
-  [/seed/i, "seed"],
-  [/series[- ]?a\b/i, "series-a"],
-  [/series[- ]?[b-k]\b|growth|late|ipo|pre[- ]?ipo/i, "series-b-plus"],
-];
-
-export function stageFromLabel(label: string | undefined): Stage | undefined {
-  if (!label) return undefined;
-  if (isStage(label)) return label;
-  for (const [re, s] of LABEL_STAGE) if (re.test(label)) return s;
-  return undefined;
-}
-
-export type Episode = {
-  stage: Stage;
-  roundIds: string[];
-  dateMs: number;
-  lastDateMs: number;
-  leadId?: string;
-  leadKind: InvestorKind;
-  memberIds: string[];
-  amountUsd?: number;
-  valuationUsd?: number;
-};
-
-// A company's stay at one stage: a round at a higher stage opens an episode, later rounds at the
-// same stage join it; every Series B+ round opens its own. Only dated rounds before asOf count.
-export function buildEpisodes(cohort: Cohort, co: CohortCompany, asOfMs: number): Episode[] {
-  const rs = co.roundIds
-    .map((id) => cohort.rounds[id])
-    .filter((r): r is CohortRound => Boolean(r))
-    .map((r) => ({ r, ms: toMs(r.date), stage: r.stage !== "unknown" ? r.stage : stageFromLabel(r.label) }))
-    .filter(
-      (x): x is { r: CohortRound; ms: number; stage: Stage } =>
-        x.ms !== undefined && x.ms < asOfMs && !!x.stage && x.stage !== "pre-idea",
-    )
-    .sort((a, b) => a.ms - b.ms);
-  const eps: Episode[] = [];
-  for (const { r, ms, stage } of rs) {
-    const cur = eps[eps.length - 1];
-    const idx = stageIdx(stage);
-    const members = r.participants.map((p) => p.investorId);
-    if (cur && (idx < stageIdx(cur.stage) || (idx === stageIdx(cur.stage) && stage !== "series-b-plus"))) {
-      cur.roundIds.push(r.id);
-      cur.lastDateMs = ms;
-      for (const m of members) if (!cur.memberIds.includes(m)) cur.memberIds.push(m);
-      if (r.amountUsd) cur.amountUsd = (cur.amountUsd ?? 0) + r.amountUsd;
-      if (r.valuationUsd) cur.valuationUsd = Math.max(cur.valuationUsd ?? 0, r.valuationUsd);
-      continue;
-    }
-    const lead = leadOf(r);
-    eps.push({
-      stage,
-      roundIds: [r.id],
-      dateMs: ms,
-      lastDateMs: ms,
-      leadId: lead?.investorId,
-      leadKind: lead?.kind ?? "unknown",
-      memberIds: [...new Set(members)],
-      amountUsd: r.amountUsd,
-      valuationUsd: r.valuationUsd,
-    });
-  }
-  return eps;
+// Episodes for every company with a dated round before asOf (lib/sim/fit.ts buildEpisodes), plus
+// the kind of each episode's lead.
+export function buildEpisodes(cohort: Cohort, asOfMs: number): Record<string, Episode[]> {
+  const sim = buildSimEpisodes(cohort, asOfMs);
+  return Object.fromEntries(
+    Object.entries(sim).map(([id, eps]) => [
+      id,
+      eps.map((e) => ({ ...e, leadKind: leadOf(cohort.rounds[e.roundIds[0]])?.kind ?? "unknown" })),
+    ]),
+  );
 }
 
 // Outcome as it could be known at asOf (leakage guard for backtests):
@@ -222,9 +128,10 @@ function buildIndex(cohort: Cohort, asOf: string): SpotterIndex {
   const roundsOf = new Map<string, number>();
   const reUp = new Map<string, { raised: number; reUp: number }>();
 
+  const allEps = buildEpisodes(cohort, asOfMs);
   for (const c of Object.values(cohort.companies)) {
-    const eps = buildEpisodes(cohort, c, asOfMs);
-    if (!eps.length) continue;
+    const eps = allEps[c.id];
+    if (!eps?.length) continue;
     const investorIds = new Set<string>();
     for (const e of eps) {
       for (const rid of e.roundIds) {

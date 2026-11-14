@@ -26,3 +26,4 @@ next-env.d.ts
 data/context-cache/
 data/.context-store/
 data/verify-cache/
+data/ai-cache/

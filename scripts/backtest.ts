@@ -17,7 +17,8 @@ if (!co) {
 }
 const t0 = performance.now();
 const r = backtest(co.id, asOf, cohort);
-console.log(`${co.name} (${co.id}), fitted on rounds before ${asOf}${usingCohortFixture() ? ", FIXTURE cohort" : ""}`);
+console.log(`${co.name} (${co.id}), fitted on rounds before ${r.asOf}${usingCohortFixture() ? ", FIXTURE cohort" : ""}`);
+if (r.programmeStep) console.log(`programme step: first round led by ${r.programmeStep.leadName} (${r.programmeStep.date}) is programme entry; backtest starts after it`);
 console.log("real path:");
 for (const s of r.realPath.path) console.log(`  ${s.date ?? "????-??-??"}  ${s.stage.padEnd(14)} lead ${s.leadName ?? "?"}`);
 const rank = (n: number | null) => (n === null ? "not simulated" : `#${n}`);

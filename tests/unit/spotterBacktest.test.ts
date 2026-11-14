@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { backtestSpotter, SpotterError } from "@/lib/sim/spotter";
-import type { Cohort } from "@/lib/sim/spotter/cohort";
+import type { Cohort } from "@/lib/sim/types";
 
 const file = path.join(process.cwd(), "data", "cohort.json");
 const hasCohort = existsSync(file);

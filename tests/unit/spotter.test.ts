@@ -4,7 +4,7 @@ import { POST } from "@/app/api/spotter/route";
 import { backtestSpotter, investorTaste, rankSpotter, runSpotter, simulateFutures, spotterCandidates, spotterIndex, unicornShape } from "@/lib/sim/spotter";
 import { tasteFromIndex } from "@/lib/sim/spotter/taste";
 import { mulberry32, toMs } from "@/lib/sim/spotter/base";
-import type { Cohort, CohortCompany, CohortRound, InvestorKind } from "@/lib/sim/spotter/cohort";
+import type { Cohort, CohortCompany, CohortRound, InvestorKind } from "@/lib/sim/types";
 import type { Revealed } from "@/lib/types";
 import { SECTORS, type Stage } from "@/lib/taxonomy";
 
@@ -163,7 +163,7 @@ describe("POST /api/spotter", () => {
     const b = await (await call({ investorName: "Seedcamp" })).json();
     expect(a).toEqual(b);
     expect(a.mock).toBe(true);
-    expect(a.picks).toHaveLength(3);
+    expect(a.picks).toHaveLength(5);
   });
 });
 

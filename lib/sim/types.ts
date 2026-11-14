@@ -1,6 +1,8 @@
 // Shared contract types for Room Path. The cohort block is a verbatim copy of Track A's
 // lib/cohortTypes.ts; on merge, replace it with a re-export from there.
 import type { Sector, Source, Stage } from "@/lib/types";
+import type { BaseRate, OutcomePopulation, ReLeadRate } from "./calibration";
+import type { GeoCounts, Region } from "./geo";
 
 export type InvestorKind = "fund" | "angel" | "accelerator" | "cvc" | "unknown";
 
@@ -23,8 +25,11 @@ export type CohortRound = {
   amountUsd?: number;
   valuationUsd?: number; // as Cala reports it (post-money where stated), USD
   participants: CohortParticipant[];
+  participantsDropped?: number; // generic cells ("existing investors", "angels") not kept as investors
   sources: (Source & { rank?: SourceRank })[];
 };
+
+export type CohortSampledBy = "seed-sample" | "cala-network" | "london-portfolio" | "must-include";
 
 export type UnicornFlag = { value: boolean; basis: "valuation" | "known_list"; source?: Source };
 
@@ -34,6 +39,7 @@ export type CohortCompany = {
   sector: Sector;
   description?: string;
   hq?: string;
+  country?: string; // derived from hq, e.g. "United Kingdom", "Spain"
   foundingDate?: string;
   totalFundingUsd?: number;
   fundingStage?: string;
@@ -41,6 +47,8 @@ export type CohortCompany = {
   status: "active" | "acquired" | "closed" | "unknown";
   maxValuationUsd?: number;
   isUnicorn?: UnicornFlag;
+  sampledBy?: CohortSampledBy;
+  tags?: string[]; // fine-grained domain from scripts/tag-cohort.ts (Haiku), e.g. "EEG", "neurotech"
   roundIds: string[]; // chronological
   sources: Source[];
 };
@@ -62,6 +70,12 @@ export type StartState = {
   companyId?: string;
   existingInvestorIds?: string[];
   asOf?: string;
+  // Free-text location of the founder ("London", "Barcelona, Spain"); a cohort company's hq is used
+  // when absent. Weights lead candidates by their real deal geography (see geo.ts).
+  geography?: string;
+  // What the company does, for "companies like you" (lib/sim/similarity.ts).
+  tags?: string[];
+  description?: string;
 };
 
 export type Vision = {
@@ -70,8 +84,13 @@ export type Vision = {
   targetHeadcount?: number;
   targetFundingUsd?: number;
   targetValuationUsd?: number;
+  targetRevenueUsd?: number;
+  goesPublic?: boolean;
+  profitable?: boolean; // profitable / bootstrapped: funding is optional on this path
   horizonYears: number;
   sector?: Sector;
+  // One human line for the UI, e.g. "Unicorn = valuation of $1B or more".
+  interpretation?: string;
 };
 
 export type FirstChequeOption = "angel" | "accelerator" | "fund";
@@ -98,6 +117,8 @@ export type Precedent = {
   name: string;
   sector: Sector;
   reachedVision: boolean;
+  // Text similarity (tags + description) to the founder, 0..1; present when the founder gave any.
+  similarity?: number;
   // source: the round's first sourced URL, else "Cala knowledge query" (query rows carry no URL).
   path: { stage: Stage; leadName?: string; date?: string; roundId: string; source?: { name: string; url?: string } }[];
 };
@@ -109,8 +130,12 @@ export type DecisionNode = {
   reachVisionShare: number;
   medianMonthsToNextRound?: number;
   outcomeBands: { best: string; median: string; worst: string };
+  // Distinct real cohort companies whose rounds inform this branch (not simulated runs).
   sampleSize: number;
   lowConfidence: boolean;
+  // 95% Wilson interval for reachVisionShare with n = sampleSize: the uncertainty that comes from
+  // how few real companies sit behind the branch, not Monte Carlo noise.
+  confidenceBand: { lo: number; hi: number };
   children: DecisionNode[];
   topPaths: SimPath[];
 };
@@ -149,6 +174,20 @@ export type Reality = {
   lowConfidence: boolean;
 };
 
+export type Calibration = {
+  // Which companies set outcome rates (seed-sample = drawn without regard to outcome).
+  outcomePopulation: { kind: OutcomePopulation; companies: number };
+  // The per-stage P(raise next round) the engine used, and where each came from.
+  baseRates: BaseRate[];
+  // Founders: the round being raised now is assumed to close (the cohort has no failed first rounds).
+  conditionalOnFirstRound: boolean;
+  reLead: ({ from: Stage } & ReLeadRate)[];
+  leadFilter: { candidates: number; droppedGeneric: number; droppedNonInvestor: number; droppedThin: number };
+  geography: { input?: string; country?: string; region?: Region; applied: boolean };
+  sampleSizeMeaning: string;
+  notes: string[];
+};
+
 export type SimResult = {
   asOf: string;
   runs: number;
@@ -159,6 +198,7 @@ export type SimResult = {
   highways: { from: string; to: string; weight: number }[];
   precedents: Precedent[];
   explanation?: string[];
+  calibration: Calibration;
   fixture: boolean;
 };
 
@@ -176,6 +216,9 @@ export type Transition = {
   leadId?: string;
   memberIds: string[];
   outcome: "raised" | "stalled" | "censored";
+  // Outcome known at asOf without survivorship bias: stalled, or raised from a round at least
+  // STALL_MONTHS old. Only knowable transitions feed the calibrated raise rates.
+  knowable: boolean;
   months?: number;
   nextStage?: Stage;
   nextLeadId?: string;
@@ -210,6 +253,9 @@ export type Agent = {
   // Raise rate of companies it led vs the sector/stage base rate; 1 = average.
   raiseLift: number;
   raiseLiftEvidence: number;
+  // Passes the lead quality filter (quality.ts): a resolved Cala entity or >= 2 rounds.
+  leadEligible: boolean;
+  geo: GeoCounts;
 };
 
 export type TransitionStats = {
@@ -250,7 +296,22 @@ export type SimModel = {
   kindTies: Partial<Record<InvestorKind, Record<string, number>>>;
   kindTieTotals: Partial<Record<InvestorKind, number>>;
   kindRaiseLift: Partial<Record<InvestorKind, number>>;
+  // Calibrated P(raise next | stage), see calibration.ts. byStage / bySectorStage keep the raw
+  // cohort counts; the engine scales the calibrated rate by the knowable sector/stage ratio.
+  baseRates: Partial<Record<Stage, BaseRate>>;
+  // Companies allowed to set outcome rates: the outcome-blind seed sample when the cohort has one.
+  outcomePopulation: { kind: OutcomePopulation; companies: number };
+  // Gaps between rounds from the outcome population, backing off to all cohort gaps when thin.
+  gapsByStage: Partial<Record<Stage, number[]>>;
+  gapsBySectorStage: Record<string, number[]>;
+  knowableByStage: Partial<Record<Stage, { n: number; raised: number }>>;
+  knowableBySectorStage: Record<string, { n: number; raised: number }>;
+  reLead: { byStage: Partial<Record<Stage, ReLeadRate>>; overall: ReLeadRate };
+  geoBase: GeoCounts;
+  dropped: { generic: number; nonInvestor: number };
   stageAmounts: Partial<Record<Stage, number[]>>;
+  // Amounts of a company's 1st, 2nd, 3rd and 4th+ Series B+ rounds (later rounds are larger).
+  bPlusAmounts: number[][];
   stageHeadcounts: Partial<Record<Stage, number[]>>;
   stageCoInvestorCounts: Partial<Record<Stage, number[]>>;
   cohort: Cohort;

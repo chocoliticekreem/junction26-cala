@@ -16,6 +16,7 @@ export type Deal = {
   amount?: string; // raw text as Cala returned it
   amountUsd?: number; // normalised, when parseable
   sector: Sector;
+  tags?: string[]; // from data/deal-tags.json (scripts/tag-deals.ts), applied at load
   sources: Source[];
   // Set on deals read from Cala FundingRound entities (deals without roundId came from the
   // knowledge query). isLead is false only when the round names other leads.
@@ -86,6 +87,7 @@ export type FounderProfile = {
   geography?: string;
   businessModel?: string;
   confidence: Record<string, number>; // keys: sectors, stage, raise, traction, ...
+  tags?: string[]; // fine-grained domain from the AI analysis, e.g. "EEG", "neurotech"
   website?: string;
   email?: string;
   seeded?: true;
@@ -104,6 +106,8 @@ export type Extraction = {
   company?: { value: string; confidence: number };
   one_liner?: { value: string; confidence: number };
   founder_name?: { value: string; confidence: number };
+  // Fine-grained domain tags from the AI analysis ("EEG", "neurotech"); the sector stays broad.
+  tags?: string[];
   // the transcript word that triggered each detection, for chip highlighting
   triggers?: Record<string, string>;
 };

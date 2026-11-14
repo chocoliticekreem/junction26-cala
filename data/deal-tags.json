@@ -1,0 +1,41 @@
+{
+ "1989ff5b-b756-44e8-aa37-8688ccdcbb45": {
+  "sector": "deep tech/hardware",
+  "tags": [
+   "drone",
+   "maritime"
+  ]
+ },
+ "1f74dff9-0af8-47ed-9fbd-30ab6dfc5380": {
+  "sector": "mobility",
+  "tags": [
+   "autonomous trucks",
+   "heavy duty"
+  ]
+ },
+ "2689fb22-ee19-4bfa-ae85-f7d0990cba64": {
+  "sector": "biotech/therapeutics",
+  "tags": [
+   "cell therapy"
+  ]
+ },
+ "9d71fb8c-ebe4-4581-b35a-7ccfc06db013": {
+  "sector": "applied AI/vertical SaaS",
+  "tags": [
+   "machine learning"
+  ]
+ },
+ "bc4fd4da-1618-4673-8606-2d5bc79a47cc": {
+  "sector": "developer tools",
+  "tags": [
+   "operating system"
+  ]
+ },
+ "d7b96d4a-0e4e-4e58-97c2-b454ca085a99": {
+  "sector": "developer tools",
+  "tags": [
+   "communication",
+   "social"
+  ]
+ }
+}

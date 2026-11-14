@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { ROUTE_PREFIX, routeCacheGet, routeCacheSet } from "@/lib/routeCache";
+import { loadCohort, usingCohortFixture } from "@/lib/cohort";
 import { runSpotter, SpotterError, type SpotterResult } from "@/lib/sim/spotter";
-import { loadSpotterCohort, type Cohort } from "@/lib/sim/spotter/cohort";
+import type { Cohort } from "@/lib/sim/types";
 import type { Investor, Revealed } from "@/lib/types";
 
 const MAX_FIELD = 200;
@@ -27,8 +28,19 @@ function revealedFor(cohort: Cohort, investorId: string): Revealed | undefined {
 
 function mock(name: string, asOf: string): SpotterResult & { mock: true } {
   return {
-    investor: { id: "mock:investor", name, kind: "fund", chips: ["Mock data (E2E_MOCK=1)"], rounds: 0, companies: 0, leadShare: 0, lowConfidence: true },
-    picks: [1, 2, 3].map((rank) => ({
+    investor: {
+      id: "mock:investor",
+      name,
+      kind: "fund",
+      chips: ["Mock data (E2E_MOCK=1)"],
+      rounds: 0,
+      companies: 0,
+      leadShare: 0,
+      sectorDist: { fintech: 0.6, "applied AI/vertical SaaS": 0.4 },
+      stageDist: { seed: 0.7, "series-a": 0.3 },
+      lowConfidence: true,
+    },
+    picks: [1, 2, 3, 4, 5].map((rank) => ({
       rank,
       company: {
         id: `mock:co${rank}`,
@@ -41,7 +53,10 @@ function mock(name: string, asOf: string): SpotterResult & { mock: true } {
       },
       scores: { combined: 0.5 / rank, fit: 0.8, shape: 0.4 / rank, shapeBase: 0.1, shapeLift: 4 / rank, pUnicorn: 0.2 / rank, pRaiseNext: 0.6, medianMonthsToNextRound: 14, pOnPath: 0.3 / rank, pLeadNext: 0.1 },
       line: "Mock precedent line",
-      precedents: { unicorns: [], stalled: [] },
+      precedents: {
+        unicorns: [{ companyId: "mock:u1", name: "Mock Unicorn", outcome: "unicorn", distance: 0.5, similarity: 0.5, steps: "Pre-seed → Seed +6 mo", sharedLeads: [] }],
+        stalled: [{ companyId: "mock:s1", name: "Mock Stalled", outcome: "stalled", distance: 0.7, similarity: 0.3, steps: "Pre-seed → Seed +12 mo", sharedLeads: [] }],
+      },
       sample: { referenceSize: 0, unicornsInReference: 0, depth: 2, runs: 0, transitionsBehind: 0 },
       lowConfidence: true,
       actions: { sharedCoInvestors: [] },
@@ -72,12 +87,11 @@ export async function POST(req: Request) {
 
   if (process.env.E2E_MOCK === "1") return Response.json(mock(investorName || investorId, asOf ?? "2026-11-14"));
 
-  const loaded = loadSpotterCohort();
-  if (!loaded) return Response.json({ error: "no_cohort" }, { status: 503 });
-  const { cohort, fixture } = loaded;
+  const cohort = loadCohort();
+  const fixture = usingCohortFixture();
 
   const t0 = performance.now();
-  const key = `${ROUTE_PREFIX}spotter:v1:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
+  const key = `${ROUTE_PREFIX}spotter:v2:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
   const shared = await routeCacheGet(key);
   if (shared) return Response.json({ ...shared, cached: true, source: "valkey", latencyMs: Math.round(performance.now() - t0) });
 
