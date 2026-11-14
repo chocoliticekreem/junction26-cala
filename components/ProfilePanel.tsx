@@ -20,7 +20,7 @@ const KIND_LABEL: Record<Investor["kind"], string> = {
 };
 
 type Fetched<T> = { ok: true; data: T } | { ok: false; detail: string };
-type CalaPayload = { answer?: string; sources?: Source[]; mock?: boolean };
+type CalaPayload = { answer?: string; sources?: Source[]; mock?: boolean; budgetExhausted?: boolean };
 
 // Session cache per investor. An uncached Cala search takes 40-70 s, so the request is never
 // aborted when the panel closes: reopening the same investor picks up the in-flight promise or
@@ -108,7 +108,8 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
     }),
   );
   const liveSources = [...(search?.ok ? (search.data.sources ?? []) : []), ...(entity?.ok ? (entity.data.sources ?? []) : [])];
-  const liveMock = (search?.ok && search.data.mock) || (entity?.ok && entity.data.mock);
+  const budgetPaused = (search?.ok && search.data.budgetExhausted) || (entity?.ok && entity.data.budgetExhausted);
+  const liveMock = !budgetPaused && ((search?.ok && search.data.mock) || (entity?.ok && entity.data.mock));
 
   const recent = [...investor.deals].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "")).slice(0, 5);
 
@@ -214,7 +215,13 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
       <section className="panel-block" data-testid="cala-live">
         <h3>
           Live from Cala {liveMock && <span className="tag">mock</span>}
+          {budgetPaused && <span className="tag">paused</span>}
         </h3>
+        {budgetPaused && (
+          <p className="muted" data-testid="cala-budget-paused">
+            Live Cala lookup paused, showing cached data.
+          </p>
+        )}
         {!search && (
           <div className="cala-wait" role="status" data-testid="cala-loading">
             <p className="muted">Asking Cala… this can take up to a minute.</p>
@@ -228,6 +235,7 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
         )}
         {search && !search.ok && entity?.ok && <p className="muted">Live Cala summary unavailable ({search.detail}).</p>}
         {search?.ok &&
+          !budgetPaused &&
           (search.data.answer ? <p>{search.data.answer}</p> : <p className="muted">No fresh summary returned.</p>)}
         {liveSources.length > 0 && (
           <ul className="sources">

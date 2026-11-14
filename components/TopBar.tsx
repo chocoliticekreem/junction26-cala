@@ -22,7 +22,7 @@ export default function TopBar({ inbox, subtitle, tools, onReplay, replaying, mi
         <div className="brand">
           <span className="brand-mark" aria-hidden />
           <span className="brand-name">Room</span>
-          <span className="brand-sub">{subtitle ?? "Investors active in London, ranked by what they did"}</span>
+          {subtitle && <span className="brand-sub">{subtitle}</span>}
         </div>
         <RoleSwitcher />
         <div className="topbar-actions">

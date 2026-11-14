@@ -100,7 +100,7 @@ export default function TranscriptRail({ tokens, live, highlightWords = 6, trigg
       </header>
       <div ref={scroller} className="transcript-body font-mono" data-testid="transcript-body">
         {words.length === 0 ? (
-          <span className="muted">Say your pitch. Investors move as you speak.</span>
+          <span className="muted">Your words land here.</span>
         ) : (
           words.map((x, i) => {
             const base = i >= cutoff ? "tok tok-new" : x.final ? "tok" : "tok tok-interim";
