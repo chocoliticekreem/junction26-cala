@@ -611,18 +611,22 @@ function buildNode(
   basis: VisionBasis,
   targetIdx: number,
   startLabel: string,
+  next: NextRound,
 ): DecisionNode {
   const sorted = [...outs].sort((a, b) => score(b, targetIdx) - score(a, targetIdx));
   const at = (q: number) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
   const gaps = outs.map((o) => o.firstGap).filter((g): g is number => g !== undefined).sort((a, b) => a - b);
   const med = quantile(gaps, 0.5);
   const share = outs.length ? outs.filter((o) => o.reached).length / outs.length : 0;
+  const nextShare = outs.length ? outs.filter((o) => closedNext(o, next.stepsBefore)).length / outs.length : 0;
   const band = wilson(share * sampleSize, sampleSize);
   return {
     decision,
     label,
     runs: outs.length,
     reachVisionShare: Math.round(share * 1000) / 1000,
+    nextRound: { stage: next.stage, share: Math.round(nextShare * 1000) / 1000 },
+    typical: next.typical,
     medianMonthsToNextRound: med !== undefined ? Math.round(med * 10) / 10 : undefined,
     outcomeBands: sorted.length
       ? { best: describeOutcome(at(0.1), basis, startLabel), median: describeOutcome(at(0.5), basis, startLabel), worst: describeOutcome(at(0.9), basis, startLabel) }
@@ -633,6 +637,29 @@ function buildNode(
     children,
     topPaths: topPaths(outs),
   };
+}
+
+// stepsBefore: steps a run takes before the next round. A founder's first step is the round being
+// raised now (assumed to close); a cohort company's first step is already its next round.
+type NextRound = { stage: Stage; stepsBefore: number; typical: DecisionNode["typical"] };
+
+const closedNext = (o: RunOutcome, stepsBefore: number) => o.reached || o.steps.length > stepsBefore;
+
+// The engine run from a typical company at `stage`: no sector, no history, no chosen first cheque,
+// half the runs raising now and half in six months like the tree. Its own random stream, so the
+// founder's runs are unchanged.
+function typicalRates(model: SimModel, vision: Vision, stage: Stage, runs: number, horizonMonths: number, seed: number): DecisionNode["typical"] {
+  const prep = prepare({ sectors: {}, stage }, { ...vision, sector: undefined }, model);
+  const engine = new Engine(model, prep);
+  const rnd = mulberry32(seed ^ 0x5bd1e995);
+  let reached = 0;
+  let next = 0;
+  for (let r = 0; r < runs; r++) {
+    const o = engine.run({ l1: null, l2: r % 2 ? "later_6m" : "now" }, 0, horizonMonths, rnd);
+    if (o.reached) reached++;
+    if (closedNext(o, 1)) next++;
+  }
+  return { reachVisionShare: Math.round((reached / runs) * 1000) / 1000, nextRoundShare: Math.round((next / runs) * 1000) / 1000 };
 }
 
 const OPTION_LABEL: Record<FirstChequeOption, string> = { angel: "Angel first", accelerator: "Accelerator first", fund: "Fund first" };
@@ -712,8 +739,13 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   }
 
   const startLabel = STAGE_LABELS[prep.company ? ROUND_STAGES[Math.max(0, prep.lastStageIdx)] : prep.firstStage];
+  const next: NextRound = {
+    stage: ROUND_STAGES[Math.min(ROUND_STAGES.length - 1, roundStageIndex(decisionStage) + 1)],
+    stepsBefore: prep.company ? 0 : 1,
+    typical: typicalRates(model, vision, decisionStage, runs, horizonMonths, opts.seed ?? 20261114),
+  };
   const node = (d: Decision | null, label: string, o: RunOutcome[], n: number, children: DecisionNode[]) =>
-    buildNode(d, label, o, n, children, prep.basis, prep.targetIdx, startLabel);
+    buildNode(d, label, o, n, children, prep.basis, prep.targetIdx, startLabel, next);
   const l1Nodes = l1.map((a, i) => {
     const kids = timings.map((t, k) => {
       const bi = i * timings.length + k;
