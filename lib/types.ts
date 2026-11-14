@@ -85,6 +85,10 @@ export type Extraction = {
   team_signals?: { value: string; confidence: number }[];
   geography?: { value: string; confidence: number };
   business_model?: { value: string; confidence: number };
+  // Display-only identity fields; scoring never reads them (spec 9.4).
+  company?: { value: string; confidence: number };
+  one_liner?: { value: string; confidence: number };
+  founder_name?: { value: string; confidence: number };
   // the transcript word that triggered each detection, for chip highlighting
   triggers?: Record<string, string>;
 };

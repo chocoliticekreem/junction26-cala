@@ -145,6 +145,18 @@ describe("replay", () => {
     expect(stage!.t).toBeGreaterThan(spoken!.t - 1200);
   });
 
+  it("names the company, founder and one-liner about 800 ms after 'Helixa Bio' is spoken", () => {
+    const identity = events.find((e) => e.extraction?.company);
+    expect(identity?.extraction).toMatchObject({
+      company: { value: "Helixa Bio" },
+      founder_name: { value: "Amara" },
+      one_liner: { value: "Therapeutics for autoimmune disease" },
+    });
+    const spoken = events.find((e) => e.kind === "transcript" && e.text?.includes("Bio"));
+    expect(identity!.t - spoken!.t).toBeLessThanOrEqual(800);
+    expect(identity!.t).toBeLessThan(events.find((e) => e.extraction?.stage)!.t);
+  });
+
   it("matches what the build script produces from the script file", () => {
     const script = readFileSync(
       path.join(process.cwd(), "data", "replay", "demo-pitch.script.md"),

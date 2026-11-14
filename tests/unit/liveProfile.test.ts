@@ -59,6 +59,25 @@ describe("liveProfile", () => {
     expect(p.raise).toBe(1_000_000);
   });
 
+  it("lets the LLM override the fallback's company, one-liner and name per field", () => {
+    let log = addFallback(emptyLog(), {
+      sectors: [],
+      company: { value: "At Helixa", confidence: 0.6 },
+      one_liner: { value: "Therapeutics for autoimmune disease", confidence: 0.7 },
+      founder_name: { value: "Amara", confidence: 0.8 },
+    });
+    const closed = closeChunk(log);
+    log = addLlm(closed.log, [closed.id], {
+      sectors: [],
+      company: { value: "Helixa Bio", confidence: 0.5 },
+      one_liner: { value: "AI-designed antibodies for autoimmune disease", confidence: 0.5 },
+    });
+    const p = buildProfile(log);
+    expect(p.company).toBe("Helixa Bio");
+    expect(p.oneLiner).toBe("AI-designed antibodies for autoimmune disease");
+    expect(p.name).toBe("Amara");
+  });
+
   it("sends the profile from before the chunk's own fallback as context", () => {
     const first = closeChunk(addFallback(emptyLog(), sector("fintech")));
     const log = addLlm(first.log, [first.id], sector("insurtech"));

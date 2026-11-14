@@ -13,6 +13,16 @@ type Trigger = { phrase: string[]; extraction: Extraction };
 
 const TRIGGERS: Trigger[] = [
   {
+    phrase: ["helixa", "bio"],
+    extraction: {
+      sectors: [],
+      company: { value: "Helixa Bio", confidence: 0.9 },
+      one_liner: { value: "Therapeutics for autoimmune disease", confidence: 0.85 },
+      founder_name: { value: "Amara", confidence: 0.9 },
+      triggers: { company: "Helixa Bio", founder_name: "Amara" },
+    },
+  },
+  {
     phrase: ["london"],
     extraction: {
       sectors: [],

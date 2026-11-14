@@ -15,6 +15,29 @@
     "text": "Bio, a London"
   },
   {
+    "t": 3600,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "company": {
+        "value": "Helixa Bio",
+        "confidence": 0.9
+      },
+      "one_liner": {
+        "value": "Therapeutics for autoimmune disease",
+        "confidence": 0.85
+      },
+      "founder_name": {
+        "value": "Amara",
+        "confidence": 0.9
+      },
+      "triggers": {
+        "company": "Helixa Bio",
+        "founder_name": "Amara"
+      }
+    }
+  },
+  {
     "t": 4400,
     "kind": "profile",
     "extraction": {

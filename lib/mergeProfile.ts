@@ -2,7 +2,7 @@ import type { Extraction, FounderProfile } from "./types";
 import type { Sector } from "./taxonomy";
 
 // Confidence keys written here: sectors, stage, raise, traction, teamSignals, geography,
-// businessModel. "sectors.evidence" holds the accumulated evidence mass so later chunks add
+// businessModel, company, oneLiner, name. "sectors.evidence" holds the accumulated evidence mass so later chunks add
 // to earlier ones instead of replacing them.
 const EVIDENCE_KEY = "sectors.evidence";
 const MAX_CONFIDENCE = 0.99;
@@ -77,6 +77,18 @@ export function mergeProfile(p: FounderProfile, e: Extraction): FounderProfile {
   ) {
     next.businessModel = e.business_model.value;
     confidence.businessModel = e.business_model.confidence;
+  }
+  if (e.company && (!p.company || wins(e.company.confidence, p.confidence.company))) {
+    next.company = e.company.value;
+    confidence.company = e.company.confidence;
+  }
+  if (e.one_liner && (!p.oneLiner || wins(e.one_liner.confidence, p.confidence.oneLiner))) {
+    next.oneLiner = e.one_liner.value;
+    confidence.oneLiner = e.one_liner.confidence;
+  }
+  if (e.founder_name && (!p.name || wins(e.founder_name.confidence, p.confidence.name))) {
+    next.name = e.founder_name.value;
+    confidence.name = e.founder_name.confidence;
   }
   return next;
 }
