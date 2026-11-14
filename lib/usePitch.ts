@@ -12,9 +12,24 @@ export type TranscriptToken = { text: string; t: number; final: boolean };
 
 const CHUNK_MS = 3000;
 
+// An extraction carries one team_signals trigger for possibly several signals. It belongs to the
+// signal whose text contains it (or is contained by it); with a single signal it is that one's.
+// Otherwise no signal gets it, rather than every chip showing the same word.
+export function teamTrigger(
+  signals: { value: string }[],
+  word: string | undefined,
+): { value: string; word: string } | undefined {
+  if (!word || !signals.length) return undefined;
+  const w = word.toLowerCase();
+  const hit = signals.find((s) => s.value.toLowerCase().includes(w) || w.includes(s.value.toLowerCase()));
+  const owner = hit ?? (signals.length === 1 ? signals[0] : undefined);
+  return owner ? { value: owner.value, word } : undefined;
+}
+
 // Extraction trigger keys use extraction field names and sector labels; chips key by profile field,
-// with one entry per sector ("sector:<label>") so each sector chip shows its own word.
-function chipTriggers(e: Extraction): Record<string, string> {
+// with one entry per sector ("sector:<label>") and per team signal ("team:<value>") so each chip
+// shows its own word.
+export function chipTriggers(e: Extraction): Record<string, string> {
   const t = e.triggers ?? {};
   const out: Record<string, string> = {};
   for (const s of e.sectors) {
@@ -24,7 +39,8 @@ function chipTriggers(e: Extraction): Record<string, string> {
   if (t.stage) out.stage = t.stage;
   if (t.raise_amount) out.raise = t.raise_amount;
   if (t.traction) out.traction = t.traction;
-  if (t.team_signals) out.teamSignals = t.team_signals;
+  const team = teamTrigger(e.team_signals ?? [], t.team_signals);
+  if (team) out[`team:${team.value.toLowerCase()}`] = team.word;
   if (t.geography) out.geography = t.geography;
   if (t.business_model) out.businessModel = t.business_model;
   return out;
@@ -43,6 +59,13 @@ function isEmpty(e: Extraction): boolean {
 }
 
 type QueuedChunk = { epoch: number; text: string; ids: number[] };
+
+declare global {
+  interface Window {
+    __ROOM_TEST__?: boolean;
+    __roomPitch?: { interim(text: string): void; final(text: string): void };
+  }
+}
 
 export function usePitch(replayEvents: ReplayEvent[]) {
   const [transcript, setTranscript] = useState<TranscriptToken[]>([]);
@@ -165,6 +188,16 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     },
     [apply, flush],
   );
+
+  // Test-only seam: Playwright sets window.__ROOM_TEST__ before load and drives the same two
+  // handlers an STT session gets (toggleMic below), so only the microphone itself is skipped.
+  useEffect(() => {
+    if (!window.__ROOM_TEST__) return;
+    window.__roomPitch = { interim: setInterim, final: onFinal };
+    return () => {
+      delete window.__roomPitch;
+    };
+  }, [onFinal]);
 
   // Flush a half-sentence chunk if the speaker pauses without a full stop.
   useEffect(() => {

@@ -66,7 +66,7 @@
           }
         ],
         "companyCalaId": "4857599f-75e3-4f60-a58a-36360d418332",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$720M",
         "amountUsd": 720000000
       },
@@ -80,7 +80,7 @@
             "url": "https://theventurecodex.com/funds/lightspeed-venture-partners"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$50M",
         "amountUsd": 50000000
       },
@@ -99,7 +99,7 @@
           }
         ],
         "companyCalaId": "8b89e72b-8bd2-44cb-bddb-27488c5ecf32",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$112M",
         "amountUsd": 112000000
       },
@@ -114,7 +114,7 @@
           }
         ],
         "companyCalaId": "5eb72172-85f5-4323-b9b3-90fecdd7c28c",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$240M",
         "amountUsd": 240000000
       },
@@ -704,23 +704,23 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.19781128161125042,
-        "biotech/therapeutics": 0.0664543848043599,
-        "fintech": 0.06511250039709696,
-        "applied AI/vertical SaaS": 0.2298451201315615,
-        "AI infrastructure": 0.12937531693935342,
-        "B2B SaaS (other)": 0.10151384253173584,
-        "consumer": 0.03255625019854848,
-        "climate/energy": 0.05760922451870013,
-        "insurtech": 0.02662390807436592,
-        "healthtech": 0.059200036187215956,
-        "cybersecurity": 0.019392533258435974,
-        "marketplaces": 0.014505601347375456
+        "deep tech/hardware": 0.19505875516510165,
+        "biotech/therapeutics": 0.06668240777132955,
+        "fintech": 0.06533591899575027,
+        "applied AI/vertical SaaS": 0.23063378090075196,
+        "AI infrastructure": 0.12981923864155556,
+        "B2B SaaS (other)": 0.10186216398006044,
+        "consumer": 0.03266795949787513,
+        "climate/energy": 0.057806897348540415,
+        "insurtech": 0.026715261903452085,
+        "healthtech": 0.059403167522128764,
+        "cybersecurity": 0.019459074284790583,
+        "marketplaces": 0.014555373988663833
       },
       "G": {
-        "series-b-plus": 0.4857306460402313,
-        "seed": 0.2942636766320796,
-        "series-a": 0.22000567732768908
+        "series-b-plus": 0.4847376573462236,
+        "seed": 0.29442999682695764,
+        "series-a": 0.22083234582681877
       },
       "chequeBand": [
         34500000,
@@ -730,7 +730,7 @@
       "activity": 1,
       "dealCount24m": 40
     },
-    "contradiction": 0.24493230299234023,
+    "contradiction": 0.04442999682695764,
     "thinHistory": false
   },
   {
@@ -797,7 +797,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$33M",
         "amountUsd": 33000000
       },
@@ -811,7 +811,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$4M",
         "amountUsd": 4000000
       },
@@ -1368,23 +1368,23 @@
     ],
     "revealed": {
       "S": {
-        "biotech/therapeutics": 0.08351670401164146,
-        "healthtech": 0.07738520622332486,
-        "fintech": 0.1879313597313237,
-        "deep tech/hardware": 0.06929023706275872,
-        "other": 0.0632855644882867,
-        "climate/energy": 0.08659826031093593,
-        "applied AI/vertical SaaS": 0.22613396698084565,
-        "crypto/web3": 0.08107596600483362,
-        "cybersecurity": 0.05111598479492536,
-        "proptech": 0.03146366403771305,
-        "B2B SaaS (other)": 0.04220308635341122
+        "biotech/therapeutics": 0.08268619535363175,
+        "healthtech": 0.0765424707556236,
+        "fintech": 0.18830611334778746,
+        "deep tech/hardware": 0.06942840861093474,
+        "other": 0.06341176212872225,
+        "climate/energy": 0.08677094575990725,
+        "applied AI/vertical SaaS": 0.22658490035382034,
+        "crypto/web3": 0.08123763945577891,
+        "cybersecurity": 0.051217915096437534,
+        "proptech": 0.03152640567860892,
+        "B2B SaaS (other)": 0.04228724345874736
       },
       "G": {
-        "series-a": 0.28362342858169,
-        "seed": 0.42991996500656876,
-        "series-b-plus": 0.2711354443017355,
-        "pre-seed": 0.015321162110005792
+        "series-a": 0.2831096327068955,
+        "seed": 0.42975355681991034,
+        "series-b-plus": 0.2717792675764998,
+        "pre-seed": 0.015357542896694387
       },
       "chequeBand": [
         5500000,
@@ -1394,9 +1394,8 @@
       "activity": 1,
       "dealCount24m": 36
     },
-    "contradiction": 0.4385317223195395,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 12 of last 28 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "index-ventures",
@@ -2258,7 +2257,7 @@
       "activity": 1,
       "dealCount24m": 35
     },
-    "contradiction": 0.3773721325480807,
+    "contradiction": 0.09931123749984128,
     "thinHistory": false
   },
   {
@@ -2319,7 +2318,7 @@
           }
         ],
         "companyCalaId": "942452bf-b72e-4b38-861a-97073705c885",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "~$6.1M",
         "amountUsd": 6100000
       },
@@ -2852,25 +2851,25 @@
     ],
     "revealed": {
       "S": {
-        "cybersecurity": 0.18886931269587337,
-        "medtech/devices": 0.09099534987879479,
-        "fintech": 0.07179653313873935,
-        "other": 0.06101376723142066,
-        "healthtech": 0.06645569428316596,
-        "deep tech/hardware": 0.153816208196284,
-        "applied AI/vertical SaaS": 0.09591849501328502,
-        "marketplaces": 0.03612115097401889,
-        "consumer": 0.06071310565553205,
-        "climate/energy": 0.03211165707548945,
-        "B2B SaaS (other)": 0.047729154443652305,
-        "edtech": 0.027018595727278303,
-        "biotech/therapeutics": 0.06744097568646586
+        "cybersecurity": 0.18805407003765975,
+        "medtech/devices": 0.09108680652330521,
+        "fintech": 0.07186869363943636,
+        "other": 0.061075090303724475,
+        "healthtech": 0.06652248686999425,
+        "deep tech/hardware": 0.15397080416510756,
+        "applied AI/vertical SaaS": 0.09601489976047366,
+        "marketplaces": 0.03615745523866911,
+        "consumer": 0.060774126542076895,
+        "climate/energy": 0.03214393152038917,
+        "B2B SaaS (other)": 0.04777712555774276,
+        "edtech": 0.02704575129190762,
+        "biotech/therapeutics": 0.06750875854951337
       },
       "G": {
-        "seed": 0.38303923768262454,
-        "series-a": 0.3944410241630497,
-        "pre-seed": 0.08094244222402439,
-        "series-b-plus": 0.14157729593030136
+        "seed": 0.3821243695463131,
+        "series-a": 0.39502592606719245,
+        "pre-seed": 0.08106246875697252,
+        "series-b-plus": 0.14178723562952184
       },
       "chequeBand": [
         3050000,
@@ -2880,7 +2879,7 @@
       "activity": 1,
       "dealCount24m": 35
     },
-    "contradiction": 0.27748026184567426,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -2946,7 +2945,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$720M",
         "amountUsd": 720000000
       },
@@ -3692,26 +3691,26 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.12843477601900338,
-        "applied AI/vertical SaaS": 0.24143861442441472,
-        "healthtech": 0.08773129765541789,
-        "other": 0.0748849957515064,
-        "consumer": 0.06709021531620768,
-        "cybersecurity": 0.11546806578739732,
-        "developer tools": 0.0353033064248832,
-        "climate/energy": 0.06473054324687445,
-        "marketplaces": 0.031444210463604495,
-        "proptech": 0.02964771744045449,
-        "B2B SaaS (other)": 0.050135953717187834,
-        "mobility": 0.025040308156488878,
-        "AI infrastructure": 0.025040308156488878,
-        "fintech": 0.023609687440070293
+        "deep tech/hardware": 0.12752671473686888,
+        "applied AI/vertical SaaS": 0.24169016307704408,
+        "healthtech": 0.08782270262711746,
+        "other": 0.0749630164932521,
+        "consumer": 0.06716011487766614,
+        "cybersecurity": 0.11558836898098457,
+        "developer tools": 0.03534008802746866,
+        "climate/energy": 0.06479798432698725,
+        "marketplaces": 0.031476971373842366,
+        "proptech": 0.029678606631040102,
+        "B2B SaaS (other)": 0.0501881890716522,
+        "mobility": 0.025066397006415414,
+        "AI infrastructure": 0.025066397006415414,
+        "fintech": 0.023634285763245357
       },
       "G": {
-        "series-b-plus": 0.5493597431536082,
-        "series-a": 0.23245764550554263,
-        "seed": 0.15994758029919826,
-        "pre-seed": 0.058235031041650946
+        "series-b-plus": 0.548871949473503,
+        "series-a": 0.23270926832140743,
+        "seed": 0.16012071489521518,
+        "pre-seed": 0.058298067309874364
       },
       "chequeBand": [
         19000000,
@@ -3721,7 +3720,7 @@
       "activity": 1,
       "dealCount24m": 34
     },
-    "contradiction": 0.35875139664489664,
+    "contradiction": 0.1571700167833774,
     "thinHistory": false
   },
   {
@@ -4597,7 +4596,7 @@
       "activity": 1,
       "dealCount24m": 33
     },
-    "contradiction": 0.3113112532875357,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -5456,7 +5455,7 @@
       "activity": 1,
       "dealCount24m": 31
     },
-    "contradiction": 0.30733388300484427,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -5522,7 +5521,7 @@
           }
         ],
         "companyCalaId": "66bde3de-0cc4-480d-8158-c113cab3558e",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$133M",
         "amountUsd": 133000000
       },
@@ -6135,19 +6134,19 @@
     ],
     "revealed": {
       "S": {
-        "biotech/therapeutics": 0.19402912509702094,
-        "deep tech/hardware": 0.07939689803357118,
-        "healthtech": 0.26412688770026393,
-        "medtech/devices": 0.049757955920372056,
-        "applied AI/vertical SaaS": 0.044318784744086764,
-        "B2B SaaS (other)": 0.08610551711944275,
-        "fintech": 0.10505098686731505,
-        "crypto/web3": 0.1772138445179274
+        "biotech/therapeutics": 0.19297468323208006,
+        "deep tech/hardware": 0.07950077202683817,
+        "healthtech": 0.2644724416857987,
+        "medtech/devices": 0.04982305364718835,
+        "applied AI/vertical SaaS": 0.04437676646959651,
+        "B2B SaaS (other)": 0.08621816791723252,
+        "fintech": 0.10518842379209176,
+        "crypto/web3": 0.17744569122917403
       },
       "G": {
-        "series-b-plus": 0.28612606346813063,
-        "series-a": 0.6141201130245078,
-        "seed": 0.09975382350736155
+        "series-b-plus": 0.2849534558081285,
+        "series-a": 0.6151288652871166,
+        "seed": 0.09991767890475499
       },
       "chequeBand": [
         18000000,
@@ -6157,7 +6156,7 @@
       "activity": 1,
       "dealCount24m": 31
     },
-    "contradiction": 0.31458826401017853,
+    "contradiction": 0.3151288652871166,
     "thinHistory": false
   },
   {
@@ -6219,7 +6218,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$2M",
         "amountUsd": 2000000
       },
@@ -6864,19 +6863,19 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.1420602119949195,
-        "B2B SaaS (other)": 0.3942577245758563,
-        "cybersecurity": 0.11356471371522664,
-        "AI infrastructure": 0.072666703897354,
-        "applied AI/vertical SaaS": 0.1854096866539628,
-        "climate/energy": 0.03289917978051844,
-        "marketplaces": 0.02333508340225204,
-        "healthtech": 0.035806695979910166
+        "fintech": 0.1409462975645053,
+        "B2B SaaS (other)": 0.3947696129098016,
+        "cybersecurity": 0.11371216156082362,
+        "AI infrastructure": 0.07276105141592533,
+        "applied AI/vertical SaaS": 0.1856504151157849,
+        "climate/energy": 0.03294189474911959,
+        "marketplaces": 0.023365380733719937,
+        "healthtech": 0.03585318595031966
       },
       "G": {
-        "seed": 0.6845071094217038,
-        "pre-seed": 0.19293431105109082,
-        "series-a": 0.12255857952720539
+        "seed": 0.6840083004683356,
+        "pre-seed": 0.19323934918233937,
+        "series-a": 0.12275235034932504
       },
       "chequeBand": [
         992500,
@@ -6886,7 +6885,7 @@
       "activity": 1,
       "dealCount24m": 31
     },
-    "contradiction": 0.21369913885954503,
+    "contradiction": 0.21317031139603704,
     "thinHistory": false
   },
   {
@@ -6960,7 +6959,7 @@
           }
         ],
         "companyCalaId": "b182f084-341b-46ac-8040-15797666c940",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$700M",
         "amountUsd": 700000000
       },
@@ -6978,7 +6977,7 @@
             "url": "https://sifted.eu/tag/lakestar"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$30M",
         "amountUsd": 30000000
       },
@@ -6992,7 +6991,7 @@
             "url": "https://theventurecodex.com/funds/lakestar"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$300M",
         "amountUsd": 300000000
       },
@@ -7537,21 +7536,21 @@
     ],
     "revealed": {
       "S": {
-        "AI infrastructure": 0.1535039010024163,
-        "deep tech/hardware": 0.3220227031278285,
-        "applied AI/vertical SaaS": 0.18036789326017286,
-        "cybersecurity": 0.1956900766371875,
-        "healthtech": 0.036004356863508793,
-        "other": 0.036004356863508793,
-        "proptech": 0.03206862726106933,
-        "climate/energy": 0.024078526860845006,
-        "biotech/therapeutics": 0.02025955812346276
+        "AI infrastructure": 0.15289449967836224,
+        "deep tech/hardware": 0.32085478258787303,
+        "applied AI/vertical SaaS": 0.18097911930668203,
+        "cybersecurity": 0.19635322610199543,
+        "healthtech": 0.03612636749580599,
+        "other": 0.03612636749580599,
+        "proptech": 0.03217730059479555,
+        "climate/energy": 0.02416012354921842,
+        "biotech/therapeutics": 0.02032821318946148
       },
       "G": {
-        "series-a": 0.2307045997380376,
-        "seed": 0.5310656574596452,
-        "series-b-plus": 0.21355468627826868,
-        "pre-seed": 0.02467505652404859
+        "series-a": 0.22787572257476368,
+        "seed": 0.5330185087441778,
+        "series-b-plus": 0.214339976265596,
+        "pre-seed": 0.024765792415462475
       },
       "chequeBand": [
         7000000,
@@ -7561,7 +7560,7 @@
       "activity": 1,
       "dealCount24m": 31
     },
-    "contradiction": 0.3610769646284618,
+    "contradiction": 0.15778430115964023,
     "thinHistory": false
   },
   {
@@ -8253,7 +8252,7 @@
       "activity": 1,
       "dealCount24m": 31
     },
-    "contradiction": 0.36256997601791296,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -8977,7 +8976,7 @@
       "activity": 1,
       "dealCount24m": 31
     },
-    "contradiction": 0.35478680710055754,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -10472,7 +10471,7 @@
       "activity": 1,
       "dealCount24m": 28
     },
-    "contradiction": 0.3480501043801064,
+    "contradiction": 0.20000000000000004,
     "thinHistory": false
   },
   {
@@ -11319,9 +11318,8 @@
       "activity": 1,
       "dealCount24m": 26
     },
-    "contradiction": 0.43382285604433907,
-    "thinHistory": false,
-    "contradictionLine": "Says fintech; 5 of last 26 deals were applied AI"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "plug-and-play",
@@ -11375,7 +11373,7 @@
             "url": "https://recentfunding.com/investors/plug-and-play?page=10"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$43.0M",
         "amountUsd": 43000000
       },
@@ -11868,23 +11866,23 @@
     ],
     "revealed": {
       "S": {
-        "AI infrastructure": 0.09758800818577092,
-        "applied AI/vertical SaaS": 0.32231464236689134,
-        "other": 0.06405247681029433,
-        "healthtech": 0.11761915068644428,
-        "biotech/therapeutics": 0.05880957534322214,
-        "climate/energy": 0.09086365669056078,
-        "cybersecurity": 0.03597382883091126,
-        "developer tools": 0.029418741594505183,
-        "proptech": 0.029418741594505183,
-        "crypto/web3": 0.13251292163942685,
-        "fintech": 0.02142825625746767
+        "AI infrastructure": 0.09588071030407531,
+        "applied AI/vertical SaaS": 0.3229244382374517,
+        "other": 0.06417365943970037,
+        "healthtech": 0.11784167756843981,
+        "biotech/therapeutics": 0.05892083878421991,
+        "climate/energy": 0.09103556412308396,
+        "cybersecurity": 0.03604188869970358,
+        "developer tools": 0.02947439971481171,
+        "proptech": 0.02947439971481171,
+        "crypto/web3": 0.13276362645326412,
+        "fintech": 0.021468796960437783
       },
       "G": {
         "seed": 0.5092744222940879,
-        "series-a": 0.21594938266405314,
+        "series-a": 0.21594938266405309,
         "pre-seed": 0.24168100085560204,
-        "series-b-plus": 0.03309519418625686
+        "series-b-plus": 0.03309519418625685
       },
       "chequeBand": [
         2240000,
@@ -11894,7 +11892,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 26
     },
-    "contradiction": 0.19236961648034479,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -12457,9 +12455,8 @@
       "activity": 1,
       "dealCount24m": 25
     },
-    "contradiction": 0.40033768596242003,
-    "thinHistory": false,
-    "contradictionLine": "Says fintech; 6 of last 25 deals were healthtech"
+    "contradiction": 0.3376482753403639,
+    "thinHistory": false
   },
   {
     "id": "notion-capital",
@@ -13254,7 +13251,7 @@
             "url": "https://www.cbinsights.com/investor/point-nine-capital"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$8M",
         "amountUsd": 8000000
       },
@@ -13269,7 +13266,7 @@
           }
         ],
         "companyCalaId": "68950d21-4cef-4e22-92ce-c1651ada6a6a",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$8M",
         "amountUsd": 8000000
       },
@@ -13747,21 +13744,21 @@
     ],
     "revealed": {
       "S": {
-        "developer tools": 0.1824088413628375,
-        "applied AI/vertical SaaS": 0.13566731007552846,
-        "deep tech/hardware": 0.10627733268219285,
-        "crypto/web3": 0.09173717915774565,
-        "other": 0.27514086978313856,
-        "AI infrastructure": 0.060355242426408454,
-        "marketplaces": 0.08176233970943765,
-        "climate/energy": 0.045599230836070634,
-        "B2B SaaS (other)": 0.021051653966640233
+        "developer tools": 0.1798435666491804,
+        "applied AI/vertical SaaS": 0.1360929799428332,
+        "deep tech/hardware": 0.10661078853146962,
+        "crypto/web3": 0.09202501380897632,
+        "other": 0.27600415200982603,
+        "AI infrastructure": 0.0605446130863006,
+        "marketplaces": 0.08201887729594443,
+        "climate/energy": 0.045742303021465786,
+        "B2B SaaS (other)": 0.02111770565400351
       },
       "G": {
-        "seed": 0.4397622218568791,
-        "series-a": 0.12841693165423468,
-        "series-b-plus": 0.414152100762828,
-        "pre-seed": 0.017668745726058248
+        "seed": 0.43779659711918373,
+        "series-a": 0.12886748944852544,
+        "series-b-plus": 0.41560517595016383,
+        "pre-seed": 0.01773073748212707
       },
       "chequeBand": [
         5750000,
@@ -13771,9 +13768,9 @@
       "activity": 1,
       "dealCount24m": 25
     },
-    "contradiction": 0.4826577772924066,
+    "contradiction": 0.4156051759501638,
     "thinHistory": false,
-    "contradictionLine": "Says seed; 10 of last 22 deals were Series B+"
+    "contradictionLine": "Says pre-seed to Series A; 10 of last 22 deals were Series B+"
   },
   {
     "id": "northzone",
@@ -14630,7 +14627,7 @@
       "activity": 1,
       "dealCount24m": 24
     },
-    "contradiction": 0.16591957836526827,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -14695,7 +14692,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "£1.5M (~$2M)",
         "amountUsd": 2000000
       },
@@ -14710,7 +14707,7 @@
           }
         ],
         "companyCalaId": "942452bf-b72e-4b38-861a-97073705c885",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "£1M",
         "amountUsd": 1270000
       },
@@ -15161,23 +15158,23 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.10424186891739576,
-        "cybersecurity": 0.05361557939117796,
-        "climate/energy": 0.15788069279670894,
-        "healthtech": 0.0957184880782415,
-        "applied AI/vertical SaaS": 0.08260976817286388,
-        "medtech/devices": 0.04782454448252931,
-        "deep tech/hardware": 0.2818431583561527,
-        "AI infrastructure": 0.04782454448252931,
-        "biotech/therapeutics": 0.037868429244264284,
-        "B2B SaaS (other)": 0.06041675030847841,
-        "consumer": 0.030156175769657883
+        "fintech": 0.10318683817789236,
+        "cybersecurity": 0.05242558669516074,
+        "climate/energy": 0.1583015786130508,
+        "healthtech": 0.09597365894986731,
+        "applied AI/vertical SaaS": 0.08282999319911213,
+        "medtech/devices": 0.04795203741462346,
+        "deep tech/hardware": 0.28259450917482337,
+        "AI infrastructure": 0.04795203741462346,
+        "biotech/therapeutics": 0.037969380693575305,
+        "B2B SaaS (other)": 0.060577812138293476,
+        "consumer": 0.03023656752897772
       },
       "G": {
-        "seed": 0.5251475185240478,
-        "series-a": 0.35102684353797003,
-        "series-b-plus": 0.07765636401692902,
-        "pre-seed": 0.04616927392105308
+        "seed": 0.5241202772538895,
+        "series-a": 0.3517862146578067,
+        "series-b-plus": 0.07782435686759429,
+        "pre-seed": 0.04626915122070946
       },
       "chequeBand": [
         2300000,
@@ -15187,7 +15184,7 @@
       "activity": 1,
       "dealCount24m": 24
     },
-    "contradiction": 0.34717856544209746,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -16408,7 +16405,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$25M",
         "amountUsd": 25000000
       },
@@ -16422,7 +16419,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$8M",
         "amountUsd": 8000000
       },
@@ -16933,20 +16930,20 @@
     ],
     "revealed": {
       "S": {
-        "AI infrastructure": 0.07982353573663276,
-        "fintech": 0.10228263172675547,
-        "developer tools": 0.2062985305953295,
-        "deep tech/hardware": 0.18765287602494973,
-        "applied AI/vertical SaaS": 0.27509767871698065,
-        "healthtech": 0.05021605144954965,
-        "climate/energy": 0.044896886344672184,
-        "B2B SaaS (other)": 0.02991181238329902,
-        "proptech": 0.023819997021831036
+        "AI infrastructure": 0.07815370194977551,
+        "fintech": 0.10070205319452634,
+        "developer tools": 0.20711838674117763,
+        "deep tech/hardware": 0.18839863200901405,
+        "applied AI/vertical SaaS": 0.27619095127667276,
+        "healthtech": 0.05041561631451662,
+        "climate/energy": 0.0450753121826697,
+        "B2B SaaS (other)": 0.030030685664388983,
+        "proptech": 0.023914660667258267
       },
       "G": {
-        "series-a": 0.32113841396061354,
-        "seed": 0.3139782729672931,
-        "series-b-plus": 0.3648833130720933
+        "series-a": 0.32042759566177564,
+        "seed": 0.3132389993732014,
+        "series-b-plus": 0.366333404965023
       },
       "chequeBand": [
         10675000,
@@ -16956,9 +16953,8 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 23
     },
-    "contradiction": 0.4894454046958989,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 8 of last 23 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "20vc",
@@ -17024,7 +17020,7 @@
           }
         ],
         "companyCalaId": "4857599f-75e3-4f60-a58a-36360d418332",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$720M–$731M",
         "amountUsd": 720000000
       },
@@ -17513,21 +17509,21 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.20066510927403547,
-        "other": 0.06568890703243656,
-        "B2B SaaS (other)": 0.06568890703243656,
-        "consumer": 0.06205357109480811,
-        "applied AI/vertical SaaS": 0.2854274021931366,
-        "AI infrastructure": 0.21618836433360264,
-        "climate/energy": 0.052112590244331805,
-        "developer tools": 0.02759586201174392,
-        "biotech/therapeutics": 0.024579286783468324
+        "deep tech/hardware": 0.1992839507760538,
+        "other": 0.06580240988740212,
+        "B2B SaaS (other)": 0.06580240988740212,
+        "consumer": 0.062160792508563566,
+        "applied AI/vertical SaaS": 0.2859205878236774,
+        "AI infrastructure": 0.21656191289257135,
+        "climate/energy": 0.05220263478974434,
+        "developer tools": 0.027643544478465763,
+        "biotech/therapeutics": 0.024621756956119595
       },
       "G": {
-        "series-b-plus": 0.2566953699888419,
-        "seed": 0.5354219764763213,
-        "series-a": 0.15185061386573895,
-        "pre-seed": 0.056032039669097804
+        "series-b-plus": 0.25533589982141147,
+        "seed": 0.536401238779578,
+        "series-a": 0.15212834169242206,
+        "pre-seed": 0.05613451970658832
       },
       "chequeBand": [
         5000000,
@@ -17537,9 +17533,8 @@
       "activity": 1,
       "dealCount24m": 22
     },
-    "contradiction": 0.46287938554470964,
-    "thinHistory": false,
-    "contradictionLine": "Says B2B SaaS; 7 of last 22 deals were applied AI"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "twin-path-ventures",
@@ -17597,7 +17592,7 @@
           }
         ],
         "companyCalaId": "69e4da82-e66c-4726-8872-ce6e81fc065e",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "~$2M (£1.5M)",
         "amountUsd": 2000000
       },
@@ -17612,7 +17607,7 @@
           }
         ],
         "companyCalaId": "06a92e7b-45ff-4311-aad1-377b76fdce2b",
-        "date": "2026-11-15"
+        "date": "2026-11-01"
       },
       {
         "company": "Azoma (formerly Ecomtent)",
@@ -18016,20 +18011,20 @@
     ],
     "revealed": {
       "S": {
-        "healthtech": 0.17293931170795457,
-        "AI infrastructure": 0.13283524823313778,
-        "applied AI/vertical SaaS": 0.40663067937104824,
-        "biotech/therapeutics": 0.11776546196325882,
-        "cybersecurity": 0.043786921385217184,
-        "climate/energy": 0.06879087873231324,
-        "B2B SaaS (other)": 0.03275258664653982,
-        "insurtech": 0.024498911960530338
+        "healthtech": 0.17167179004916444,
+        "AI infrastructure": 0.13141230352633393,
+        "applied AI/vertical SaaS": 0.4082065740342769,
+        "biotech/therapeutics": 0.11822186127702336,
+        "cybersecurity": 0.043956617326106125,
+        "climate/energy": 0.06905747735404227,
+        "B2B SaaS (other)": 0.032879519091929946,
+        "insurtech": 0.024593857341122925
       },
       "G": {
-        "seed": 0.5835450284010497,
-        "series-a": 0.13340021096915528,
-        "pre-seed": 0.2527687595219696,
-        "series-b-plus": 0.030286001107825464
+        "seed": 0.58186919682034,
+        "series-a": 0.13393701879151626,
+        "pre-seed": 0.25378591119192645,
+        "series-b-plus": 0.030407873196217242
       },
       "chequeBand": [
         2000000,
@@ -18039,9 +18034,8 @@
       "activity": 1,
       "dealCount24m": 22
     },
-    "contradiction": 0.4421979961224463,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 12 of last 21 deals were seed"
+    "contradiction": 0.34621408880807353,
+    "thinHistory": false
   },
   {
     "id": "ventures-together",
@@ -18572,9 +18566,8 @@
       "activity": 1,
       "dealCount24m": 22
     },
-    "contradiction": 0.5084323641819877,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 10 of last 19 deals were seed"
+    "contradiction": 0.32923098734443296,
+    "thinHistory": false
   },
   {
     "id": "foresight-group",
@@ -19051,9 +19044,8 @@
       "activity": 0.9687936498860342,
       "dealCount24m": 21
     },
-    "contradiction": 0.420579994312428,
-    "thinHistory": false,
-    "contradictionLine": "Says climate; 8 of last 21 deals were deep tech"
+    "contradiction": 0.18606981593821656,
+    "thinHistory": false
   },
   {
     "id": "partech",
@@ -19534,7 +19526,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 21
     },
-    "contradiction": 0.32517164682017585,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -19596,7 +19588,7 @@
           }
         ],
         "companyCalaId": "250d3499-be4b-49c6-83af-4a492586a64c",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$750M",
         "amountUsd": 750000000
       },
@@ -20018,14 +20010,14 @@
     ],
     "revealed": {
       "S": {
-        "applied AI/vertical SaaS": 0.365730082368719,
-        "AI infrastructure": 0.09301075038990919,
-        "developer tools": 0.09987104246743142,
-        "B2B SaaS (other)": 0.05522026788344298,
-        "cybersecurity": 0.1435714894922614,
-        "biotech/therapeutics": 0.052065384217214405,
-        "fintech": 0.16448593736381212,
-        "healthtech": 0.026045045817209574
+        "applied AI/vertical SaaS": 0.36469582682915247,
+        "AI infrastructure": 0.09316241592086999,
+        "developer tools": 0.10003389455302296,
+        "B2B SaaS (other)": 0.05531031135920499,
+        "cybersecurity": 0.14380560056107222,
+        "biotech/therapeutics": 0.05215028326500059,
+        "fintech": 0.16475415202632465,
+        "healthtech": 0.026087515485352295
       },
       "G": {
         "series-b-plus": 1
@@ -20038,7 +20030,7 @@
       "activity": 1,
       "dealCount24m": 21
     },
-    "contradiction": 0.19107622320858844,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -20680,7 +20672,7 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 20
     },
-    "contradiction": 0.30092542291155056,
+    "contradiction": 0.14446147153510436,
     "thinHistory": false
   },
   {
@@ -21155,7 +21147,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 20
     },
-    "contradiction": 0.05257075858056154,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -21231,7 +21223,7 @@
             "url": "https://www.startupmag.co.uk/investors/oxford-science-enterprises"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$90M",
         "amountUsd": 90000000
       },
@@ -21257,7 +21249,7 @@
             "url": "https://www.axios.com/pro/climate-deals/2026/11/07/harbinger-humble-robotics-vaeridion"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$30M",
         "amountUsd": 30000000
       },
@@ -21626,16 +21618,16 @@
     ],
     "revealed": {
       "S": {
-        "biotech/therapeutics": 0.3041570517387758,
-        "deep tech/hardware": 0.38646132844252484,
-        "medtech/devices": 0.10800982353428343,
-        "healthtech": 0.1560968398189897,
-        "climate/energy": 0.045274956465426355
+        "biotech/therapeutics": 0.3035325258348672,
+        "deep tech/hardware": 0.3860992636241967,
+        "medtech/devices": 0.10835425734347927,
+        "healthtech": 0.15659461888558748,
+        "climate/energy": 0.0454193343118693
       },
       "G": {
-        "series-a": 0.38555299997024495,
-        "series-b-plus": 0.3670375217505322,
-        "seed": 0.24740947827922288
+        "series-a": 0.3833609136582682,
+        "series-b-plus": 0.36834695596922357,
+        "seed": 0.24829213037250822
       },
       "chequeBand": [
         14250000,
@@ -21645,7 +21637,7 @@
       "activity": 1,
       "dealCount24m": 20
     },
-    "contradiction": 0.29157925675828755,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -22114,7 +22106,7 @@
             "url": "https://www.startup.eu/investor/accel"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$30M",
         "amountUsd": 30000000
       },
@@ -22548,17 +22540,17 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.08236846543612421,
-        "cybersecurity": 0.2280481027097239,
-        "applied AI/vertical SaaS": 0.4667011430753169,
-        "developer tools": 0.13006533023701086,
-        "AI infrastructure": 0.04913553271918499,
-        "marketplaces": 0.04368142582263925
+        "deep tech/hardware": 0.08049055352849595,
+        "cybersecurity": 0.22851479792611504,
+        "applied AI/vertical SaaS": 0.4676562362699959,
+        "developer tools": 0.13033150595484708,
+        "AI infrastructure": 0.04923608746093639,
+        "marketplaces": 0.0437708188596097
       },
       "G": {
-        "series-a": 0.3397227847033817,
-        "series-b-plus": 0.5286289364813099,
-        "seed": 0.13164827881530838
+        "series-a": 0.3383715425127671,
+        "series-b-plus": 0.5297107634860967,
+        "seed": 0.13191769400113623
       },
       "chequeBand": [
         67500000,
@@ -22568,9 +22560,8 @@
       "activity": 1,
       "dealCount24m": 19
     },
-    "contradiction": 0.43790598896974287,
-    "thinHistory": false,
-    "contradictionLine": "Says Series A; 10 of last 19 deals were Series B+"
+    "contradiction": 0.17971076348609671,
+    "thinHistory": false
   },
   {
     "id": "seedcamp",
@@ -23013,7 +23004,7 @@
       "activity": 1,
       "dealCount24m": 19
     },
-    "contradiction": 0.18510672864546648,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -23464,7 +23455,7 @@
     },
     "contradiction": 0.5793378318815624,
     "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 10 of last 17 deals were seed"
+    "contradictionLine": "Says 3 sectors, not deep tech; 5 of last 18 deals were deep tech"
   },
   {
     "id": "dn-capital",
@@ -23944,9 +23935,8 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 18
     },
-    "contradiction": 0.5575984559101469,
-    "thinHistory": false,
-    "contradictionLine": "Says B2B SaaS; 9 of last 18 deals were applied AI"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "eqt-life-sciences",
@@ -24956,7 +24946,7 @@
       "activity": 1,
       "dealCount24m": 18
     },
-    "contradiction": 0.3351351990914327,
+    "contradiction": 0.2538187841377655,
     "thinHistory": false
   },
   {
@@ -25437,9 +25427,8 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 18
     },
-    "contradiction": 0.412569043719082,
-    "thinHistory": false,
-    "contradictionLine": "Says B2B SaaS; 6 of last 18 deals were applied AI"
+    "contradiction": 0.3800707269568569,
+    "thinHistory": false
   },
   {
     "id": "visionaries-club",
@@ -25508,7 +25497,7 @@
           }
         ],
         "companyCalaId": "2cead233-e17f-4b2e-9326-e71558b97b06",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$11M",
         "amountUsd": 11000000
       },
@@ -25523,7 +25512,7 @@
           }
         ],
         "companyCalaId": "b35917e2-6076-468e-b281-a8d33177e7db",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$30M",
         "amountUsd": 30000000
       },
@@ -25876,20 +25865,20 @@
     ],
     "revealed": {
       "S": {
-        "applied AI/vertical SaaS": 0.37790864378200656,
-        "deep tech/hardware": 0.23534506342844783,
-        "healthtech": 0.07353649968534938,
-        "fintech": 0.1199836226739413,
-        "climate/energy": 0.04917878660181815,
-        "AI infrastructure": 0.04371987846904851,
-        "developer tools": 0.06354180729266966,
-        "insurtech": 0.036785698066718546
+        "applied AI/vertical SaaS": 0.3774074620967098,
+        "deep tech/hardware": 0.2342586621364823,
+        "healthtech": 0.07383836500968348,
+        "fintech": 0.12047615217056165,
+        "climate/energy": 0.049380664178687264,
+        "AI infrastructure": 0.04389934737701091,
+        "developer tools": 0.06380264467749555,
+        "insurtech": 0.03693670235336911
       },
       "G": {
-        "seed": 0.34875211715853494,
-        "series-b-plus": 0.35668632255886806,
-        "series-a": 0.24538277368077885,
-        "pre-seed": 0.04917878660181815
+        "seed": 0.3460787623725853,
+        "series-b-plus": 0.3581505101786958,
+        "series-a": 0.24639006327003163,
+        "pre-seed": 0.049380664178687264
       },
       "chequeBand": [
         15750000,
@@ -25899,7 +25888,7 @@
       "activity": 1,
       "dealCount24m": 18
     },
-    "contradiction": 0.38472316086526437,
+    "contradiction": 0.20815051017869585,
     "thinHistory": false
   },
   {
@@ -25967,7 +25956,7 @@
           }
         ],
         "companyCalaId": "91f2f732-21b9-515d-8646-20b6df7aa2b6",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$6.86M",
         "amountUsd": 6860000
       },
@@ -26422,19 +26411,19 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.29722535374736525,
-        "healthtech": 0.19876195497652469,
-        "B2B SaaS (other)": 0.14319489098618807,
-        "climate/energy": 0.07807145263635563,
-        "other": 0.12739358668322082,
-        "medtech/devices": 0.05221161362487611,
-        "applied AI/vertical SaaS": 0.07702295212814239,
-        "biotech/therapeutics": 0.026118195217327
+        "deep tech/hardware": 0.29550559757499817,
+        "healthtech": 0.19924834432014324,
+        "B2B SaaS (other)": 0.14354530245725927,
+        "climate/energy": 0.07826250088101408,
+        "other": 0.12770533086492497,
+        "medtech/devices": 0.05233938039233054,
+        "applied AI/vertical SaaS": 0.07721143459267439,
+        "biotech/therapeutics": 0.026182108916655226
       },
       "G": {
-        "seed": 0.4177391445746538,
-        "series-a": 0.5420543151676195,
-        "series-b-plus": 0.0402065402577267
+        "seed": 0.4156687527224591,
+        "series-a": 0.5439817413840876,
+        "series-b-plus": 0.04034950589345319
       },
       "chequeBand": [
         12000000,
@@ -26444,9 +26433,8 @@
       "activity": 1,
       "dealCount24m": 17
     },
-    "contradiction": 0.4340908233857511,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 7 of last 12 deals were Series A"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "expeditions-fund",
@@ -26930,7 +26918,7 @@
       "activity": 0.9687936498860342,
       "dealCount24m": 17
     },
-    "contradiction": 0.36228981715793557,
+    "contradiction": 0.23512663542376422,
     "thinHistory": false
   },
   {
@@ -27533,7 +27521,7 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 17
     },
-    "contradiction": 0.3341074674368995,
+    "contradiction": 0.2357334081243221,
     "thinHistory": false
   },
   {
@@ -27988,7 +27976,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 16
     },
-    "contradiction": 0.31386903614544603,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -28843,7 +28831,7 @@
       "activity": 0.9687936498860342,
       "dealCount24m": 16
     },
-    "contradiction": 0.3035206648629203,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -29294,7 +29282,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 16
     },
-    "contradiction": 0.3480558260350326,
+    "contradiction": 0.2626642325303971,
     "thinHistory": false
   },
   {
@@ -29751,9 +29739,8 @@
       "activity": 0.9687936498860342,
       "dealCount24m": 16
     },
-    "contradiction": 0.41034241062101784,
-    "thinHistory": false,
-    "contradictionLine": "Says B2B SaaS; 7 of last 16 deals were applied AI"
+    "contradiction": 0.3341099102355794,
+    "thinHistory": false
   },
   {
     "id": "google-ventures",
@@ -29817,7 +29804,7 @@
           }
         ],
         "companyCalaId": "c1d50686-5703-4c76-b564-d9a3bbde8c4a",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$47.5M",
         "amountUsd": 47500000
       },
@@ -30128,19 +30115,19 @@
     ],
     "revealed": {
       "S": {
-        "crypto/web3": 0.1081719979845497,
-        "healthtech": 0.08103088285138375,
-        "applied AI/vertical SaaS": 0.36985440992032587,
-        "consumer": 0.15280273750292198,
-        "cybersecurity": 0.10032914743909148,
-        "developer tools": 0.06084152818301737,
-        "AI infrastructure": 0.09653409597681183,
-        "B2B SaaS (other)": 0.030435200141897947
+        "crypto/web3": 0.10577360479720488,
+        "healthtech": 0.08124879921749485,
+        "applied AI/vertical SaaS": 0.3708490594436172,
+        "consumer": 0.15321366992913696,
+        "cybersecurity": 0.10059896263122077,
+        "developer tools": 0.06100514931441497,
+        "AI infrastructure": 0.09679370513644135,
+        "B2B SaaS (other)": 0.03051704953046935
       },
       "G": {
-        "series-a": 0.5450927631365213,
-        "series-b-plus": 0.3759574143912151,
-        "seed": 0.07894982247226363
+        "series-a": 0.5438284603301836,
+        "series-b-plus": 0.37700229557920306,
+        "seed": 0.07916924409061321
       },
       "chequeBand": [
         25000000,
@@ -30150,7 +30137,7 @@
       "activity": 0.9687936498860342,
       "dealCount24m": 16
     },
-    "contradiction": 0.3935462920832139,
+    "contradiction": 0.1938284603301837,
     "thinHistory": false
   },
   {
@@ -30566,7 +30553,7 @@
       "activity": 1,
       "dealCount24m": 16
     },
-    "contradiction": 0.19824704285969064,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -31053,7 +31040,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 16
     },
-    "contradiction": 0.13363458245160664,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -31118,7 +31105,7 @@
           }
         ],
         "companyCalaId": "5c173f6e-4675-47de-9d62-0d0596b2e2f5",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$19M",
         "amountUsd": 19000000
       },
@@ -31141,7 +31128,7 @@
           }
         ],
         "companyCalaId": "8b89e72b-8bd2-44cb-bddb-27488c5ecf32",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "€100M (~$112M)",
         "amountUsd": 112000000
       },
@@ -31487,17 +31474,17 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.4804656591419188,
-        "applied AI/vertical SaaS": 0.18509044543698397,
-        "climate/energy": 0.2042079559782491,
-        "healthtech": 0.06418985140722239,
-        "cybersecurity": 0.040475460092914306,
-        "mobility": 0.02557062794271136
+        "deep tech/hardware": 0.47824857417693684,
+        "applied AI/vertical SaaS": 0.1858803089964599,
+        "climate/energy": 0.20507940248971798,
+        "healthtech": 0.06446377815906004,
+        "cybersecurity": 0.040648186950343036,
+        "mobility": 0.02567974922748207
       },
       "G": {
-        "series-a": 0.37576216393704165,
-        "series-b-plus": 0.5048056691896193,
-        "seed": 0.119432166873339
+        "series-a": 0.3751993856046052,
+        "series-b-plus": 0.504827438133594,
+        "seed": 0.119973176261801
       },
       "chequeBand": [
         38572500,
@@ -31507,9 +31494,8 @@
       "activity": 1,
       "dealCount24m": 16
     },
-    "contradiction": 0.5250701788447414,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 7 of last 14 deals were Series B+"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "air-street-capital",
@@ -31991,9 +31977,8 @@
       "activity": 1,
       "dealCount24m": 15
     },
-    "contradiction": 0.42815048864851224,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 5 of last 11 deals were Series B+"
+    "contradiction": 0.36253233904603566,
+    "thinHistory": false
   },
   {
     "id": "general-catalyst",
@@ -32065,7 +32050,7 @@
           }
         ],
         "companyCalaId": "411887b0-d0b7-4257-b5fb-a31912d3549c",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$1.5B (expected)",
         "amountUsd": 1500000000
       },
@@ -32092,7 +32077,7 @@
           }
         ],
         "companyCalaId": "25e51ce6-4a57-4d51-ad2e-3ac6efe75541",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$100M",
         "amountUsd": 100000000
       },
@@ -32484,15 +32469,15 @@
     ],
     "revealed": {
       "S": {
-        "applied AI/vertical SaaS": 0.5592574012198451,
-        "developer tools": 0.09474137377593495,
-        "deep tech/hardware": 0.14063599922463085,
-        "AI infrastructure": 0.1583304557301147,
-        "consumer": 0.047034770049474435
+        "applied AI/vertical SaaS": 0.5570702400637988,
+        "developer tools": 0.09521152268635723,
+        "deep tech/hardware": 0.14133389771571656,
+        "AI infrastructure": 0.15911616199846823,
+        "consumer": 0.047268177535659095
       },
       "G": {
-        "series-b-plus": 0.6264459682031327,
-        "seed": 0.3735540317968673
+        "series-b-plus": 0.625228126316571,
+        "seed": 0.374771873683429
       },
       "chequeBand": [
         48000000,
@@ -32502,9 +32487,8 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 15
     },
-    "contradiction": 0.49083477213494264,
-    "thinHistory": false,
-    "contradictionLine": "Says AI infra; 8 of last 15 deals were applied AI"
+    "contradiction": 0.39999999999999997,
+    "thinHistory": false
   },
   {
     "id": "molten-ventures",
@@ -32565,7 +32549,7 @@
           }
         ],
         "companyCalaId": "2d301b70-5c9c-4e82-b69b-86e9f0f61de3",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$80M",
         "amountUsd": 80000000
       },
@@ -32884,21 +32868,21 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.19358580681560278,
-        "climate/energy": 0.19920519731828767,
-        "healthtech": 0.1152864853738402,
-        "deep tech/hardware": 0.13768264552559886,
-        "biotech/therapeutics": 0.0766461711785343,
-        "mobility": 0.06826777947542524,
-        "AI infrastructure": 0.06436745608598925,
-        "B2B SaaS (other)": 0.05754929503152431,
-        "applied AI/vertical SaaS": 0.051258432375270245,
-        "cybersecurity": 0.03615073081992711
+        "fintech": 0.19153476677152972,
+        "climate/energy": 0.19971185734503386,
+        "healthtech": 0.11557970590497751,
+        "deep tech/hardware": 0.13803282862224278,
+        "biotech/therapeutics": 0.07684111363817936,
+        "mobility": 0.06844141226935106,
+        "AI infrastructure": 0.06453116876749124,
+        "B2B SaaS (other)": 0.05769566634990568,
+        "applied AI/vertical SaaS": 0.0513888034653213,
+        "cybersecurity": 0.03624267686596753
       },
       "G": {
-        "series-b-plus": 0.5320631229193622,
-        "series-a": 0.4217867467338789,
-        "seed": 0.046150130346758855
+        "series-b-plus": 0.5305426988387314,
+        "series-a": 0.4231572194579481,
+        "seed": 0.046300081703320506
       },
       "chequeBand": [
         8000000,
@@ -32908,7 +32892,7 @@
       "activity": 1,
       "dealCount24m": 15
     },
-    "contradiction": 0.2870545102597775,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -32977,7 +32961,7 @@
           }
         ],
         "companyCalaId": "a6c444df-31b7-4a61-95fa-97000dbf67c2",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "€6.9M",
         "amountUsd": 7452000
       },
@@ -33270,21 +33254,21 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.17269815513602912,
-        "fintech": 0.1482644998008355,
-        "B2B SaaS (other)": 0.08923277481695657,
-        "cybersecurity": 0.16653679642158106,
-        "applied AI/vertical SaaS": 0.10904969131373289,
-        "developer tools": 0.07947850883502883,
-        "healthtech": 0.12979826640090633,
-        "consumer": 0.040596789126132356,
-        "climate/energy": 0.03409318431864897,
-        "marketplaces": 0.03025133383014824
+        "deep tech/hardware": 0.1707026811844637,
+        "fintech": 0.1486221176994673,
+        "B2B SaaS (other)": 0.08944800663213817,
+        "cybersecurity": 0.16693848758339772,
+        "applied AI/vertical SaaS": 0.10931272205613214,
+        "developer tools": 0.07967021310243035,
+        "healthtech": 0.1301113432557077,
+        "consumer": 0.04069470965625244,
+        "climate/energy": 0.034175417981798815,
+        "marketplaces": 0.030324300848211774
       },
       "G": {
-        "seed": 0.700682252317685,
-        "series-a": 0.18705006930650783,
-        "pre-seed": 0.11226767837580716
+        "seed": 0.6982916335173012,
+        "series-a": 0.18854401818110597,
+        "pre-seed": 0.11316434830159289
       },
       "chequeBand": [
         4800000,
@@ -33294,9 +33278,8 @@
       "activity": 0.9687936498860342,
       "dealCount24m": 15
     },
-    "contradiction": 0.48326333989503445,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 3 of last 5 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "salesforce-ventures",
@@ -33362,7 +33345,7 @@
           }
         ],
         "companyCalaId": "250d3499-be4b-49c6-83af-4a492586a64c",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$750M",
         "amountUsd": 750000000
       },
@@ -33377,7 +33360,7 @@
           }
         ],
         "companyCalaId": "00612a68-1ca4-4eae-bfe3-5921fdede808",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$300M",
         "amountUsd": 300000000
       },
@@ -33396,7 +33379,7 @@
           }
         ],
         "companyCalaId": "5c4aa187-db8e-4c73-9412-743afc067225",
-        "date": "2026-11-15"
+        "date": "2026-11-01"
       },
       {
         "company": "Q-CTRL",
@@ -33422,7 +33405,7 @@
           }
         ],
         "companyCalaId": "1eaced9b-cf10-4cf2-84dc-8167c55db492",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$290M",
         "amountUsd": 290000000
       },
@@ -33630,15 +33613,15 @@
     ],
     "revealed": {
       "S": {
-        "applied AI/vertical SaaS": 0.40442859494402605,
-        "AI infrastructure": 0.18236392644439348,
-        "deep tech/hardware": 0.34140624629332555,
-        "developer tools": 0.04097612471225216,
-        "fintech": 0.03082510760600274
+        "applied AI/vertical SaaS": 0.40607058837998977,
+        "AI infrastructure": 0.18164477213975888,
+        "deep tech/hardware": 0.3397199659599093,
+        "developer tools": 0.04141181168999832,
+        "fintech": 0.031152861830343617
       },
       "G": {
-        "series-b-plus": 0.9107781599482948,
-        "series-a": 0.0892218400517052
+        "series-b-plus": 0.9097438673651014,
+        "series-a": 0.09025613263489857
       },
       "chequeBand": [
         149000000,
@@ -33648,9 +33631,8 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 15
     },
-    "contradiction": 0.5133065005928232,
-    "thinHistory": false,
-    "contradictionLine": "Says AI infra; 6 of last 15 deals were applied AI"
+    "contradiction": 0.3597438673651014,
+    "thinHistory": false
   },
   {
     "id": "sofinnova-partners",
@@ -33722,7 +33704,7 @@
             "url": "https://www.insideprecisionmedicine.com/topics/oncology/alethio-raises-90m-to-advance-first-candidate-for-myeloproliferative-neoplasms"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$90M",
         "amountUsd": 90000000
       },
@@ -33741,7 +33723,7 @@
           }
         ],
         "companyCalaId": "66bde3de-0cc4-480d-8158-c113cab3558e",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$133M",
         "amountUsd": 133000000
       },
@@ -33990,14 +33972,14 @@
     ],
     "revealed": {
       "S": {
-        "biotech/therapeutics": 0.8393120357172443,
-        "medtech/devices": 0.07752335270141675,
-        "climate/energy": 0.083164611581339
+        "biotech/therapeutics": 0.8386164992885085,
+        "medtech/devices": 0.07785891184626154,
+        "climate/energy": 0.08352458886523005
       },
       "G": {
-        "series-a": 0.2329296139014907,
-        "series-b-plus": 0.4475071305448359,
-        "seed": 0.31956325555367354
+        "series-a": 0.23115418561831041,
+        "series-b-plus": 0.44715816888548654,
+        "seed": 0.32168764549620305
       },
       "chequeBand": [
         16500000,
@@ -34007,7 +33989,7 @@
       "activity": 1,
       "dealCount24m": 15
     },
-    "contradiction": 0.27819121090787685,
+    "contradiction": 0.2787311568350991,
     "thinHistory": false
   },
   {
@@ -34432,7 +34414,7 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 14
     },
-    "contradiction": 0.3054118694746188,
+    "contradiction": 0.2424322044839012,
     "thinHistory": false
   },
   {
@@ -34821,7 +34803,8 @@
       "dealCount24m": 14
     },
     "contradiction": 0.4240666312849294,
-    "thinHistory": false
+    "thinHistory": false,
+    "contradictionLine": "Says seed and Series A; 4 of last 13 deals were Series B+"
   },
   {
     "id": "fuel-ventures",
@@ -35211,9 +35194,8 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 14
     },
-    "contradiction": 0.6452078023880773,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 12 of last 14 deals were pre-seed"
+    "contradiction": 0.4704156047761545,
+    "thinHistory": false
   },
   {
     "id": "nauta-capital",
@@ -35641,7 +35623,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 14
     },
-    "contradiction": 0.42125314266667013,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -36490,9 +36472,8 @@
       "activity": 1,
       "dealCount24m": 14
     },
-    "contradiction": 0.4285120981827428,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 7 of last 14 deals were Series B+"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "unilever-ventures",
@@ -36907,7 +36888,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 14
     },
-    "contradiction": 0.4465975721778625,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -37232,9 +37213,8 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 13
     },
-    "contradiction": 0.5497948155264119,
-    "thinHistory": false,
-    "contradictionLine": "Says Series B+; 7 of last 11 deals were Series A"
+    "contradiction": 0.4495896310528237,
+    "thinHistory": false
   },
   {
     "id": "cavalry-ventures",
@@ -37526,7 +37506,7 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 13
     },
-    "contradiction": 0.49184497839644037,
+    "contradiction": 0.4,
     "thinHistory": false
   },
   {
@@ -37592,7 +37572,7 @@
             "url": "https://www.crowdcube.com/companies/beach/pitches/lEapYl"
           }
         ],
-        "date": "2026-11-15"
+        "date": "2026-11-01"
       },
       {
         "company": "Chip",
@@ -37813,16 +37793,16 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.34069797386699774,
-        "mobility": 0.08271654805985455,
-        "other": 0.17371800440026092,
-        "consumer": 0.27187424492697965,
-        "cybersecurity": 0.0654966143729536,
-        "B2B SaaS (other)": 0.0654966143729536
+        "fintech": 0.33798774540509285,
+        "mobility": 0.08305657544326367,
+        "other": 0.17443211638719408,
+        "consumer": 0.2729918530753752,
+        "cybersecurity": 0.06576585484453705,
+        "B2B SaaS (other)": 0.06576585484453705
       },
       "G": {
-        "series-a": 0.28794179544762194,
-        "pre-seed": 0.712058204552378
+        "series-a": 0.28794179544762205,
+        "pre-seed": 0.7120582045523779
       },
       "chequeBand": [
         415000,
@@ -37832,9 +37812,8 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 13
     },
-    "contradiction": 0.693970450262126,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 3 of last 4 deals were pre-seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "firedrop",
@@ -38161,7 +38140,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 13
     },
-    "contradiction": 0.27764241804098905,
+    "contradiction": 0.05528483608197811,
     "thinHistory": false
   },
   {
@@ -38508,7 +38487,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 13
     },
-    "contradiction": 0.3974012483593275,
+    "contradiction": 0.24156515539554235,
     "thinHistory": false
   },
   {
@@ -38969,7 +38948,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 13
     },
-    "contradiction": 0.38572465597802563,
+    "contradiction": 0.011871439086028501,
     "thinHistory": false
   },
   {
@@ -39049,7 +39028,7 @@
           }
         ],
         "companyCalaId": "4857599f-75e3-4f60-a58a-36360d418332",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$720M (£540M)",
         "amountUsd": 720000000
       },
@@ -39357,19 +39336,19 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.3561839642077943,
-        "fintech": 0.17706078255703034,
-        "biotech/therapeutics": 0.17374183904797466,
-        "AI infrastructure": 0.0991147543158902,
-        "climate/energy": 0.0882802635325004,
-        "consumer": 0.06628468002215654,
-        "healthtech": 0.039333716316653444
+        "deep tech/hardware": 0.3541825122051643,
+        "fintech": 0.17761121721248274,
+        "biotech/therapeutics": 0.17428195599500806,
+        "AI infrastructure": 0.09942287559974676,
+        "climate/energy": 0.0885547032799081,
+        "consumer": 0.0664907413785047,
+        "healthtech": 0.03945599432918536
       },
       "G": {
-        "series-b-plus": 0.4129360581446289,
-        "seed": 0.4048105762438331,
-        "pre-seed": 0.13756346378550202,
-        "series-a": 0.044689901826036
+        "series-b-plus": 0.4107480055087229,
+        "seed": 0.40631935030615,
+        "pre-seed": 0.13807617812218725,
+        "series-a": 0.04485646606293975
       },
       "chequeBand": [
         12700000,
@@ -39379,8 +39358,9 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 13
     },
-    "contradiction": 0.3681036619897924,
-    "thinHistory": false
+    "contradiction": 0.4107480055087229,
+    "thinHistory": false,
+    "contradictionLine": "Says pre-seed to Series A; 4 of last 11 deals were Series B+"
   },
   {
     "id": "pembroke-vct",
@@ -39808,9 +39788,8 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 13
     },
-    "contradiction": 0.447801078167659,
-    "thinHistory": false,
-    "contradictionLine": "Says consumer; 6 of last 13 deals were applied AI"
+    "contradiction": 0.5504786033486477,
+    "thinHistory": false
   },
   {
     "id": "blackfinch-ventures",
@@ -40234,7 +40213,7 @@
       "activity": 0.9348704159880586,
       "dealCount24m": 12
     },
-    "contradiction": 0.34421475806418206,
+    "contradiction": 0.30000000000000004,
     "thinHistory": false
   },
   {
@@ -40580,7 +40559,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 12
     },
-    "contradiction": 0.31786413031861555,
+    "contradiction": 0.30000000000000004,
     "thinHistory": false
   },
   {
@@ -40882,7 +40861,7 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 12
     },
-    "contradiction": 0.3853515970275376,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -41184,7 +41163,7 @@
       "activity": 0.4283173410313946,
       "dealCount24m": 12
     },
-    "contradiction": 0.38377953683403043,
+    "contradiction": 0.15994771478747258,
     "thinHistory": false
   },
   {
@@ -41250,7 +41229,7 @@
           }
         ],
         "companyCalaId": "60fe47ef-92e3-4347-9766-cc81e08967e1",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$25M",
         "amountUsd": 25000000
       },
@@ -41269,7 +41248,7 @@
           }
         ],
         "companyCalaId": "7410f676-386b-4e6b-9b99-7dbcee7ffb40",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$100M",
         "amountUsd": 100000000
       },
@@ -41470,12 +41449,12 @@
     ],
     "revealed": {
       "S": {
-        "medtech/devices": 0.11680331202209165,
-        "biotech/therapeutics": 0.8831966879779083
+        "medtech/devices": 0.11457083099091261,
+        "biotech/therapeutics": 0.8854291690090873
       },
       "G": {
-        "series-b-plus": 0.6905144318233952,
-        "series-a": 0.3094855681766048
+        "series-b-plus": 0.6885674936892539,
+        "series-a": 0.3114325063107461
       },
       "chequeBand": [
         38500000,
@@ -41485,7 +41464,7 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 12
     },
-    "contradiction": 0.46659834398895417,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -41912,7 +41891,7 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 12
     },
-    "contradiction": 0.3320608937574561,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -41988,7 +41967,7 @@
           }
         ],
         "companyCalaId": "df947568-9385-4600-bc79-4279ad75b567",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$12M",
         "amountUsd": 12000000
       },
@@ -42329,16 +42308,16 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.5908193285968935,
-        "developer tools": 0.13540472405849086,
-        "applied AI/vertical SaaS": 0.15738162846368575,
-        "crypto/web3": 0.07604743186752247,
-        "consumer": 0.04034688701340744
+        "fintech": 0.5893592750454645,
+        "developer tools": 0.1358878801850106,
+        "applied AI/vertical SaaS": 0.15794320339042933,
+        "crypto/web3": 0.07631878711652408,
+        "consumer": 0.04049085426257156
       },
       "G": {
-        "series-a": 0.6682406462717817,
-        "pre-seed": 0.13540472405849088,
-        "seed": 0.19635462966972742
+        "series-a": 0.6670568503193247,
+        "pre-seed": 0.1358878801850106,
+        "seed": 0.1970552694956648
       },
       "chequeBand": [
         9000000,
@@ -42348,7 +42327,7 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 11
     },
-    "contradiction": 0.36379896923137506,
+    "contradiction": 0.36331297169390564,
     "thinHistory": false
   },
   {
@@ -42775,7 +42754,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 11
     },
-    "contradiction": 0.3127224180348024,
+    "contradiction": 0.5007368396422254,
     "thinHistory": false
   },
   {
@@ -43173,7 +43152,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 11
     },
-    "contradiction": 0.32193628320422973,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -43528,7 +43507,7 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 11
     },
-    "contradiction": 0.3271230903672993,
+    "contradiction": 0.08606301983888942,
     "thinHistory": false
   },
   {
@@ -43799,9 +43778,8 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 11
     },
-    "contradiction": 0.4138528968492491,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 4 of last 7 deals were seed"
+    "contradiction": 0.35573847861425745,
+    "thinHistory": false
   },
   {
     "id": "etf-partners",
@@ -44171,7 +44149,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 11
     },
-    "contradiction": 0.38611212945772544,
+    "contradiction": 0.3146441862102024,
     "thinHistory": false
   },
   {
@@ -44897,7 +44875,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 11
     },
-    "contradiction": 0.29808042705367593,
+    "contradiction": 0.16449690744606074,
     "thinHistory": false
   },
   {
@@ -45241,7 +45219,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 11
     },
-    "contradiction": 0.39976545844857714,
+    "contradiction": 0.24953091689715418,
     "thinHistory": false
   },
   {
@@ -46042,7 +46020,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 11
     },
-    "contradiction": 0.1799991246642646,
+    "contradiction": 0.07734661455799897,
     "thinHistory": false
   },
   {
@@ -46314,7 +46292,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 10
     },
-    "contradiction": 0.1955290633988157,
+    "contradiction": 0.15000000000000002,
     "thinHistory": false
   },
   {
@@ -46571,9 +46549,9 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 10
     },
-    "contradiction": 0.4694491123189924,
+    "contradiction": 0.43945054566029373,
     "thinHistory": false,
-    "contradictionLine": "Says fintech; 4 of last 10 deals were healthtech"
+    "contradictionLine": "Says seed; 5 of last 10 deals were pre-seed"
   },
   {
     "id": "aviva-investors-venture-growth-team",
@@ -46634,7 +46612,7 @@
           }
         ],
         "companyCalaId": "8932a610-7903-431d-8366-905e45c68ee4",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "€15 million",
         "amountUsd": 16200000
       },
@@ -46811,16 +46789,16 @@
     ],
     "revealed": {
       "S": {
-        "deep tech/hardware": 0.46280885386325793,
-        "fintech": 0.14321071087203793,
-        "climate/energy": 0.24221428369635298,
-        "other": 0.08012681610092645,
-        "healthtech": 0.07163933546742467
+        "deep tech/hardware": 0.4595920798072158,
+        "fintech": 0.14406827619602644,
+        "climate/energy": 0.2436646959553795,
+        "other": 0.08060662643488364,
+        "healthtech": 0.07206832160649454
       },
       "G": {
         "series-b-plus": 0.6210894381785912,
         "seed": 0.23238083670072118,
-        "series-a": 0.14652972512068754
+        "series-a": 0.14652972512068757
       },
       "chequeBand": [
         16912500,
@@ -46830,9 +46808,8 @@
       "activity": 0.4283173410313946,
       "dealCount24m": 10
     },
-    "contradiction": 0.42811969591956434,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 3 of last 5 deals were Series B+"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "bd-partners",
@@ -47086,9 +47063,9 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 10
     },
-    "contradiction": 0.5237884884870454,
+    "contradiction": 0.49539784211662086,
     "thinHistory": false,
-    "contradictionLine": "Says B2B SaaS; 5 of last 10 deals were applied AI"
+    "contradictionLine": "Says seed; 4 of last 8 deals were pre-seed"
   },
   {
     "id": "cambridge-innovation-capital",
@@ -47164,7 +47141,7 @@
           }
         ],
         "companyCalaId": "66bde3de-0cc4-480d-8158-c113cab3558e",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$133M",
         "amountUsd": 133000000
       },
@@ -47472,14 +47449,14 @@
     ],
     "revealed": {
       "S": {
-        "biotech/therapeutics": 0.5768378083138804,
-        "deep tech/hardware": 0.3225002067148376,
-        "cybersecurity": 0.10066198497128195
+        "biotech/therapeutics": 0.5752489066874109,
+        "deep tech/hardware": 0.32371113981106764,
+        "cybersecurity": 0.1010399535015214
       },
       "G": {
-        "series-b-plus": 0.4808093297514514,
-        "seed": 0.30367735329292517,
-        "series-a": 0.21551331695562342
+        "series-b-plus": 0.4788598576185119,
+        "seed": 0.30481760979515765,
+        "series-a": 0.2163225325863304
       },
       "chequeBand": [
         21500000,
@@ -47489,7 +47466,7 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 10
     },
-    "contradiction": 0.3422433415221883,
+    "contradiction": 0.2336774674136696,
     "thinHistory": false
   },
   {
@@ -47828,9 +47805,8 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 10
     },
-    "contradiction": 0.43262726357146175,
-    "thinHistory": false,
-    "contradictionLine": "Says Series A; 3 of last 5 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "energy-impact-partners-eip",
@@ -47900,7 +47876,7 @@
           }
         ],
         "companyCalaId": "332eb776-9cdb-4dc6-9950-7309f2e95718",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$51M",
         "amountUsd": 51000000
       },
@@ -48143,14 +48119,14 @@
     ],
     "revealed": {
       "S": {
-        "mobility": 0.13846551420724645,
-        "climate/energy": 0.6758629103168879,
-        "AI infrastructure": 0.13074549023349963,
-        "deep tech/hardware": 0.054926085242366036
+        "mobility": 0.13549750036750294,
+        "climate/energy": 0.6781912796447205,
+        "AI infrastructure": 0.1311959126262144,
+        "deep tech/hardware": 0.055115307361562185
       },
       "G": {
-        "series-a": 0.19339159944961246,
-        "series-b-plus": 0.8066084005503875
+        "series-a": 0.19061280772906516,
+        "series-b-plus": 0.8093871922709349
       },
       "chequeBand": [
         42500000,
@@ -48160,7 +48136,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 10
     },
-    "contradiction": 0.4066084005503875,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -48459,7 +48435,7 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 10
     },
-    "contradiction": 0.2752931680560001,
+    "contradiction": 0.15763477182346908,
     "thinHistory": false
   },
   {
@@ -48799,7 +48775,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 10
     },
-    "contradiction": 0.33042492184990624,
+    "contradiction": 0.26724914810953715,
     "thinHistory": false
   },
   {
@@ -49169,7 +49145,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 10
     },
-    "contradiction": 0.2174122611784367,
+    "contradiction": 0.16104759331677884,
     "thinHistory": false
   },
   {
@@ -49426,9 +49402,9 @@
       "activity": 0.8977117175026231,
       "dealCount24m": 10
     },
-    "contradiction": 0.690834467524319,
+    "contradiction": 0.9178496591806982,
     "thinHistory": false,
-    "contradictionLine": "Says seed; 9 of last 10 deals were pre-seed"
+    "contradictionLine": "Says seed and Series A; 9 of last 10 deals were pre-seed"
   },
   {
     "id": "odyssey-ventures",
@@ -49490,7 +49466,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "£2.2M (~$3M)",
         "amountUsd": 3000000
       },
@@ -49656,12 +49632,12 @@
     ],
     "revealed": {
       "S": {
-        "climate/energy": 0.2947013452293692,
-        "biotech/therapeutics": 0.272032521090664,
-        "AI infrastructure": 0.12189987729799805,
-        "deep tech/hardware": 0.11537246916424865,
-        "developer tools": 0.11384998058374844,
-        "medtech/devices": 0.08214380663397167
+        "climate/energy": 0.2925252420229291,
+        "biotech/therapeutics": 0.27287184048734403,
+        "AI infrastructure": 0.12227598281309943,
+        "deep tech/hardware": 0.11572843524809841,
+        "developer tools": 0.11420124923586573,
+        "medtech/devices": 0.08239725019266313
       },
       "G": {
         "seed": 1
@@ -49674,9 +49650,8 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 10
     },
-    "contradiction": 0.5813638267688767,
-    "thinHistory": false,
-    "contradictionLine": "Says AI infra; 3 of last 10 deals were climate"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "outward-vc",
@@ -50420,7 +50395,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 10
     },
-    "contradiction": 0.32039418091584365,
+    "contradiction": 0.16210759077412945,
     "thinHistory": false
   },
   {
@@ -50635,7 +50610,7 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 10
     },
-    "contradiction": 0.03651870265609,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -51040,9 +51015,8 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 9
     },
-    "contradiction": 0.4235409615888591,
-    "thinHistory": false,
-    "contradictionLine": "Says B2B SaaS; 7 of last 9 deals were applied AI"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "boost-capital-partners",
@@ -51324,9 +51298,8 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 9
     },
-    "contradiction": 0.4409860391394369,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 5 of last 8 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "bp-ventures",
@@ -51572,7 +51545,7 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 9
     },
-    "contradiction": 0.3187203853579274,
+    "contradiction": 0.3037900156047699,
     "thinHistory": false
   },
   {
@@ -51990,7 +51963,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 9
     },
-    "contradiction": 0.12245966425855405,
+    "contradiction": 0.05071630582620354,
     "thinHistory": false
   },
   {
@@ -52333,7 +52306,7 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 9
     },
-    "contradiction": 0.46329886977017265,
+    "contradiction": 0.45,
     "thinHistory": false
   },
   {
@@ -52625,9 +52598,8 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 9
     },
-    "contradiction": 0.5374524253607756,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 6 of last 7 deals were Series A"
+    "contradiction": 0.4772623216815893,
+    "thinHistory": false
   },
   {
     "id": "eight-roads",
@@ -52936,7 +52908,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 9
     },
-    "contradiction": 0.2905274379519166,
+    "contradiction": 0.1610548759038331,
     "thinHistory": false
   },
   {
@@ -53149,9 +53121,8 @@
       "activity": 0.27023815442731974,
       "dealCount24m": 9
     },
-    "contradiction": 0.5870684518538329,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 3 of last 4 deals were Series B+"
+    "contradiction": 0.5,
+    "thinHistory": false
   },
   {
     "id": "sustainable-ventures-barclays-partnership",
@@ -53745,7 +53716,7 @@
       "activity": 0.27023815442731974,
       "dealCount24m": 9
     },
-    "contradiction": 0.38424479208469103,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -54339,7 +54310,7 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 8
     },
-    "contradiction": 0.38463105232471206,
+    "contradiction": 0.21414488771024695,
     "thinHistory": false
   },
   {
@@ -54661,7 +54632,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 8
     },
-    "contradiction": 0.35579844035340646,
+    "contradiction": 0.2266899565126126,
     "thinHistory": false
   },
   {
@@ -54883,7 +54854,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 8
     },
-    "contradiction": 0.390707713658228,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -55393,7 +55364,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 8
     },
-    "contradiction": 0.31580754528073396,
+    "contradiction": 0.15189336338789583,
     "thinHistory": false
   },
   {
@@ -55648,9 +55619,8 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 8
     },
-    "contradiction": 0.4375,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-idea; 5 of last 5 deals were Series B+"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "mmc-ventures",
@@ -55724,7 +55694,7 @@
             "url": "https://mmc.vc/portfolio/loadsure"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$100M",
         "amountUsd": 100000000
       },
@@ -56003,17 +55973,17 @@
     ],
     "revealed": {
       "S": {
-        "cybersecurity": 0.1738004355813722,
-        "healthtech": 0.2680125539226493,
-        "deep tech/hardware": 0.12275442272882443,
-        "B2B SaaS (other)": 0.12275442272882443,
-        "applied AI/vertical SaaS": 0.22050877964802534,
-        "climate/energy": 0.09216938539030442
+        "cybersecurity": 0.1702246668159733,
+        "healthtech": 0.26917250481142246,
+        "deep tech/hardware": 0.1232857004606363,
+        "B2B SaaS (other)": 0.1232857004606363,
+        "applied AI/vertical SaaS": 0.2214631355212537,
+        "climate/energy": 0.092568291930078
       },
       "G": {
-        "series-b-plus": 0.4820787834305365,
-        "seed": 0.35522292383297277,
-        "series-a": 0.1626982927364909
+        "series-b-plus": 0.4791036526195763,
+        "seed": 0.35726345554251515,
+        "series-a": 0.16363289183790847
       },
       "chequeBand": [
         29000000,
@@ -56023,9 +55993,9 @@
       "activity": 0.8566346820627895,
       "dealCount24m": 8
     },
-    "contradiction": 0.48078500189125556,
+    "contradiction": 0.4291036526195764,
     "thinHistory": false,
-    "contradictionLine": "Says seed; 3 of last 6 deals were Series B+"
+    "contradictionLine": "Says pre-seed to Series A; 3 of last 6 deals were Series B+"
   },
   {
     "id": "mosaic-ventures",
@@ -56662,7 +56632,7 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 8
     },
-    "contradiction": 0.3900519931323625,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -56728,7 +56698,7 @@
             "url": "https://theventurecodex.com/funds/stride-vc"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$5M",
         "amountUsd": 5000000
       },
@@ -56949,16 +56919,16 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.2736832594981953,
-        "applied AI/vertical SaaS": 0.2599576374006597,
-        "healthtech": 0.19912258439761657,
-        "proptech": 0.10856385524345784,
-        "B2B SaaS (other)": 0.15867266346007064
+        "fintech": 0.2687208859993583,
+        "applied AI/vertical SaaS": 0.2617337315187246,
+        "healthtech": 0.20048303856414448,
+        "proptech": 0.10930559003786652,
+        "B2B SaaS (other)": 0.15975675387990612
       },
       "G": {
-        "seed": 0.48976238267054306,
-        "pre-seed": 0.17688165640033676,
-        "series-a": 0.3333559609291202
+        "seed": 0.48598332643327075,
+        "pre-seed": 0.1781917239143263,
+        "series-a": 0.33582494965240295
       },
       "chequeBand": [
         4750000,
@@ -56968,9 +56938,9 @@
       "activity": 0.4283173410313946,
       "dealCount24m": 8
     },
-    "contradiction": 0.4255000189854271,
+    "contradiction": 0.5215223601207356,
     "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 3 of last 7 deals were seed"
+    "contradictionLine": "Says 3 sectors, not applied AI; 2 of last 8 deals were applied AI"
   },
   {
     "id": "zinc",
@@ -57202,7 +57172,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 8
     },
-    "contradiction": 0.32388293818222863,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -57495,7 +57465,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 7
     },
-    "contradiction": 0.33750306115394846,
+    "contradiction": 0.17500612230789675,
     "thinHistory": false
   },
   {
@@ -57554,7 +57524,7 @@
           }
         ],
         "companyCalaId": "315482d6-b6c4-4660-bf1a-a49e53c489c0",
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$3.3M",
         "amountUsd": 3300000
       },
@@ -57688,10 +57658,10 @@
     ],
     "revealed": {
       "S": {
-        "edtech": 0.2002874095888817,
-        "other": 0.4474393261482607,
-        "deep tech/hardware": 0.16844730101225766,
-        "healthtech": 0.18382596325059997
+        "edtech": 0.19629617060549034,
+        "other": 0.44967242501732724,
+        "deep tech/hardware": 0.16928799483464899,
+        "healthtech": 0.1847434095425335
       },
       "G": {
         "seed": 0.7074311219132042,
@@ -57706,8 +57676,7 @@
       "dealCount24m": 7
     },
     "contradiction": 0.4766618911439735,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 4 of last 6 deals were seed"
+    "thinHistory": false
   },
   {
     "id": "episode-1-ventures",
@@ -57945,9 +57914,8 @@
       "activity": 0.8107144632819592,
       "dealCount24m": 7
     },
-    "contradiction": 0.533097372355298,
-    "thinHistory": false,
-    "contradictionLine": "Says AI infra; 2 of last 7 deals were applied AI"
+    "contradiction": 0.39999999999999997,
+    "thinHistory": false
   },
   {
     "id": "khp-ventures",
@@ -58201,7 +58169,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 7
     },
-    "contradiction": 0.38195924005495807,
+    "contradiction": 0.39999999999999997,
     "thinHistory": false
   },
   {
@@ -58475,9 +58443,8 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 7
     },
-    "contradiction": 0.5850095481431603,
-    "thinHistory": false,
-    "contradictionLine": "Says fintech; 2 of last 7 deals were healthtech"
+    "contradiction": 0.3,
+    "thinHistory": false
   },
   {
     "id": "talis-capital",
@@ -58908,9 +58875,8 @@
       "activity": 0.7586544129592989,
       "dealCount24m": 6
     },
-    "contradiction": 0.4393939393939394,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 3 of last 5 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "blume-equity",
@@ -59384,9 +59350,8 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 6
     },
-    "contradiction": 0.5709753399363107,
-    "thinHistory": false,
-    "contradictionLine": "Says AI infra; 3 of last 6 deals were fintech"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "seedrs",
@@ -59441,7 +59406,7 @@
             "date": "2026-11-14"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "€1.45M (~$1.45M)",
         "amountUsd": 1450000
       },
@@ -59628,15 +59593,15 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.6556259448320682,
-        "other": 0.14764369129654228,
-        "climate/energy": 0.09836518193569481,
-        "consumer": 0.09836518193569481
+        "fintech": 0.6529361373767649,
+        "other": 0.1487968940294957,
+        "climate/energy": 0.09913348429686966,
+        "consumer": 0.09913348429686966
       },
       "G": {
         "series-a": 0.3165401380795596,
         "series-b-plus": 0.26583041427900134,
-        "seed": 0.25064280175662423,
+        "seed": 0.2506428017566242,
         "pre-seed": 0.16698664588481485
       },
       "chequeBand": [
@@ -59647,7 +59612,7 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 6
     },
-    "contradiction": 0.24935719824337577,
+    "contradiction": 0.24935719824337582,
     "thinHistory": false
   },
   {
@@ -59962,7 +59927,7 @@
       "activity": 0.6985554954587144,
       "dealCount24m": 6
     },
-    "contradiction": 0.06068923039576063,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -60619,7 +60584,7 @@
     },
     "contradiction": 0.6050563733416137,
     "thinHistory": false,
-    "contradictionLine": "Says fintech; 3 of last 5 deals were insurtech"
+    "contradictionLine": "Says 4 sectors, not insurtech; 3 of last 5 deals were insurtech"
   },
   {
     "id": "bek-ventures",
@@ -60880,7 +60845,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 5
     },
-    "contradiction": 0.22546313135985827,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -61111,9 +61076,9 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 5
     },
-    "contradiction": 0.7975059196615906,
+    "contradiction": 0.7950118393231812,
     "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 3 of last 5 deals were Series B+"
+    "contradictionLine": "Says pre-seed and seed; 3 of last 5 deals were Series B+"
   },
   {
     "id": "embryo-ventures",
@@ -61310,9 +61275,8 @@
       "activity": 0.4283173410313946,
       "dealCount24m": 5
     },
-    "contradiction": 0.575,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 4 of last 5 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "kiko-ventures",
@@ -61559,7 +61523,7 @@
       "activity": 0.27023815442731974,
       "dealCount24m": 5
     },
-    "contradiction": 0.05885242700687563,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -61761,9 +61725,8 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 5
     },
-    "contradiction": 0.6121045611355711,
-    "thinHistory": false,
-    "contradictionLine": "Says seed; 2 of last 3 deals were Series B+"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "project-a",
@@ -61947,9 +61910,8 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 5
     },
-    "contradiction": 0.5232981974714159,
-    "thinHistory": false,
-    "contradictionLine": "Says AI infra; 1 of last 5 deals were applied AI"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "sie-ventures",
@@ -62146,9 +62108,8 @@
       "activity": 0.4283173410313946,
       "dealCount24m": 5
     },
-    "contradiction": 0.6,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-seed; 4 of last 4 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "advent-life-sciences",
@@ -62595,7 +62556,7 @@
       "activity": 0.6274735630753033,
       "dealCount24m": 4
     },
-    "contradiction": 0.6000000000000001,
+    "contradiction": 0,
     "thinHistory": false
   },
   {
@@ -62757,9 +62718,8 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 4
     },
-    "contradiction": 0.5494549079098171,
-    "thinHistory": false,
-    "contradictionLine": "Says pre-idea; 4 of last 4 deals were pre-seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "axiom-equity",
@@ -63315,7 +63275,7 @@
       "activity": 0.27023815442731974,
       "dealCount24m": 3
     },
-    "contradiction": 0.48500000000000004,
+    "contradiction": 0.30000000000000004,
     "thinHistory": false
   },
   {
@@ -63454,7 +63414,7 @@
       "activity": 0.27023815442731974,
       "dealCount24m": 3
     },
-    "contradiction": 0.3976535837811672,
+    "contradiction": 0.2587218017086758,
     "thinHistory": false
   },
   {
@@ -63576,9 +63536,8 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 3
     },
-    "contradiction": 0.6300821275126676,
-    "thinHistory": false,
-    "contradictionLine": "Says Series A; 2 of last 3 deals were seed"
+    "contradiction": 0,
+    "thinHistory": false
   },
   {
     "id": "pearson-ventures",
@@ -63837,7 +63796,7 @@
       "activity": 0.5404763088546395,
       "dealCount24m": 3
     },
-    "contradiction": 0.44694234797405186,
+    "contradiction": 0.22388469594810367,
     "thinHistory": false
   },
   {
@@ -64014,7 +63973,7 @@
     },
     "contradiction": 0.5,
     "thinHistory": false,
-    "contradictionLine": "Says other; 2 of last 3 deals were consumer"
+    "contradictionLine": "Says dev tools and B2B SaaS; 2 of last 3 deals were consumer"
   },
   {
     "id": "ada-ventures",
@@ -64085,7 +64044,7 @@
             "url": "https://www.fintechfutures.com/venture-capital-funding/icymi-fintech-funding-round-up-ancep-planky-seva-money-and-more"
           }
         ],
-        "date": "2026-11-15",
+        "date": "2026-11-01",
         "amount": "$5M",
         "amountUsd": 5000000
       },
@@ -64128,8 +64087,8 @@
     ],
     "revealed": {
       "S": {
-        "fintech": 0.5577314200275212,
-        "deep tech/hardware": 0.4422685799724788
+        "fintech": 0.5515296321220631,
+        "deep tech/hardware": 0.44847036787793687
       },
       "G": {
         "seed": 1

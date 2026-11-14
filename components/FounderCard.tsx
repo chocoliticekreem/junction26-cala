@@ -3,6 +3,7 @@
 import type { FounderProfile, InterestState } from "@/lib/types";
 import type { Sector } from "@/lib/taxonomy";
 import type { FounderMatch } from "@/lib/engine";
+import { INVESTOR_OPEN_CAP } from "@/lib/interest";
 import { formatGbp } from "@/lib/scoring";
 import { Avatar, Button, Chip, Score, SectorChip, StageChip } from "@/components/ui";
 
@@ -30,7 +31,7 @@ export function FounderCard({ founder, match, interestState, capHit, onIntereste
   const isLive = !founder.seeded;
   const open = interestState && interestState !== "declined" && interestState !== "expired";
   const disabled = !!open || capHit;
-  const title = capHit && !open ? "You have 10 open requests" : undefined;
+  const title = capHit && !open ? `You have ${INVESTOR_OPEN_CAP} open requests` : undefined;
 
   return (
     <article

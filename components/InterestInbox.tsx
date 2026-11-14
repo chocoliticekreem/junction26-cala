@@ -125,7 +125,7 @@ export function InterestInbox({ founderId, founder, open, onClose }: InterestInb
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
         {active.length === 0 && (
           <div className="rounded-lg border border-dashed border-white/10 p-6 text-center text-[13px] text-white/40">
-            No requests yet. When an investor taps Interested, it lands here within a second.
+            No requests yet. When an investor taps Interested, it lands here.
           </div>
         )}
         {active.map((req) => {

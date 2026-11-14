@@ -31,7 +31,7 @@ function chipsFor(p: FounderProfile, triggers: Record<string, string>): Chip[] {
     const t = [p.traction.revenue, p.traction.users, p.traction.growth].filter(Boolean).join(" · ");
     if (t) chips.push({ key: "traction", label: "Traction", value: t, trigger: triggers.traction });
   }
-  for (const sig of p.teamSignals) chips.push({ key: `team:${sig}`, label: "Team", value: sig, trigger: triggers.teamSignals });
+  for (const sig of p.teamSignals) chips.push({ key: `team:${sig}`, label: "Team", value: sig, trigger: triggers[`team:${sig.toLowerCase()}`] });
   if (p.geography) chips.push({ key: "geo", label: "Where", value: p.geography, trigger: triggers.geography });
   if (p.businessModel) chips.push({ key: "model", label: "Model", value: p.businessModel, trigger: triggers.businessModel });
   return chips;

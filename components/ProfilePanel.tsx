@@ -19,26 +19,52 @@ const KIND_LABEL: Record<Investor["kind"], string> = {
   cvc: "Corporate VC",
 };
 
-type CalaState =
-  | { status: "loading" }
-  | { status: "ok"; answer?: string; sources: Source[]; mock: boolean }
-  | { status: "unavailable"; detail: string };
+type Fetched<T> = { ok: true; data: T } | { ok: false; detail: string };
+type CalaPayload = { answer?: string; sources?: Source[]; mock?: boolean };
 
-async function fetchCala(inv: Investor, signal: AbortSignal): Promise<CalaState> {
+// Session cache per investor. An uncached Cala search takes 40-70 s, so the request is never
+// aborted when the panel closes: reopening the same investor picks up the in-flight promise or
+// the finished result. Failures are dropped so the next open retries.
+const pending = new Map<string, Promise<Fetched<CalaPayload>>>();
+const settled = new Map<string, Fetched<CalaPayload>>();
+
+async function getJson(url: string, init?: RequestInit): Promise<Fetched<CalaPayload>> {
   try {
-    const [entityRes, searchRes] = await Promise.all([
-      fetch(`/api/cala/entity/${encodeURIComponent(inv.calaId)}`, { signal }),
-      fetch("/api/cala/search", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: `What does ${inv.name} invest in?` }), signal }),
-    ]);
-    if (!entityRes.ok && !searchRes.ok) return { status: "unavailable", detail: `Cala routes answered ${entityRes.status}/${searchRes.status}` };
-    const entity = entityRes.ok ? ((await entityRes.json()) as { sources?: Source[]; mock?: boolean }) : undefined;
-    const search = searchRes.ok ? ((await searchRes.json()) as { answer?: string; sources?: Source[]; mock?: boolean }) : undefined;
-    const sources = [...(search?.sources ?? []), ...(entity?.sources ?? [])];
-    return { status: "ok", answer: search?.answer, sources, mock: Boolean(entity?.mock || search?.mock) };
-  } catch (e) {
-    if ((e as Error).name === "AbortError") return { status: "loading" };
-    return { status: "unavailable", detail: "network error" };
+    const res = await fetch(url, init);
+    if (!res.ok) return { ok: false, detail: `Cala route answered ${res.status}` };
+    return { ok: true, data: (await res.json()) as CalaPayload };
+  } catch {
+    return { ok: false, detail: "network error" };
   }
+}
+
+function cachedFetch(key: string, load: () => Promise<Fetched<CalaPayload>>): Promise<Fetched<CalaPayload>> {
+  const hit = pending.get(key);
+  if (hit) return hit;
+  const p = load().then((r) => {
+    pending.delete(key);
+    if (r.ok) settled.set(key, r);
+    return r;
+  });
+  pending.set(key, p);
+  return p;
+}
+
+function useCala(key: string, load: () => Promise<Fetched<CalaPayload>>): Fetched<CalaPayload> | undefined {
+  const [result, setResult] = useState<{ key: string; r: Fetched<CalaPayload> } | null>(null);
+  useEffect(() => {
+    if (settled.has(key)) return;
+    let live = true;
+    cachedFetch(key, load).then((r) => {
+      if (live) setResult({ key, r });
+    });
+    return () => {
+      live = false;
+    };
+    // load is rebuilt each render from the same key; the key alone identifies the request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return settled.get(key) ?? (result?.key === key ? result.r : undefined);
 }
 
 function Bars({ title, stated, revealed, labelOf, colorOf }: { title: string; stated: Partial<Record<string, number>>; revealed: Partial<Record<string, number>>; labelOf: (k: string) => string; colorOf?: (k: string) => string }) {
@@ -69,16 +95,18 @@ function Bars({ title, stated, revealed, labelOf, colorOf }: { title: string; st
 }
 
 export default function ProfilePanel({ investor, match, onClose }: ProfilePanelProps) {
-  const [calaResult, setCalaResult] = useState<{ forId: string; state: CalaState } | null>(null);
-  const cala: CalaState = calaResult?.forId === investor.id ? calaResult.state : { status: "loading" };
-
-  useEffect(() => {
-    const ctrl = new AbortController();
-    fetchCala(investor, ctrl.signal).then((s) => {
-      if (!ctrl.signal.aborted) setCalaResult({ forId: investor.id, state: s });
-    });
-    return () => ctrl.abort();
-  }, [investor]);
+  const entity = useCala(`entity:${investor.calaId}`, () =>
+    getJson(`/api/cala/entity/${encodeURIComponent(investor.calaId)}`),
+  );
+  const search = useCala(`search:${investor.id}`, () =>
+    getJson("/api/cala/search", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: `What does ${investor.name} invest in?` }),
+    }),
+  );
+  const liveSources = [...(search?.ok ? (search.data.sources ?? []) : []), ...(entity?.ok ? (entity.data.sources ?? []) : [])];
+  const liveMock = (search?.ok && search.data.mock) || (entity?.ok && entity.data.mock);
 
   const recent = [...investor.deals].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "")).slice(0, 5);
 
@@ -131,7 +159,9 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
           revealed={investor.revealed.G}
           labelOf={(k) => STAGE_LABELS[k as Stage] ?? k}
         />
-        {investor.statedThesis.text && <p className="muted quote">“{investor.statedThesis.text}”</p>}
+        {investor.statedThesis.text && (
+          <p className="muted quote">Stated thesis, summarised from Cala sources: {investor.statedThesis.text}</p>
+        )}
       </section>
 
       <section className="panel-block">
@@ -181,30 +211,37 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
 
       <section className="panel-block" data-testid="cala-live">
         <h3>
-          Live from Cala {cala.status === "ok" && cala.mock && <span className="tag">mock</span>}
+          Live from Cala {liveMock && <span className="tag">mock</span>}
         </h3>
-        {cala.status === "loading" && <p className="muted">Asking Cala…</p>}
-        {cala.status === "unavailable" && <p className="muted">Live Cala data unavailable ({cala.detail}). Showing cached deals above.</p>}
-        {cala.status === "ok" && (
-          <>
-            {cala.answer ? <p>{cala.answer}</p> : <p className="muted">No fresh summary returned.</p>}
-            {cala.sources.length > 0 && (
-              <ul className="sources">
-                {cala.sources.slice(0, 5).map((s, i) => (
-                  <li key={`${s.name}-${i}`}>
-                    {s.url ? (
-                      <a href={s.url} target="_blank" rel="noreferrer">
-                        {s.name}
-                      </a>
-                    ) : (
-                      s.name
-                    )}
-                    {s.date && <span className="muted font-mono"> {s.date}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+        {!search && (
+          <div className="cala-wait" role="status" data-testid="cala-loading">
+            <p className="muted">Asking Cala… this can take up to a minute.</p>
+            <span className="cala-progress" aria-hidden="true">
+              <i />
+            </span>
+          </div>
+        )}
+        {search && !search.ok && entity && !entity.ok && (
+          <p className="muted">Live Cala data unavailable ({search.detail}). Showing cached deals above.</p>
+        )}
+        {search && !search.ok && entity?.ok && <p className="muted">Live Cala summary unavailable ({search.detail}).</p>}
+        {search?.ok &&
+          (search.data.answer ? <p>{search.data.answer}</p> : <p className="muted">No fresh summary returned.</p>)}
+        {liveSources.length > 0 && (
+          <ul className="sources">
+            {liveSources.slice(0, 5).map((s, i) => (
+              <li key={`${s.name}-${i}`}>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noreferrer">
+                    {s.name}
+                  </a>
+                ) : (
+                  s.name
+                )}
+                {s.date && <span className="muted font-mono"> {s.date}</span>}
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
