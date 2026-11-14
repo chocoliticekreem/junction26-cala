@@ -11,12 +11,15 @@ export type TranscriptToken = { text: string; t: number; final: boolean };
 
 const CHUNK_MS = 3000;
 
-// Extraction trigger keys use extraction field names and sector labels; chips key by profile field.
+// Extraction trigger keys use extraction field names and sector labels; chips key by profile field,
+// with one entry per sector ("sector:<label>") so each sector chip shows its own word.
 function chipTriggers(e: Extraction): Record<string, string> {
   const t = e.triggers ?? {};
   const out: Record<string, string> = {};
-  const sectorWord = t.sectors ?? e.sectors.map((s) => t[s.label]).find(Boolean);
-  if (sectorWord) out.sectors = sectorWord;
+  for (const s of e.sectors) {
+    const word = t[s.label] ?? (s === e.sectors[0] ? t.sectors : undefined);
+    if (word) out[`sector:${s.label}`] = word;
+  }
   if (t.stage) out.stage = t.stage;
   if (t.raise_amount) out.raise = t.raise_amount;
   if (t.traction) out.traction = t.traction;
