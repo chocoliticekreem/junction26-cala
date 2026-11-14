@@ -14,7 +14,7 @@ npm run dev                  # http://localhost:3000 (use Chrome for the mic)
 
 | Key | Used for | Without it |
 |---|---|---|
-| `CALA_API_KEY` | Ingest, live entity and knowledge-search panels | Mock panels; app runs on committed `data/investors.json` |
+| `CALA_API_KEY` | Ingest, live entity and knowledge-search panels | Panels answer from the committed `data/cala-snapshot.json`, mock for anything outside it; app runs on committed `data/investors.json` |
 | `ANTHROPIC_API_KEY` | Live pitch extraction (Claude Haiku), ingest classification | Offline keyword extractor drives the graph |
 | `ELEVENLABS_API_KEY` | Realtime speech-to-text | Browser Web Speech API (Chrome) |
 
@@ -43,7 +43,25 @@ Every live Cala call costs one credit. The `/api/cala/*` routes cache successful
 ```bash
 npm run prewarm                  # cache the panel's requests for the demo investors (max 15 calls)
 npm run prewarm -- zinc syncona  # or chosen investor ids; --dry-run lists the requests
+npm run build-snapshot           # data/cala-cache -> committed data/cala-snapshot.json (no calls)
 ```
+
+The panel's two live requests (entity and "What does X invest in?") are answered first from the committed `data/cala-snapshot.json`, which holds the displayed fields (name, type, description, answer text, cited sources) for all 193 investors. Only a request the snapshot cannot answer reaches the disk cache and then live Cala. Each response carries `source: "snapshot" | "cache" | "live"`. Re-run `npm run build-snapshot` after a new ingest or prewarm.
+
+## Deploy
+
+Not deployed; deploy only when Anson says so. The app runs on a read-only filesystem (e.g. Vercel): the snapshot is bundled with the routes, the disk cache simply stays empty there, and nothing writes to disk.
+
+| Env var | Deploy value | Effect |
+|---|---|---|
+| `CALA_LIVE_BUDGET` | `25` (recommended) | Normal panel visits cost 0 (snapshot). Only requests outside the snapshot call Cala, up to 25. `0` = zero-spend mode: Cala is never called, misses show "Live Cala lookup paused". |
+| `CALA_API_KEY` | set, or leave unset | Unset: snapshot answers still work; misses fall back to mock. |
+| `ANTHROPIC_API_KEY` | optional | Unset: the offline keyword extractor drives the graph. Set: every visitor pitch spends Anthropic credits. |
+| `ELEVENLABS_API_KEY` | optional | Unset: browser Web Speech. |
+
+On a deploy the live-call counter file (`data/.cala-live-usage.json`) cannot be written and is not shared between instances, so the routes count in memory instead, with the same cap. The cap is per server instance and resets on a cold start: treat `CALA_LIVE_BUDGET` there as approximate, not a hard account limit.
+
+The repo becomes public at submission. `data/cala-snapshot.json` then publishes display fields of Cala data (entity names, descriptions, search answers and source links).
 
 ## Test
 

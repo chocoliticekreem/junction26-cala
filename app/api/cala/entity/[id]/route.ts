@@ -1,4 +1,6 @@
+import { SNAPSHOT } from "@/lib/calaSnapshotData";
 import { CalaBudgetError, CalaError, UUID_RE, entitySources, getRouteCala } from "@/lib/cala";
+import { snapshotEntity } from "@/lib/calaSnapshot";
 
 function mock(id: string) {
   return {
@@ -35,12 +37,19 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/cala/entity/[id
   const { id } = await ctx.params;
   if (!UUID_RE.test(id)) return Response.json({ error: "invalid_id" }, { status: 400 });
 
+  const snap = snapshotEntity(SNAPSHOT, id);
+  if (snap) {
+    const { sources, ...entity } = snap;
+    return Response.json({ entity: { ...entity, properties: {} }, sources, cached: true, source: "snapshot" });
+  }
+
   const cala = getRouteCala();
   if (!cala) return Response.json(mock(id));
 
   const hitsBefore = cala.stats.cacheHits;
   try {
     const e = await cala.retrieve(id);
+    const cached = cala.stats.cacheHits > hitsBefore;
     return Response.json({
       entity: {
         id: e.id,
@@ -50,7 +59,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/cala/entity/[id
         properties: Object.fromEntries(Object.entries(e.properties ?? {}).map(([k, v]) => [k, v.value])),
       },
       sources: entitySources(e),
-      cached: cala.stats.cacheHits > hitsBefore,
+      cached,
+      source: cached ? "cache" : "live",
     });
   } catch (err) {
     if (err instanceof CalaBudgetError) return Response.json(budgetExhausted(id));
