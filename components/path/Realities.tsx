@@ -42,7 +42,9 @@ export default function Realities({ realities, selectedId, onSelect, horizonYear
         {sorted.map((r, i) => {
           const selected = r.title === selectedId;
           const stalled = r.outcome !== "reached_vision";
-          const lastYear = Math.min(horizonYears, Math.max(...r.steps.map((s) => s.year), 0));
+          // Steps sit at their median month, so two rounds inside one year do not stack.
+          const at = (s: { monthFromStart: number }) => Math.min(1, Math.max(0, s.monthFromStart / (horizonYears * 12)));
+          const lastAt = Math.max(...r.steps.map(at), 0);
           return (
             <li key={r.title}>
               <button
@@ -64,12 +66,12 @@ export default function Realities({ realities, selectedId, onSelect, horizonYear
                   </span>
                 </span>
                 <span className="path-lane-track" style={{ "--cols": horizonYears } as React.CSSProperties}>
-                  <i className="path-lane-line" style={{ width: `${(lastYear / horizonYears) * 100}%` }} />
+                  <i className="path-lane-line" style={{ width: `${lastAt * 100}%` }} />
                   {r.steps.map((s, j) => (
                     <span
                       key={j}
                       className="path-step"
-                      style={{ left: `${(Math.min(s.year, horizonYears) / horizonYears) * 100}%` }}
+                      style={{ left: `${at(s) * 100}%` }}
                       title={[s.label, `month ${Math.round(s.monthFromStart)}`, s.amountBand, s.headcountBand ? `${s.headcountBand} people` : undefined].filter(Boolean).join(" · ")}
                     >
                       <i />

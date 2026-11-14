@@ -124,7 +124,7 @@ export default function PathPage() {
   const vision = visionText.trim() || visionSpoken;
   const pitchSpoken = q1.tokens.map((t) => t.text).join(" ").trim();
   const pitch = [pitchText.trim(), pitchSpoken].filter(Boolean).join(" ");
-  const companyLabel = result?.start.companyName || candidate?.name || profile.company || "You";
+  const companyLabel = result?.start.companyName || candidate?.name || companyName.trim() || result?.founder?.company || profile.company || "You";
 
   const pick = useCallback((c: CompanyCandidate | null) => {
     setCandidate(c);
@@ -347,7 +347,8 @@ export default function PathPage() {
                 </>
               ) : (
                 <>
-                  <b>{companyLabel}</b> is not in the cohort · starts from your pitch at {STAGE_LABELS[result.start.stage]}
+                  <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
+                  {STAGE_LABELS[result.start.stage]}
                 </>
               )}
             </p>
