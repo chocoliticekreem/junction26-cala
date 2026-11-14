@@ -4,6 +4,10 @@ export type { Sector, Stage };
 
 export type Source = { name: string; url?: string; date?: string };
 
+// Cala's kind of source: registry/regulator filing, the company or its investors, independent
+// press, or a funding database.
+export type SourceRank = "FILING" | "PRIMARY" | "PRESS" | "AGGREGATOR";
+
 export type Deal = {
   company: string;
   companyCalaId?: string;
@@ -13,9 +17,17 @@ export type Deal = {
   amountUsd?: number; // normalised, when parseable
   sector: Sector;
   sources: Source[];
+  // Set on deals read from Cala FundingRound entities (deals without roundId came from the
+  // knowledge query). isLead is false only when the round names other leads.
+  roundId?: string;
+  isLead?: boolean;
+  sourceRank?: SourceRank; // best rank among sources; sources[0] carries it
+  datePrecision?: "day" | "month" | "year";
 };
 
-export type DoorKind = "programme" | "office_hours" | "scout" | "warm_intro" | "room";
+export type InvestorEvent = { id: string; name: string; date?: string; source?: Source };
+
+export type DoorKind ="programme" | "office_hours" | "scout" | "warm_intro" | "room";
 
 export type Door = { kind: DoorKind; label: string; url?: string; via?: string[] };
 
@@ -53,6 +65,9 @@ export type Investor = {
   thinHistory: boolean;
   partners: Partner[];
   doors: Door[];
+  // Cala Event entities whose incoming PARTICIPATES_IN_EVENT includes this investor
+  // (scripts/ingest-events.ts).
+  events?: InvestorEvent[];
   fixture?: true;
 };
 
