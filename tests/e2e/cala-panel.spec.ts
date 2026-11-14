@@ -21,7 +21,7 @@ test("slow Cala search shows a loading state, never blocks the panel, and is cac
   await expect(panel.getByTestId("cala-loading")).toContainText("this can take up to a minute");
   await expect(panel.locator(".cala-progress")).toBeVisible();
   await expect(panel.getByTestId("profile-fit")).toBeVisible();
-  await expect(page.getByTestId("intro-email")).toBeVisible();
+  await expect(page.getByTestId("profile-sources")).toBeVisible();
   await page.screenshot({ path: "tests/screenshots/cala-loading.png" });
 
   await expect(panel.getByTestId("cala-live")).toContainText("Slow answer from Cala.", { timeout: 10_000 });

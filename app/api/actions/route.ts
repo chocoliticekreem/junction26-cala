@@ -2,11 +2,9 @@ import {
   buildAction,
   cacheOnlyCala,
   choosePrecedent,
-  emailFacts,
   findInvestor,
   investorSources,
-  mailtoFor,
-  templateDraft,
+  warmPath,
 } from "@/lib/context/actions";
 import { mockDoc } from "@/lib/context/build";
 import { loadCohortLite } from "@/lib/context/cohortRead";
@@ -64,9 +62,9 @@ export async function POST(req: Request) {
 
   if (process.env.E2E_MOCK === "1") {
     const doc = { ...mockDoc({ name: "Mock Company", calaId: undefined }), id };
+    const cohort = loadCohortLite();
     const actions: InvestorAction[] = known.map((inv) => {
       const precedent = choosePrecedent(inv, null, doc.company.sector, doc.company.stage);
-      const emailDraft = templateDraft(emailFacts(doc, inv, precedent));
       return {
         investorId: inv.id,
         name: inv.name,
@@ -74,8 +72,7 @@ export async function POST(req: Request) {
         calaSources: investorSources(inv, precedent),
         ...(inv.partners[0] ? { leadPartner: { name: inv.partners[0].name, calaId: inv.partners[0].calaId } } : {}),
         ...(precedent ? { precedent } : {}),
-        emailDraft,
-        mailto: mailtoFor(emailDraft),
+        warmPath: warmPath(inv, cohort, { sector: doc.company.sector, stage: doc.company.stage }),
       };
     });
     return Response.json({ actions, unknown, mock: true });

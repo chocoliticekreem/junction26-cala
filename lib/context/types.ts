@@ -1,3 +1,4 @@
+import type { EventTag } from "@/lib/events";
 import type { Sector, Source, Stage } from "@/lib/types";
 
 export type SourceRank = "FILING" | "PRIMARY" | "PRESS" | "AGGREGATOR";
@@ -100,7 +101,15 @@ export type Precedent = {
   source?: Source;
 };
 
-export type EmailDraft = { subject: string; body: string; grounded: "llm" | "template" };
+// A founder the investor already backed: ask them how the investor works, then for the intro.
+export type WarmFounder = {
+  company: string;
+  companyCalaId?: string; // only a real Cala entity id, so the link resolves
+  round: string;
+  year?: string;
+  led: boolean;
+  event?: EventTag;
+};
 
 export type InvestorAction = {
   investorId: string;
@@ -110,8 +119,7 @@ export type InvestorAction = {
   leadPartner?: { name: string; role?: string; calaId?: string };
   events?: EventRef[];
   precedent?: Precedent;
-  emailDraft: EmailDraft;
-  mailto: string;
+  warmPath: WarmFounder[];
 };
 
 export type WatchItem = { investorId: string; name: string; sectors: Sector[]; since: string };

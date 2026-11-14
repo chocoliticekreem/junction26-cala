@@ -37,7 +37,7 @@ test("replay runs offline and ends on the same ranking as online", async ({ page
   await expect(panel).toBeVisible();
   await expect(panel.getByTestId("cala-live")).toContainText("unavailable", { timeout: 10_000 });
   await expect(panel.getByTestId("profile-fit")).toBeVisible();
-  await expect(page.getByTestId("intro-email")).toBeVisible();
+  await expect(page.getByTestId("profile-sources")).toBeVisible();
   expect(errors).toEqual([]);
   await context.setOffline(false);
 });
