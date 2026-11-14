@@ -232,3 +232,13 @@ describe("tags in profiles and deals", () => {
     expect(out[0].deals[1]).toMatchObject({ sector: "fintech", tags: ["payments"] });
   });
 });
+
+describe("vision horizon guard", () => {
+  it("defaults to 5 years when the founder states no horizon, even if the model says otherwise", async () => {
+    const { parseVisionTool } = await import("@/lib/ai/analyzeVision");
+    const v = parseVisionTool({ targetStage: "series-b-plus", horizonYears: 1, interpretation: "x" }, "the default fundraising layer for European founders, Series B");
+    expect(v?.horizonYears).toBe(5);
+    const w = parseVisionTool({ targetStage: "series-b-plus", horizonYears: 3, interpretation: "x" }, "Series B in 3 years");
+    expect(w?.horizonYears).toBe(3);
+  });
+});

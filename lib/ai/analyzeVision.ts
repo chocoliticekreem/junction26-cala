@@ -67,6 +67,8 @@ function applyGlossary(v: Vision): Vision {
   return v;
 }
 
+const STATES_HORIZON = /\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(years?|yrs?|months?)\b|\b20\d\d\b|\bdecade\b|\bnext year\b/i;
+
 const num = (x: unknown) => (typeof x === "number" && Number.isFinite(x) && x > 0 ? x : undefined);
 
 export function parseVisionTool(out: unknown, text: string): Vision | null {
@@ -78,6 +80,8 @@ export function parseVisionTool(out: unknown, text: string): Vision | null {
     targetStage: o.targetStage,
     horizonYears: Math.min(10, Math.max(1, Math.round(num(o.horizonYears) ?? 5))),
   };
+  // The model sometimes invents a horizon; only trust one the founder actually stated.
+  if (!STATES_HORIZON.test(text)) v.horizonYears = 5;
   const set = <K extends keyof Vision>(k: K, x: Vision[K] | undefined) => {
     if (x !== undefined) v[k] = x;
   };
