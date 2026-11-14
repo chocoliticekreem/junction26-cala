@@ -1,0 +1,257 @@
+// Shared contract types for Room Path. The cohort block is a verbatim copy of Track A's
+// lib/cohortTypes.ts; on merge, replace it with a re-export from there.
+import type { Sector, Source, Stage } from "@/lib/types";
+
+export type InvestorKind = "fund" | "angel" | "accelerator" | "cvc" | "unknown";
+
+export type SourceRank = "FILING" | "PRIMARY" | "PRESS" | "AGGREGATOR";
+
+export type CohortParticipant = {
+  investorId: string; // Cala entity id, or "name:<key>" when Cala named the investor without an id
+  name: string;
+  kind: InvestorKind;
+  isLead?: boolean;
+};
+
+export type CohortRound = {
+  id: string; // Cala FundingRound id, or "q:<hash>" for a round read from a knowledge/query row
+  companyId: string;
+  stage: Stage | "unknown";
+  label: string;
+  date?: string; // ISO yyyy-mm-dd
+  datePrecision?: "day" | "month" | "year";
+  amountUsd?: number;
+  valuationUsd?: number; // as Cala reports it (post-money where stated), USD
+  participants: CohortParticipant[];
+  sources: (Source & { rank?: SourceRank })[];
+};
+
+export type UnicornFlag = { value: boolean; basis: "valuation" | "known_list"; source?: Source };
+
+export type CohortCompany = {
+  id: string; // Cala Company id, or "name:<key>" when Cala named the company without an id
+  name: string;
+  sector: Sector;
+  description?: string;
+  hq?: string;
+  foundingDate?: string;
+  totalFundingUsd?: number;
+  fundingStage?: string;
+  headcount?: { date: string; value: number }[];
+  status: "active" | "acquired" | "closed" | "unknown";
+  maxValuationUsd?: number;
+  isUnicorn?: UnicornFlag;
+  roundIds: string[]; // chronological
+  sources: Source[];
+};
+
+export type CohortInvestor = { id: string; name: string; kind: InvestorKind; investorsJsonId?: string };
+
+export type Cohort = {
+  version: 1;
+  asOf: string;
+  companies: Record<string, CohortCompany>;
+  rounds: Record<string, CohortRound>;
+  investors: Record<string, CohortInvestor>;
+};
+
+export type StartState = {
+  sectors: Partial<Record<Sector, number>>;
+  stage: Stage;
+  raiseUsd?: number;
+  companyId?: string;
+  existingInvestorIds?: string[];
+  asOf?: string;
+};
+
+export type Vision = {
+  text: string;
+  targetStage: Stage;
+  targetHeadcount?: number;
+  targetFundingUsd?: number;
+  targetValuationUsd?: number;
+  horizonYears: number;
+  sector?: Sector;
+};
+
+export type FirstChequeOption = "angel" | "accelerator" | "fund";
+export type TimingOption = "now" | "later_6m";
+
+export type Decision =
+  | { kind: "first_cheque"; option: FirstChequeOption }
+  | { kind: "timing"; option: TimingOption }
+  | { kind: "lead"; investorId: string };
+
+export type PathStep = {
+  stage: Stage;
+  leadId?: string;
+  leadName?: string;
+  coInvestorIds: string[];
+  monthFromStart: number;
+  amountUsd?: number;
+};
+
+export type SimPath = { steps: PathStep[]; reachedVision: boolean; stalledAtStage?: Stage; count: number; share: number };
+
+export type Precedent = {
+  companyId: string;
+  name: string;
+  sector: Sector;
+  reachedVision: boolean;
+  // source: the round's first sourced URL, else "Cala knowledge query" (query rows carry no URL).
+  path: { stage: Stage; leadName?: string; date?: string; roundId: string; source?: { name: string; url?: string } }[];
+};
+
+export type DecisionNode = {
+  decision: Decision | null;
+  label: string;
+  runs: number;
+  reachVisionShare: number;
+  medianMonthsToNextRound?: number;
+  outcomeBands: { best: string; median: string; worst: string };
+  sampleSize: number;
+  lowConfidence: boolean;
+  children: DecisionNode[];
+  topPaths: SimPath[];
+};
+
+// How "reached the vision" is judged. valuation: a sourced cohort valuation >= target (precedents)
+// and, in simulated runs, total raised >= the median total raised of cohort companies that hit it.
+// proxy: no valuation data, so Series B+ with total raised >= PROXY_FUNDING_USD. stage: target stage only.
+export type VisionBasis = {
+  kind: "stage" | "valuation" | "proxy";
+  targetStage: Stage;
+  targetValuationUsd?: number;
+  fundingThresholdUsd?: number;
+  text: string;
+};
+
+export type RealityStep = {
+  year: number;
+  monthFromStart: number;
+  stage: Stage;
+  label: string;
+  leadId?: string;
+  leadName?: string;
+  amountBand?: string;
+  headcountBand?: string;
+};
+
+export type Reality = {
+  title: string;
+  outcome: "reached_vision" | "stalled" | "horizon";
+  probability: number;
+  runs: number;
+  steps: RealityStep[];
+  outcomeLine: string;
+  precedents: { companyId: string; name: string; roundIds: string[] }[];
+  sampleSize: number;
+  lowConfidence: boolean;
+};
+
+export type SimResult = {
+  asOf: string;
+  runs: number;
+  start: { stage: Stage; companyId?: string; companyName?: string; existingInvestors: { id: string; name: string }[] };
+  visionBasis: VisionBasis;
+  tree: DecisionNode;
+  realities: Reality[];
+  highways: { from: string; to: string; weight: number }[];
+  precedents: Precedent[];
+  explanation?: string[];
+  fixture: boolean;
+};
+
+// ---- Fitted model (engine-internal, exported for tests and the network route) ----
+
+// One observed "company closed a round at stage s" event and what happened next.
+// raised: a later round at a higher stage exists before asOf. stalled: none, and asOf is at least
+// STALL_MONTHS after the company's last round (or it closed). Censored events (too recent to tell)
+// are kept out of every rate.
+export type Transition = {
+  companyId: string;
+  sector: Sector;
+  stage: Stage;
+  roundId: string;
+  leadId?: string;
+  memberIds: string[];
+  outcome: "raised" | "stalled" | "censored";
+  months?: number;
+  nextStage?: Stage;
+  nextLeadId?: string;
+  nextMemberIds?: string[];
+  stepUp?: number;
+};
+
+export type FollowOnStats = {
+  observed: number;
+  raisedWithin24m: number;
+  pNextWithin24m: number;
+  medianMonthsToNext?: number;
+  medianStepUp?: number;
+  nextLeads: Record<string, number>;
+  reUpRate: number;
+};
+
+export type Agent = {
+  id: string;
+  name: string;
+  kind: InvestorKind;
+  rounds: number;
+  led: number;
+  stageDist: Partial<Record<Stage, number>>;
+  leadStageCounts: Partial<Record<Stage, number>>;
+  sectorDist: Partial<Record<Sector, number>>;
+  chequeBand?: [number, number];
+  chequeMedian?: number;
+  pacePerYear: number;
+  coInvestors: Record<string, number>;
+  followOn: FollowOnStats;
+  // Raise rate of companies it led vs the sector/stage base rate; 1 = average.
+  raiseLift: number;
+  raiseLiftEvidence: number;
+};
+
+export type TransitionStats = {
+  n: number;
+  raised: number;
+  stalled: number;
+  pRaise: number;
+  months: number[];
+  nextStage: Partial<Record<Stage, number>>;
+};
+
+// A company's stay at one stage: the first round at a new (higher) stage opens an episode, later
+// rounds at the same stage join it. Every Series B+ round opens its own episode, so B+ -> B+
+// follow-on rounds are transitions too.
+export type Episode = {
+  stage: Stage;
+  roundIds: string[];
+  dateMs: number;
+  lastDateMs: number;
+  leadId?: string;
+  memberIds: string[];
+  amountUsd?: number;
+  valuationUsd?: number;
+};
+
+export type SimModel = {
+  asOf: string;
+  asOfMs: number;
+  agents: Agent[];
+  agentIndex: Record<string, number>;
+  episodes: Record<string, Episode[]>;
+  transitions: Transition[];
+  bySectorStage: Record<string, TransitionStats>;
+  byStage: Partial<Record<Stage, TransitionStats>>;
+  // tie[i][j] = (weighted) times a company with i on its round at stage s had j lead its next round.
+  ties: Record<string, Record<string, number>>;
+  tieTotals: Record<string, number>;
+  kindTies: Partial<Record<InvestorKind, Record<string, number>>>;
+  kindTieTotals: Partial<Record<InvestorKind, number>>;
+  kindRaiseLift: Partial<Record<InvestorKind, number>>;
+  stageAmounts: Partial<Record<Stage, number[]>>;
+  stageHeadcounts: Partial<Record<Stage, number[]>>;
+  stageCoInvestorCounts: Partial<Record<Stage, number[]>>;
+  cohort: Cohort;
+};
