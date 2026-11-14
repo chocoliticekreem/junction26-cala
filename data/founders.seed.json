@@ -1,0 +1,1222 @@
+[
+  {
+    "id": "seed-f-01",
+    "name": "Dr Amara Okafor",
+    "company": "Helixa Bio",
+    "oneLiner": "AI-designed antibody therapeutics for autoimmune disease",
+    "sectors": {
+      "biotech/therapeutics": 0.85,
+      "AI infrastructure": 0.15
+    },
+    "stage": "pre-seed",
+    "raise": 1524000,
+    "teamSignals": [
+      "PhD in immunology",
+      "PhD in machine learning",
+      "Early pharma LOI"
+    ],
+    "geography": "London",
+    "businessModel": "Drug discovery platform",
+    "confidence": {
+      "sectors": 0.73,
+      "stage": 0.86,
+      "raise": 0.63,
+      "team": 0.76,
+      "geography": 0.89
+    },
+    "website": "https://helixabio.example",
+    "email": "okafor@helixabio.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-02",
+    "name": "Dr Ilya Vance",
+    "company": "Kestrel Therapeutics",
+    "oneLiner": "Small-molecule inhibitors for treatment-resistant glioblastoma",
+    "sectors": {
+      "biotech/therapeutics": 1
+    },
+    "stage": "seed",
+    "raise": 4500000,
+    "teamSignals": [
+      "Oncology PhD",
+      "Ex-pharma medicinal chemist",
+      "Oxford spin-out"
+    ],
+    "geography": "Oxford",
+    "businessModel": "Therapeutics development",
+    "confidence": {
+      "sectors": 0.8,
+      "stage": 0.93,
+      "raise": 0.7,
+      "team": 0.83,
+      "geography": 0.6
+    },
+    "website": "https://kestreltx.example",
+    "email": "vance@kestreltx.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-03",
+    "name": "Dr Priya Nandakumar",
+    "company": "Marrowlight",
+    "oneLiner": "Gene therapy vectors for inherited blood disorders",
+    "sectors": {
+      "biotech/therapeutics": 0.9,
+      "medtech/devices": 0.1
+    },
+    "stage": "seed",
+    "raise": 5200000,
+    "teamSignals": [
+      "PhD in haematology",
+      "Ex-CMC lead at a gene therapy company"
+    ],
+    "geography": "London",
+    "businessModel": "Therapeutics development",
+    "confidence": {
+      "sectors": 0.87,
+      "stage": 0.64,
+      "raise": 0.77,
+      "team": 0.9,
+      "geography": 0.67
+    },
+    "website": "https://marrowlight.example",
+    "email": "nandakumar@marrowlight.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-04",
+    "name": "Tomas Brandt",
+    "company": "Cinder Peptides",
+    "oneLiner": "Orally available peptide drugs for metabolic disease",
+    "sectors": {
+      "biotech/therapeutics": 0.9,
+      "healthtech": 0.1
+    },
+    "stage": "pre-seed",
+    "raise": 1800000,
+    "teamSignals": [
+      "PhD in peptide chemistry",
+      "Technology transfer office backing"
+    ],
+    "geography": "Cambridge",
+    "businessModel": "Licensing and co-development",
+    "confidence": {
+      "sectors": 0.94,
+      "stage": 0.71,
+      "raise": 0.84,
+      "team": 0.61,
+      "geography": 0.74
+    },
+    "website": "https://cinderpeptides.example",
+    "email": "brandt@cinderpeptides.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-05",
+    "name": "Dr Hana Mizuno",
+    "company": "Vellum Labs",
+    "oneLiner": "Protein design engine for enzyme and antibody discovery",
+    "sectors": {
+      "biotech/therapeutics": 0.6,
+      "AI infrastructure": 0.4
+    },
+    "stage": "pre-seed",
+    "raise": 1200000,
+    "traction": {
+      "users": "3 pilot biotech customers"
+    },
+    "teamSignals": [
+      "PhD in structural biology",
+      "ML engineer from a large AI lab"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS plus milestones",
+    "confidence": {
+      "sectors": 0.65,
+      "stage": 0.78,
+      "raise": 0.91,
+      "team": 0.68,
+      "geography": 0.81,
+      "traction": 0.94
+    },
+    "website": "https://vellumlabs.example",
+    "email": "mizuno@vellumlabs.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-06",
+    "name": "Dr Samuel Adeyemi",
+    "company": "Orrery Bio",
+    "oneLiner": "CRISPR-based screening to find new cancer drug targets",
+    "sectors": {
+      "biotech/therapeutics": 0.95,
+      "deep tech/hardware": 0.05
+    },
+    "stage": "seed",
+    "raise": 3800000,
+    "traction": {
+      "revenue": "First pharma service contract"
+    },
+    "teamSignals": [
+      "Two PhDs in genetics",
+      "Ex-Wellcome Sanger researcher"
+    ],
+    "geography": "Cambridge",
+    "businessModel": "Target discovery partnerships",
+    "confidence": {
+      "sectors": 0.72,
+      "stage": 0.85,
+      "raise": 0.62,
+      "team": 0.75,
+      "geography": 0.88,
+      "traction": 0.65
+    },
+    "website": "https://orrerybio.example",
+    "email": "adeyemi@orrerybio.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-07",
+    "name": "Dr Lena Fischer",
+    "company": "Nimbus Cell Therapies",
+    "oneLiner": "Off-the-shelf CAR-T cells for solid tumours",
+    "sectors": {
+      "biotech/therapeutics": 1
+    },
+    "stage": "seed",
+    "raise": 6000000,
+    "teamSignals": [
+      "Clinical immunologist",
+      "Ex-biomanufacturing director"
+    ],
+    "geography": "London",
+    "businessModel": "Therapeutics development",
+    "confidence": {
+      "sectors": 0.79,
+      "stage": 0.92,
+      "raise": 0.69,
+      "team": 0.82,
+      "geography": 0.95
+    },
+    "website": "https://nimbuscell.example",
+    "email": "fischer@nimbuscell.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-08",
+    "name": "Dr Rahul Mehta",
+    "company": "Quillon Pharma",
+    "oneLiner": "Repurposed generics reformulated for rare paediatric diseases",
+    "sectors": {
+      "biotech/therapeutics": 0.8,
+      "healthtech": 0.2
+    },
+    "stage": "pre-seed",
+    "raise": 900000,
+    "teamSignals": [
+      "Clinical pharmacologist",
+      "Regulatory affairs specialist"
+    ],
+    "geography": "London",
+    "businessModel": "Specialty pharma",
+    "confidence": {
+      "sectors": 0.86,
+      "stage": 0.63,
+      "raise": 0.76,
+      "team": 0.89,
+      "geography": 0.66
+    },
+    "website": "https://quillonpharma.example",
+    "email": "mehta@quillonpharma.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-09",
+    "name": "Dr Chloe Barrett",
+    "company": "Lumen RNA",
+    "oneLiner": "mRNA delivery for in vivo gene editing",
+    "sectors": {
+      "biotech/therapeutics": 0.9,
+      "deep tech/hardware": 0.1
+    },
+    "stage": "seed",
+    "raise": 4200000,
+    "teamSignals": [
+      "PhD in lipid nanoparticle formulation",
+      "Imperial College spin-out"
+    ],
+    "geography": "London",
+    "businessModel": "Platform licensing",
+    "confidence": {
+      "sectors": 0.93,
+      "stage": 0.7,
+      "raise": 0.83,
+      "team": 0.6,
+      "geography": 0.73
+    },
+    "website": "https://lumenrna.example",
+    "email": "barrett@lumenrna.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-10",
+    "name": "Dr Jonas Eriksen",
+    "company": "Fathom Antibodies",
+    "oneLiner": "Bispecific antibodies for inflammatory bowel disease",
+    "sectors": {
+      "biotech/therapeutics": 1
+    },
+    "stage": "pre-seed",
+    "raise": 2000000,
+    "teamSignals": [
+      "Antibody engineer, ex-biotech",
+      "PhD in mucosal immunology",
+      "Letter of interest from a pharma partner"
+    ],
+    "geography": "Oxford",
+    "businessModel": "Therapeutics development",
+    "confidence": {
+      "sectors": 0.64,
+      "stage": 0.77,
+      "raise": 0.9,
+      "team": 0.67,
+      "geography": 0.8
+    },
+    "website": "https://fathomab.example",
+    "email": "eriksen@fathomab.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-11",
+    "name": "Dr Ngozi Eze",
+    "company": "Sable Microbiome",
+    "oneLiner": "Live biotherapeutic products for recurrent infections",
+    "sectors": {
+      "biotech/therapeutics": 0.85,
+      "healthtech": 0.15
+    },
+    "stage": "pre-seed",
+    "raise": 1500000,
+    "teamSignals": [
+      "PhD in microbiology",
+      "Clinician co-founder"
+    ],
+    "geography": "London",
+    "businessModel": "Therapeutics development",
+    "confidence": {
+      "sectors": 0.71,
+      "stage": 0.84,
+      "raise": 0.61,
+      "team": 0.74,
+      "geography": 0.87
+    },
+    "website": "https://sablemicrobiome.example",
+    "email": "eze@sablemicrobiome.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-12",
+    "name": "Dr Arjun Rao",
+    "company": "Tessellate Drug Discovery",
+    "oneLiner": "Generative chemistry for kinase inhibitors",
+    "sectors": {
+      "biotech/therapeutics": 0.55,
+      "AI infrastructure": 0.45
+    },
+    "stage": "seed",
+    "raise": 3500000,
+    "traction": {
+      "revenue": "Two paid pilots"
+    },
+    "teamSignals": [
+      "PhD in computational chemistry",
+      "Ex-research scientist at a big pharma"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS plus milestones",
+    "confidence": {
+      "sectors": 0.78,
+      "stage": 0.91,
+      "raise": 0.68,
+      "team": 0.81,
+      "geography": 0.94,
+      "traction": 0.71
+    },
+    "website": "https://tessellatedd.example",
+    "email": "rao@tessellatedd.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-13",
+    "name": "Dr Beatrice Lang",
+    "company": "Wren Neurotherapeutics",
+    "oneLiner": "Disease-modifying treatments for early-stage Parkinson's",
+    "sectors": {
+      "biotech/therapeutics": 1
+    },
+    "stage": "seed",
+    "raise": 5500000,
+    "teamSignals": [
+      "Neuroscience professor",
+      "Ex-clinical development lead"
+    ],
+    "geography": "London",
+    "businessModel": "Therapeutics development",
+    "confidence": {
+      "sectors": 0.85,
+      "stage": 0.62,
+      "raise": 0.75,
+      "team": 0.88,
+      "geography": 0.65
+    },
+    "website": "https://wrenneuro.example",
+    "email": "lang@wrenneuro.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-14",
+    "name": "Dr Kwame Asante",
+    "company": "Ardent Vaccines",
+    "oneLiner": "Thermostable vaccine platform for low-resource settings",
+    "sectors": {
+      "biotech/therapeutics": 0.8,
+      "medtech/devices": 0.2
+    },
+    "stage": "pre-seed",
+    "raise": 1300000,
+    "teamSignals": [
+      "PhD in vaccinology",
+      "Public health specialist"
+    ],
+    "geography": "London",
+    "businessModel": "Grants and licensing",
+    "confidence": {
+      "sectors": 0.92,
+      "stage": 0.69,
+      "raise": 0.82,
+      "team": 0.95,
+      "geography": 0.72
+    },
+    "website": "https://ardentvaccines.example",
+    "email": "asante@ardentvaccines.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-15",
+    "name": "Dr Elena Rossi",
+    "company": "Pulsar Diagnostics",
+    "oneLiner": "Point-of-care sepsis test cutting diagnosis from hours to minutes",
+    "sectors": {
+      "medtech/devices": 0.8,
+      "healthtech": 0.2
+    },
+    "stage": "seed",
+    "raise": 3000000,
+    "traction": {
+      "users": "2 NHS trusts piloting"
+    },
+    "teamSignals": [
+      "PhD in biosensors",
+      "Clinical scientist"
+    ],
+    "geography": "London",
+    "businessModel": "Device sales plus consumables",
+    "confidence": {
+      "sectors": 0.63,
+      "stage": 0.76,
+      "raise": 0.89,
+      "team": 0.66,
+      "geography": 0.79,
+      "traction": 0.92
+    },
+    "website": "https://pulsardx.example",
+    "email": "rossi@pulsardx.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-16",
+    "name": "Dr Marcus Webb",
+    "company": "Halcyon Surgical",
+    "oneLiner": "Robotic assist for minimally invasive orthopaedic surgery",
+    "sectors": {
+      "medtech/devices": 0.7,
+      "deep tech/hardware": 0.3
+    },
+    "stage": "seed",
+    "raise": 4800000,
+    "teamSignals": [
+      "Orthopaedic surgeon",
+      "Robotics engineer from a university lab"
+    ],
+    "geography": "London",
+    "businessModel": "Device sales",
+    "confidence": {
+      "sectors": 0.7,
+      "stage": 0.83,
+      "raise": 0.6,
+      "team": 0.73,
+      "geography": 0.86
+    },
+    "website": "https://halcyonsurgical.example",
+    "email": "webb@halcyonsurgical.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-17",
+    "name": "Anya Kowalski",
+    "company": "Stitch Wearables",
+    "oneLiner": "Wearable patch for continuous wound monitoring",
+    "sectors": {
+      "medtech/devices": 0.85,
+      "healthtech": 0.15
+    },
+    "stage": "pre-seed",
+    "raise": 1100000,
+    "traction": {
+      "users": "Clinical pilot in progress"
+    },
+    "teamSignals": [
+      "Biomedical engineer",
+      "Nurse practitioner advisor"
+    ],
+    "geography": "London",
+    "businessModel": "Device sales plus subscription",
+    "confidence": {
+      "sectors": 0.77,
+      "stage": 0.9,
+      "raise": 0.67,
+      "team": 0.8,
+      "geography": 0.93,
+      "traction": 0.7
+    },
+    "website": "https://stitchwearables.example",
+    "email": "kowalski@stitchwearables.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-18",
+    "name": "Oliver Grant",
+    "company": "Mendr Health",
+    "oneLiner": "AI triage tool that cuts GP admin time",
+    "sectors": {
+      "healthtech": 0.6,
+      "applied AI/vertical SaaS": 0.4
+    },
+    "stage": "seed",
+    "raise": 2500000,
+    "traction": {
+      "users": "40 GP practices",
+      "growth": "15% month on month"
+    },
+    "teamSignals": [
+      "Practising GP",
+      "Ex-health tech engineer"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS",
+    "confidence": {
+      "sectors": 0.84,
+      "stage": 0.61,
+      "raise": 0.74,
+      "team": 0.87,
+      "geography": 0.64,
+      "traction": 0.77
+    },
+    "website": "https://mendrhealth.example",
+    "email": "grant@mendrhealth.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-19",
+    "name": "Sofia Duarte",
+    "company": "Calmwave",
+    "oneLiner": "Digital CBT programme for anxiety, prescribed by employers",
+    "sectors": {
+      "healthtech": 0.75,
+      "consumer": 0.25
+    },
+    "stage": "pre-seed",
+    "raise": 1000000,
+    "traction": {
+      "users": "6,000 users",
+      "revenue": "£4k monthly recurring revenue"
+    },
+    "teamSignals": [
+      "Clinical psychologist",
+      "Product lead from a consumer app"
+    ],
+    "geography": "London",
+    "businessModel": "B2B2C subscription",
+    "confidence": {
+      "sectors": 0.91,
+      "stage": 0.68,
+      "raise": 0.81,
+      "team": 0.94,
+      "geography": 0.71,
+      "traction": 0.84
+    },
+    "website": "https://calmwave.example",
+    "email": "duarte@calmwave.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-20",
+    "name": "Dr Yusuf Rahman",
+    "company": "Ledgerly Care",
+    "oneLiner": "Remote monitoring for chronic heart failure patients",
+    "sectors": {
+      "healthtech": 0.7,
+      "medtech/devices": 0.3
+    },
+    "stage": "seed",
+    "raise": 3200000,
+    "traction": {
+      "revenue": "£18k monthly recurring revenue"
+    },
+    "teamSignals": [
+      "Cardiologist",
+      "Data scientist"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS to hospitals",
+    "confidence": {
+      "sectors": 0.62,
+      "stage": 0.75,
+      "raise": 0.88,
+      "team": 0.65,
+      "geography": 0.78,
+      "traction": 0.91
+    },
+    "website": "https://ledgerlycare.example",
+    "email": "rahman@ledgerlycare.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-21",
+    "name": "Isabel Moreau",
+    "company": "Paylane",
+    "oneLiner": "Cross-border payroll for small businesses hiring in Europe",
+    "sectors": {
+      "fintech": 0.9,
+      "B2B SaaS (other)": 0.1
+    },
+    "stage": "seed",
+    "raise": 3500000,
+    "traction": {
+      "revenue": "£35k monthly recurring revenue",
+      "growth": "20% month on month"
+    },
+    "teamSignals": [
+      "Ex-payments product lead",
+      "Ex-compliance officer"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS plus transaction fees",
+    "confidence": {
+      "sectors": 0.69,
+      "stage": 0.82,
+      "raise": 0.95,
+      "team": 0.72,
+      "geography": 0.85,
+      "traction": 0.62
+    },
+    "website": "https://paylane.example",
+    "email": "moreau@paylane.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-22",
+    "name": "Daniel Osei",
+    "company": "Brightfold",
+    "oneLiner": "Embedded lending for online marketplaces",
+    "sectors": {
+      "fintech": 0.8,
+      "insurtech": 0.2
+    },
+    "stage": "pre-seed",
+    "raise": 1500000,
+    "teamSignals": [
+      "Ex-bank credit risk analyst",
+      "Full-stack engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Revenue share",
+    "confidence": {
+      "sectors": 0.76,
+      "stage": 0.89,
+      "raise": 0.66,
+      "team": 0.79,
+      "geography": 0.92
+    },
+    "website": "https://brightfold.example",
+    "email": "osei@brightfold.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-23",
+    "name": "Maya Chen",
+    "company": "Tallyhouse",
+    "oneLiner": "Automated VAT and expense reconciliation for freelancers",
+    "sectors": {
+      "fintech": 0.7,
+      "consumer": 0.3
+    },
+    "stage": "pre-seed",
+    "raise": 800000,
+    "traction": {
+      "users": "1,200 freelancers",
+      "revenue": "£6k monthly recurring revenue"
+    },
+    "teamSignals": [
+      "Chartered accountant",
+      "Mobile engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Subscription",
+    "confidence": {
+      "sectors": 0.83,
+      "stage": 0.6,
+      "raise": 0.73,
+      "team": 0.86,
+      "geography": 0.63,
+      "traction": 0.76
+    },
+    "website": "https://tallyhouse.example",
+    "email": "chen@tallyhouse.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-24",
+    "name": "Henrik Larsen",
+    "company": "Voltpath",
+    "oneLiner": "Smart charging software for fleets of electric vans",
+    "sectors": {
+      "climate/energy": 0.6,
+      "mobility": 0.4
+    },
+    "stage": "seed",
+    "raise": 3000000,
+    "traction": {
+      "revenue": "Two fleet customers",
+      "users": "300 vehicles on platform"
+    },
+    "teamSignals": [
+      "Ex-grid operator engineer",
+      "Software lead from an EV startup"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS per vehicle",
+    "confidence": {
+      "sectors": 0.9,
+      "stage": 0.67,
+      "raise": 0.8,
+      "team": 0.93,
+      "geography": 0.7,
+      "traction": 0.83
+    },
+    "website": "https://voltpath.example",
+    "email": "larsen@voltpath.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-25",
+    "name": "Dr Aisha Bello",
+    "company": "Marlow Carbon",
+    "oneLiner": "Verification of soil carbon credits using satellite data",
+    "sectors": {
+      "climate/energy": 0.75,
+      "applied AI/vertical SaaS": 0.25
+    },
+    "stage": "pre-seed",
+    "raise": 1400000,
+    "teamSignals": [
+      "PhD in soil science",
+      "Remote sensing engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Data subscription",
+    "confidence": {
+      "sectors": 0.61,
+      "stage": 0.74,
+      "raise": 0.87,
+      "team": 0.64,
+      "geography": 0.77
+    },
+    "website": "https://marlowcarbon.example",
+    "email": "bello@marlowcarbon.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-26",
+    "name": "Fraser McKay",
+    "company": "Tidewell Energy",
+    "oneLiner": "Low-cost long-duration thermal storage for industrial heat",
+    "sectors": {
+      "climate/energy": 0.7,
+      "deep tech/hardware": 0.3
+    },
+    "stage": "seed",
+    "raise": 5000000,
+    "teamSignals": [
+      "Mechanical engineering professor",
+      "Ex-energy project developer"
+    ],
+    "geography": "Edinburgh",
+    "businessModel": "Equipment sales",
+    "confidence": {
+      "sectors": 0.68,
+      "stage": 0.81,
+      "raise": 0.94,
+      "team": 0.71,
+      "geography": 0.84
+    },
+    "website": "https://tidewellenergy.example",
+    "email": "mckay@tidewellenergy.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-27",
+    "name": "Priyanka Shah",
+    "company": "Gridlock AI",
+    "oneLiner": "Inference scheduling that cuts GPU cost for AI teams",
+    "sectors": {
+      "AI infrastructure": 0.9,
+      "developer tools": 0.1
+    },
+    "stage": "seed",
+    "raise": 3500000,
+    "traction": {
+      "users": "25 teams on beta",
+      "growth": "Waitlist of 200 teams"
+    },
+    "teamSignals": [
+      "Ex-AI lab infrastructure engineer",
+      "Distributed systems PhD"
+    ],
+    "geography": "London",
+    "businessModel": "Usage-based",
+    "confidence": {
+      "sectors": 0.75,
+      "stage": 0.88,
+      "raise": 0.65,
+      "team": 0.78,
+      "geography": 0.91,
+      "traction": 0.68
+    },
+    "website": "https://gridlockai.example",
+    "email": "shah@gridlockai.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-28",
+    "name": "Lucas Meyer",
+    "company": "Cobalt Inference",
+    "oneLiner": "Low-latency model serving on edge hardware",
+    "sectors": {
+      "AI infrastructure": 0.8,
+      "deep tech/hardware": 0.2
+    },
+    "stage": "pre-seed",
+    "raise": 1800000,
+    "teamSignals": [
+      "Compiler engineer",
+      "Ex-chip startup founder"
+    ],
+    "geography": "London",
+    "businessModel": "Usage-based",
+    "confidence": {
+      "sectors": 0.82,
+      "stage": 0.95,
+      "raise": 0.72,
+      "team": 0.85,
+      "geography": 0.62
+    },
+    "website": "https://cobaltinference.example",
+    "email": "meyer@cobaltinference.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-29",
+    "name": "Nia Thompson",
+    "company": "Patchwork",
+    "oneLiner": "Automated dependency upgrades with test-verified pull requests",
+    "sectors": {
+      "developer tools": 1
+    },
+    "stage": "pre-seed",
+    "raise": 1200000,
+    "traction": {
+      "users": "900 repositories connected"
+    },
+    "teamSignals": [
+      "Ex-open source maintainer",
+      "Platform engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Seat-based SaaS",
+    "confidence": {
+      "sectors": 0.89,
+      "stage": 0.66,
+      "raise": 0.79,
+      "team": 0.92,
+      "geography": 0.69,
+      "traction": 0.82
+    },
+    "website": "https://patchwork.example",
+    "email": "thompson@patchwork.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-30",
+    "name": "Ravi Kapoor",
+    "company": "Traceline",
+    "oneLiner": "Production debugging with replayable traces for backend teams",
+    "sectors": {
+      "developer tools": 0.8,
+      "B2B SaaS (other)": 0.2
+    },
+    "stage": "seed",
+    "raise": 3000000,
+    "traction": {
+      "revenue": "£22k monthly recurring revenue",
+      "growth": "12% month on month"
+    },
+    "teamSignals": [
+      "Ex-observability engineer",
+      "Staff engineer from a scale-up"
+    ],
+    "geography": "London",
+    "businessModel": "Usage-based",
+    "confidence": {
+      "sectors": 0.6,
+      "stage": 0.73,
+      "raise": 0.86,
+      "team": 0.63,
+      "geography": 0.76,
+      "traction": 0.89
+    },
+    "website": "https://traceline.example",
+    "email": "kapoor@traceline.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-31",
+    "name": "Emma Walsh",
+    "company": "Sprout Kitchen",
+    "oneLiner": "Weekly meal kits built from supermarket surplus",
+    "sectors": {
+      "consumer": 0.9,
+      "climate/energy": 0.1
+    },
+    "stage": "pre-seed",
+    "raise": 700000,
+    "traction": {
+      "users": "2,500 subscribers",
+      "revenue": "£30k monthly revenue"
+    },
+    "teamSignals": [
+      "Chef",
+      "Ops lead from a grocery delivery startup"
+    ],
+    "geography": "London",
+    "businessModel": "Subscription",
+    "confidence": {
+      "sectors": 0.67,
+      "stage": 0.8,
+      "raise": 0.93,
+      "team": 0.7,
+      "geography": 0.83,
+      "traction": 0.6
+    },
+    "website": "https://sproutkitchen.example",
+    "email": "walsh@sproutkitchen.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-32",
+    "name": "Tariq Hassan",
+    "company": "Loomi",
+    "oneLiner": "Social app for planning small group trips",
+    "sectors": {
+      "consumer": 1
+    },
+    "stage": "pre-seed",
+    "raise": 900000,
+    "traction": {
+      "users": "12,000 downloads"
+    },
+    "teamSignals": [
+      "Mobile engineer",
+      "Designer from a travel brand"
+    ],
+    "geography": "London",
+    "businessModel": "Marketplace commissions",
+    "confidence": {
+      "sectors": 0.74,
+      "stage": 0.87,
+      "raise": 0.64,
+      "team": 0.77,
+      "geography": 0.9,
+      "traction": 0.67
+    },
+    "website": "https://loomi.example",
+    "email": "hassan@loomi.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-33",
+    "name": "Greta Novak",
+    "company": "Bastion Labs",
+    "oneLiner": "Continuous phishing simulation for small teams",
+    "sectors": {
+      "cybersecurity": 0.85,
+      "B2B SaaS (other)": 0.15
+    },
+    "stage": "seed",
+    "raise": 2800000,
+    "traction": {
+      "revenue": "£15k monthly recurring revenue"
+    },
+    "teamSignals": [
+      "Ex-security consultant",
+      "Detection engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Seat-based SaaS",
+    "confidence": {
+      "sectors": 0.81,
+      "stage": 0.94,
+      "raise": 0.71,
+      "team": 0.84,
+      "geography": 0.61,
+      "traction": 0.74
+    },
+    "website": "https://bastionlabs.example",
+    "email": "novak@bastionlabs.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-34",
+    "name": "Rhys Morgan",
+    "company": "Clause and Effect",
+    "oneLiner": "Contract review assistant for in-house legal teams",
+    "sectors": {
+      "applied AI/vertical SaaS": 0.9,
+      "B2B SaaS (other)": 0.1
+    },
+    "stage": "seed",
+    "raise": 3000000,
+    "traction": {
+      "users": "14 legal teams",
+      "revenue": "Two paying customers"
+    },
+    "teamSignals": [
+      "Qualified solicitor",
+      "NLP engineer"
+    ],
+    "geography": "London",
+    "businessModel": "SaaS",
+    "confidence": {
+      "sectors": 0.88,
+      "stage": 0.65,
+      "raise": 0.78,
+      "team": 0.91,
+      "geography": 0.68,
+      "traction": 0.81
+    },
+    "website": "https://clauseeffect.example",
+    "email": "morgan@clauseeffect.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-35",
+    "name": "Aditi Verma",
+    "company": "Fieldnote",
+    "oneLiner": "Voice-to-report tool for construction site inspectors",
+    "sectors": {
+      "applied AI/vertical SaaS": 0.8,
+      "proptech": 0.2
+    },
+    "stage": "pre-seed",
+    "raise": 1000000,
+    "traction": {
+      "users": "5 contractors piloting"
+    },
+    "teamSignals": [
+      "Ex-site manager",
+      "Speech engineer"
+    ],
+    "geography": "Manchester",
+    "businessModel": "Seat-based SaaS",
+    "confidence": {
+      "sectors": 0.95,
+      "stage": 0.72,
+      "raise": 0.85,
+      "team": 0.62,
+      "geography": 0.75,
+      "traction": 0.88
+    },
+    "website": "https://fieldnote.example",
+    "email": "verma@fieldnote.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-36",
+    "name": "Jack Sullivan",
+    "company": "Quorum Ops",
+    "oneLiner": "Meeting-to-task automation for operations teams",
+    "sectors": {
+      "B2B SaaS (other)": 0.8,
+      "applied AI/vertical SaaS": 0.2
+    },
+    "stage": "pre-seed",
+    "raise": 1100000,
+    "traction": {
+      "users": "350 teams on free tier"
+    },
+    "teamSignals": [
+      "Ex-operations lead",
+      "Backend engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Freemium SaaS",
+    "confidence": {
+      "sectors": 0.66,
+      "stage": 0.79,
+      "raise": 0.92,
+      "team": 0.69,
+      "geography": 0.82,
+      "traction": 0.95
+    },
+    "website": "https://quorumops.example",
+    "email": "sullivan@quorumops.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-37",
+    "name": "Fatima Zahra",
+    "company": "Lessonly Bright",
+    "oneLiner": "Adaptive maths tutor for secondary school pupils",
+    "sectors": {
+      "edtech": 0.85,
+      "applied AI/vertical SaaS": 0.15
+    },
+    "stage": "pre-seed",
+    "raise": 900000,
+    "traction": {
+      "users": "4 schools piloting"
+    },
+    "teamSignals": [
+      "Former maths teacher",
+      "ML engineer"
+    ],
+    "geography": "London",
+    "businessModel": "School subscription",
+    "confidence": {
+      "sectors": 0.73,
+      "stage": 0.86,
+      "raise": 0.63,
+      "team": 0.76,
+      "geography": 0.89,
+      "traction": 0.66
+    },
+    "website": "https://lessonlybright.example",
+    "email": "zahra@lessonlybright.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-38",
+    "name": "Callum Reid",
+    "company": "Keyhold",
+    "oneLiner": "Digital tenancy deposits and referencing for landlords",
+    "sectors": {
+      "proptech": 0.8,
+      "fintech": 0.2
+    },
+    "stage": "seed",
+    "raise": 2200000,
+    "traction": {
+      "revenue": "£12k monthly recurring revenue",
+      "users": "900 landlords"
+    },
+    "teamSignals": [
+      "Ex-lettings agent",
+      "Fintech engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Fees per tenancy",
+    "confidence": {
+      "sectors": 0.8,
+      "stage": 0.93,
+      "raise": 0.7,
+      "team": 0.83,
+      "geography": 0.6,
+      "traction": 0.73
+    },
+    "website": "https://keyhold.example",
+    "email": "reid@keyhold.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-39",
+    "name": "Lena Vogel",
+    "company": "Sparrow Mobility",
+    "oneLiner": "Shared e-cargo bikes for last-mile delivery",
+    "sectors": {
+      "mobility": 0.8,
+      "climate/energy": 0.2
+    },
+    "stage": "seed",
+    "raise": 3000000,
+    "traction": {
+      "revenue": "Contracts with three couriers"
+    },
+    "teamSignals": [
+      "Ex-logistics manager",
+      "Hardware engineer"
+    ],
+    "geography": "London",
+    "businessModel": "Hardware as a service",
+    "confidence": {
+      "sectors": 0.87,
+      "stage": 0.64,
+      "raise": 0.77,
+      "team": 0.9,
+      "geography": 0.67,
+      "traction": 0.8
+    },
+    "website": "https://sparrowmobility.example",
+    "email": "vogel@sparrowmobility.example",
+    "seeded": true
+  },
+  {
+    "id": "seed-f-40",
+    "name": "Dr Mei Lin",
+    "company": "Photonix",
+    "oneLiner": "Silicon photonics chips for low-power data centre links",
+    "sectors": {
+      "deep tech/hardware": 0.7,
+      "AI infrastructure": 0.3
+    },
+    "stage": "seed",
+    "raise": 5500000,
+    "teamSignals": [
+      "PhD in photonics",
+      "Ex-semiconductor design lead",
+      "University spin-out"
+    ],
+    "geography": "Cambridge",
+    "businessModel": "Chip sales and licensing",
+    "confidence": {
+      "sectors": 0.94,
+      "stage": 0.71,
+      "raise": 0.84,
+      "team": 0.61,
+      "geography": 0.74
+    },
+    "website": "https://photonix.example",
+    "email": "lin@photonix.example",
+    "seeded": true
+  }
+]
