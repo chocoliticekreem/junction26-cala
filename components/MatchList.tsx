@@ -85,7 +85,7 @@ export default function MatchList({ matches, investors, selectedId, onSelect, li
           if (!inv) return null;
           const sector = dominantSector(inv.revealed.S);
           const selected = m.investorId === selectedId;
-          const contradicts = inv.contradiction > 0.4;
+          const contradicts = inv.contradiction > 0.4 && !!inv.contradictionLine;
           return (
             <li key={m.investorId} data-testid="match-row" data-sector={sector} data-investor-id={m.investorId}>
               <div className={`match ${selected ? "is-selected" : ""}`}>
@@ -107,7 +107,7 @@ export default function MatchList({ matches, investors, selectedId, onSelect, li
                     </span>
                     <span className="match-reason">{m.reason}</span>
                     {contradicts && inv.contradictionLine && (
-                      <span className="match-contra">
+                      <span className="match-contra" data-testid="match-contradiction">
                         {inv.contradictionLine}
                         <MiniBars inv={inv} />
                       </span>

@@ -1,5 +1,5 @@
 import type { Deal, Investor, Revealed } from "./types";
-import { SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "./taxonomy";
+import { SECTOR_SHORT, STAGE_LABELS, stageIndex, type Sector, type Stage } from "./taxonomy";
 
 export const WINDOW_MONTHS = 24;
 export const HALF_LIFE_MONTHS = 12;
@@ -90,13 +90,26 @@ function tvd<K extends string>(p: Partial<Record<K, number>>, q: Partial<Record<
 
 const isEmpty = (o: object) => Object.keys(o).length === 0;
 
-// Average of the sector TVD and the stage TVD, over whichever dimensions both sides have.
+// Below this top share a stated distribution is spread across the board: no stated preference.
+export const STATED_LEAD_MIN = 0.4;
+const TIE_EPSILON = 1e-9;
+
+// A stated dimension is a claim only when one category clearly leads it ("across the full
+// continuum" is not a claim, so it can neither score nor word a contradiction).
+export function hasClearLead<K extends string>(w: Partial<Record<K, number>>): boolean {
+  const shares = (Object.values(normalize(w)) as number[]).sort((a, b) => b - a);
+  if (!shares.length || shares[0] < STATED_LEAD_MIN) return false;
+  return shares.length === 1 || shares[0] - shares[1] > TIE_EPSILON;
+}
+
+// Average of the sector TVD and the stage TVD, over the dimensions where both sides have data
+// and the stated side has a clear lead.
 export function contradictionScore(stated: Investor["statedThesis"], revealed: Revealed): number {
   const parts: number[] = [];
   const ss = normalize(stated.sectors);
   const sg = normalize(stated.stages);
-  if (!isEmpty(ss) && !isEmpty(revealed.S)) parts.push(tvd(ss, revealed.S));
-  if (!isEmpty(sg) && !isEmpty(revealed.G)) parts.push(tvd(sg, revealed.G));
+  if (hasClearLead(ss) && !isEmpty(revealed.S)) parts.push(tvd(ss, revealed.S));
+  if (hasClearLead(sg) && !isEmpty(revealed.G)) parts.push(tvd(sg, revealed.G));
   if (!parts.length) return 0;
   return parts.reduce((a, b) => a + b, 0) / parts.length;
 }
@@ -111,29 +124,55 @@ export function stageLabel(s: Stage): string {
   return l.startsWith("Series") ? l : l.toLowerCase();
 }
 
-function argmax<K extends string>(w: Partial<Record<K, number>>): K | undefined {
-  let best: K | undefined;
-  let bv = -Infinity;
-  for (const [k, v] of Object.entries(w) as [K, number][]) {
-    if (v > bv) {
-      bv = v;
-      best = k;
-    }
-  }
-  return best;
+// A stated weight below this is a passing mention, not part of the thesis.
+export const STATED_MIN_WEIGHT = 0.1;
+// A line is strong when the off-thesis category is at least this share of counted deals.
+export const STRONG_LINE_SHARE = 0.4;
+// Below this share the contrast is too weak to call a contradiction at all.
+export const MIN_LINE_SHARE = 0.25;
+const MIN_LINE_COUNT = 2;
+
+type Contrast = { said: string; was: string; count: number; total: number; gap: number };
+
+// "other" is the taxonomy's catch-all, never a thesis or a revealed category worth naming.
+const UNNAMED = "other";
+
+// Up to two stated sectors read naturally; a wider thesis is summarised by its size.
+function saidSectors(stated: Sector[], top: Sector): string {
+  if (stated.length <= 2) return stated.map(sectorLabel).join(" and ");
+  return `${stated.length} sectors, not ${sectorLabel(top)}`;
 }
 
-type Mismatch = { said: string; was: string; count: number; total: number };
+// Stages read in order; a contiguous span of three or more reads as a range.
+function saidStages(stated: Stage[], top: Stage): string {
+  const ordered = [...stated].sort((a, b) => stageIndex(a) - stageIndex(b));
+  if (ordered.length <= 2) return ordered.map(stageLabel).join(" and ");
+  const first = stageIndex(ordered[0]);
+  const contiguous = ordered.every((s, i) => stageIndex(s) === first + i);
+  if (contiguous) return `${stageLabel(ordered[0])} to ${stageLabel(ordered[ordered.length - 1])}`;
+  return `${ordered.length} stages, not ${stageLabel(top)}`;
+}
 
-function mismatch<K extends string>(
+// The biggest revealed category the stated thesis leaves out. gap = share of the dimension's
+// counted deals that fall outside the stated thesis.
+function contrast<K extends string>(
   statedW: Partial<Record<K, number>>,
   values: K[],
   label: (k: K) => string,
-): Mismatch | undefined {
-  const said = argmax(normalize(statedW));
-  if (!said || values.length < THIN_HISTORY_MIN_DEALS) return undefined;
+  said: (stated: K[], top: K) => string,
+): Contrast | undefined {
+  const stated = (Object.entries(normalize(statedW)) as [K, number][])
+    .filter(([k, w]) => w >= STATED_MIN_WEIGHT && k !== UNNAMED)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k]) => k);
+  if (!hasClearLead(statedW) || !stated.length || values.length < THIN_HISTORY_MIN_DEALS) return undefined;
   const counts = new Map<K, number>();
-  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  let outside = 0;
+  for (const v of values) {
+    if (stated.includes(v)) continue;
+    outside++;
+    if (v !== UNNAMED) counts.set(v, (counts.get(v) ?? 0) + 1);
+  }
   let top: K | undefined;
   let topN = 0;
   for (const [k, n] of counts) {
@@ -142,28 +181,41 @@ function mismatch<K extends string>(
       topN = n;
     }
   }
-  if (!top || top === said || topN <= (counts.get(said) ?? 0)) return undefined;
-  return { said: label(said), was: label(top), count: topN, total: values.length };
+  if (!top || topN < MIN_LINE_COUNT || topN / values.length < MIN_LINE_SHARE) return undefined;
+  return {
+    said: said(stated, top),
+    was: label(top),
+    count: topN,
+    total: values.length,
+    gap: outside / values.length,
+  };
 }
 
-// Built only from counted (dated, in-window) deals; picks whichever dimension disagrees harder.
+// Built only from counted (dated, in-window) deals. Prefers a contrast where the off-thesis
+// category is >= 40% of counted deals; then the dimension with the larger gap.
 export function contradictionLine(
   inv: Pick<Investor, "statedThesis" | "deals">,
   now: Date = new Date(),
 ): string | undefined {
   const counted = countedDeals(inv.deals, now).map((c) => c.deal);
-  const stage = mismatch(
-    inv.statedThesis.stages,
-    counted.filter((d) => d.round !== "unknown").map((d) => d.round as Stage),
-    stageLabel,
-  );
-  const sector = mismatch(
-    inv.statedThesis.sectors,
-    counted.map((d) => d.sector),
-    sectorLabel,
-  );
-  const pick =
-    stage && sector ? (stage.count / stage.total >= sector.count / sector.total ? stage : sector) : (stage ?? sector);
+  const candidates = [
+    contrast(
+      inv.statedThesis.stages,
+      counted.filter((d) => d.round !== "unknown").map((d) => d.round as Stage),
+      stageLabel,
+      saidStages,
+    ),
+    contrast(
+      inv.statedThesis.sectors,
+      counted.map((d) => d.sector),
+      sectorLabel,
+      saidSectors,
+    ),
+  ].filter((c): c is Contrast => !!c);
+  const strong = (c: Contrast) => (c.count / c.total >= STRONG_LINE_SHARE ? 1 : 0);
+  const pick = candidates.sort(
+    (a, b) => strong(b) - strong(a) || b.gap - a.gap || b.count / b.total - a.count / a.total,
+  )[0];
   if (!pick) return undefined;
   return `Says ${pick.said}; ${pick.count} of last ${pick.total} deals were ${pick.was}`;
 }
