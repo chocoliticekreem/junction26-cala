@@ -1,6 +1,6 @@
 // One seam between the page and the engine routes. Every call returns real data or throws an
 // ApiError; the page turns that into an honest empty state, never a stand-in number.
-import type { ContextBuildBody, ContextDoc, FeedItem, InvestorAction, NetworkData, ResolveResult, SimulateBody, SimulateResponse } from "./types";
+import type { ContextBuildBody, ContextResult, FeedItem, InvestorAction, NetworkData, ResolveResult, SimulateBody, SimulateResponse } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -64,8 +64,8 @@ export async function runSimulate(body: SimulateBody): Promise<SimulateResponse>
   return r;
 }
 
-export async function buildContext(body: ContextBuildBody): Promise<{ doc: ContextDoc; markdown: string }> {
-  const r = await json<{ doc: ContextDoc; markdown: string }>("/api/context/build", post(body));
+export async function buildContext(body: ContextBuildBody): Promise<ContextResult> {
+  const r = await json<ContextResult>("/api/context/build", post(body));
   if (!r.doc) throw new ApiError(200, "bad_shape");
   return r;
 }

@@ -5,6 +5,7 @@ import type { CompanyCandidate, ContextDoc, FeedItem, InvestorAction, ResolveRes
 import type { NetworkEdge, NetworkNode as EngineNetworkNode } from "@/lib/sim/network";
 import type { Decision, DecisionNode, InvestorKind, Precedent, Reality, RealityStep, SimResult, Vision, VisionBasis } from "@/lib/sim/types";
 import type { FounderProfile } from "@/lib/types";
+import type { Trust, TrustLevel } from "@/lib/verify/types";
 
 export type { Analysis, CompanyCandidate, ContextDoc, Decision, DecisionNode, FeedItem, FounderAnalysis, InvestorAction, InvestorKind, Precedent, Reality, RealityStep, ResolveResult, SimResult, Upload, Vision, VisionBasis };
 export type { NetworkEdge };
@@ -27,6 +28,10 @@ export type SimulateResponse = SimResult & {
 
 export type SimulateBody = { profile: FounderProfile; pitchText?: string; visionText: string; decision?: Decision; companyName?: string };
 
-export type ContextBuildBody = { calaId?: string; name?: string; website?: string; pitchProfile?: FounderProfile; visionText?: string; uploads?: Upload[] };
+// The context routes' verification audit: which of the doc's Cala facts are confirmed.
+export type ContextVerification = { trust: Record<string, Trust>; unconfirmed: { id: string; level: TrustLevel; text: string; reasons: string[] }[] };
+export type ContextResult = { doc: ContextDoc; markdown: string; verification?: ContextVerification };
+
+export type ContextBuildBody ={ calaId?: string; name?: string; website?: string; pitchProfile?: FounderProfile; visionText?: string; uploads?: Upload[] };
 
 export const YOU_ID = "you";

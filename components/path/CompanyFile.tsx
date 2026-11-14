@@ -2,15 +2,31 @@
 
 import { useState, type DragEvent } from "react";
 import type { ClaimBasis, ContextRound } from "@/lib/context/types";
-import type { ContextDoc, Upload } from "./types";
+import type { ContextDoc, ContextVerification, Upload } from "./types";
 
 export type CompanyFileProps = {
   doc: ContextDoc;
   markdown: string;
+  verification?: ContextVerification;
   onAddContext: (upload: Upload) => void;
 };
 
 type Item = { text: string; basis: ClaimBasis };
+type Unconfirmed = ContextVerification["unconfirmed"][number];
+
+const LEVEL_LABEL: Record<Unconfirmed["level"], string> = {
+  verified: "verified",
+  corroborated: "corroborated",
+  single_source: "single source",
+  unverified: "unverified",
+  conflict: "conflict",
+};
+
+// The audit keys unconfirmed facts by claim id (ctx:<company>:<kind>:…) and the text load.ts
+// builds for them; both are matched so a founder and an investor with one name cannot collide.
+function unconfirmedFor(list: Unconfirmed[] | undefined, kind: "round" | "investor" | "founder", text: string): Unconfirmed | undefined {
+  return list?.find((u) => u.id.includes(`:${kind}:`) && u.text === text);
+}
 
 const BASIS_LABEL: Record<ClaimBasis, string> = { cala: "Cala", website: "Website", founder: "You" };
 
@@ -49,17 +65,21 @@ function basisFor(doc: ContextDoc, fallback: ClaimBasis): ClaimBasis {
   return doc.coverage.cala ? "cala" : doc.coverage.website ? "website" : fallback;
 }
 
-export default function CompanyFile({ doc, markdown, onAddContext }: CompanyFileProps) {
+export default function CompanyFile({ doc, markdown, verification, onAddContext }: CompanyFileProps) {
   const [open, setOpen] = useState(false);
+  const [showUnconfirmed, setShowUnconfirmed] = useState(false);
   const [paste, setPaste] = useState("");
   const [over, setOver] = useState(false);
 
+  const unconfirmed = verification?.unconfirmed ?? [];
   const company: Item[] = [
     { text: [doc.company.name, doc.company.hq, doc.company.founded ? `founded ${doc.company.founded}` : undefined].filter(Boolean).join(" · "), basis: basisFor(doc, "founder") },
   ];
-  const investors: Item[] = doc.investors.map((i) => ({ text: [i.name, i.round, i.lead ? "lead" : undefined].filter(Boolean).join(" · "), basis: "cala" }));
-  const rounds: Item[] = doc.rounds.map((r) => ({ text: roundLine(r), basis: "cala" }));
-  const founders: Item[] = doc.founders.map((f) => ({ text: f.role ? `${f.name} · ${f.role}` : f.name, basis: "cala" }));
+  const investors: Item[] = doc.investors
+    .filter((i) => !unconfirmedFor(unconfirmed, "investor", `Investor: ${i.name}`))
+    .map((i) => ({ text: [i.name, i.round, i.lead ? "lead" : undefined].filter(Boolean).join(" · "), basis: "cala" }));
+  const rounds: Item[] = doc.rounds.filter((r) => !unconfirmedFor(unconfirmed, "round", `${r.label}${r.date ? `, ${r.date}` : ""}`)).map((r) => ({ text: roundLine(r), basis: "cala" }));
+  const founders: Item[] = doc.founders.filter((f) => !unconfirmedFor(unconfirmed, "founder", `Founder: ${f.name}`)).map((f) => ({ text: f.role ? `${f.name} · ${f.role}` : f.name, basis: "cala" }));
   const product: Item[] = doc.product ? [{ text: doc.product, basis: doc.coverage.website ? "website" : "founder" }] : [];
   const vision: Item[] = doc.vision ? [{ text: doc.vision, basis: "founder" }] : [];
   const founderClaims: Item[] = doc.claims.filter((c) => c.basis === "founder").map((c) => ({ text: c.text, basis: "founder" }));
@@ -102,6 +122,25 @@ export default function CompanyFile({ doc, markdown, onAddContext }: CompanyFile
         <Row title="Company" items={company} />
         <Row title="Investors" items={investors} />
         <Row title="Rounds" items={rounds} />
+        {unconfirmed.length > 0 && (
+          <div className="path-unconfirmed" data-testid="unconfirmed">
+            <button type="button" className="path-link path-file-key" onClick={() => setShowUnconfirmed((v) => !v)} aria-expanded={showUnconfirmed}>
+              {showUnconfirmed ? "▾" : "▸"} Unconfirmed ({unconfirmed.length})
+            </button>
+            <span className="path-file-vals">
+              {showUnconfirmed ? (
+                unconfirmed.map((u) => (
+                  <span key={u.id} className={`path-claim is-unconfirmed is-${u.level}`} title={u.reasons.join("; ") || "Cala's graph is the only source"} data-testid="unconfirmed-claim">
+                    {u.text}
+                    <i className="path-basis path-basis-unconfirmed">{LEVEL_LABEL[u.level]}</i>
+                  </span>
+                ))
+              ) : (
+                <span className="muted path-unconfirmed-hint">Cala facts the audit could not confirm against a second source. Not shown as fact.</span>
+              )}
+            </span>
+          </div>
+        )}
         {open && (
           <>
             <Row title="Founders" items={founders} />

@@ -170,6 +170,8 @@ export type Reality = {
   runs: number;
   steps: RealityStep[];
   outcomeLine: string;
+  // Chip-length form of outcomeLine ("Stalls · no round in 24 mo"); older cached runs lack it.
+  outcomeShort?: string;
   precedents: { companyId: string; name: string; roundIds: string[] }[];
   sampleSize: number;
   lowConfidence: boolean;
