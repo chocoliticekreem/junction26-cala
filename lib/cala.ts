@@ -75,6 +75,13 @@ export class CalaError extends Error {
   }
 }
 
+// Thrown instead of calling Cala when the live-call budget is spent. No request was sent.
+export class CalaBudgetError extends CalaError {
+  constructor() {
+    super("Cala live budget exhausted", 402);
+  }
+}
+
 // ---------- caches ----------
 
 export interface CalaCache {
@@ -119,6 +126,91 @@ export function diskCache(dir: string): CalaCache {
   };
 }
 
+// Read-through in order; a hit in a later layer is copied into the earlier ones.
+export function tieredCache(...layers: CalaCache[]): CalaCache {
+  return {
+    async get(key) {
+      for (let i = 0; i < layers.length; i++) {
+        const v = await layers[i].get(key);
+        if (v === undefined) continue;
+        await Promise.all(layers.slice(0, i).map((l) => l.set(key, v)));
+        return v;
+      }
+      return undefined;
+    },
+    async set(key, value) {
+      await Promise.all(layers.map((l) => l.set(key, value)));
+    },
+  };
+}
+
+// ---------- live-call budget ----------
+
+export interface CalaBudget {
+  // Reserves one live call. false = budget spent, do not send the request.
+  tryConsume(): Promise<boolean>;
+}
+
+export type BudgetUsage = { used: number; limit: number };
+
+// Counts live calls in a JSON file so the cap survives restarts. Consumes are serialised within
+// the process so concurrent route calls cannot overshoot. Delete the file to reset the count.
+export function fileBudget(file: string, limit: number): CalaBudget & { usage(): Promise<BudgetUsage> } {
+  let chain: Promise<unknown> = Promise.resolve();
+  const read = async (): Promise<number> => {
+    try {
+      const used = Number(JSON.parse(await fs.readFile(file, "utf8")).used);
+      return Number.isFinite(used) && used > 0 ? used : 0;
+    } catch {
+      return 0;
+    }
+  };
+  const serial = <T>(fn: () => Promise<T>): Promise<T> => {
+    const next = chain.then(fn, fn);
+    chain = next.catch(() => undefined);
+    return next;
+  };
+  return {
+    usage: () => serial(async () => ({ used: await read(), limit })),
+    tryConsume: () =>
+      serial(async () => {
+        const used = await read();
+        if (used >= limit) return false;
+        await fs.mkdir(path.dirname(file), { recursive: true });
+        await fs.writeFile(file, JSON.stringify({ used: used + 1, updatedAt: new Date().toISOString() }));
+        return true;
+      }),
+  };
+}
+
+// In-memory cap for one script run.
+export function sessionBudget(limit: number): CalaBudget {
+  let used = 0;
+  return {
+    async tryConsume() {
+      if (used >= limit) return false;
+      used++;
+      return true;
+    },
+  };
+}
+
+export function allBudgets(...budgets: CalaBudget[]): CalaBudget {
+  return {
+    async tryConsume() {
+      for (const b of budgets) if (!(await b.tryConsume())) return false;
+      return true;
+    },
+  };
+}
+
+export const DEFAULT_LIVE_BUDGET = 150;
+
+export function liveBudgetLimit(raw = process.env.CALA_LIVE_BUDGET): number {
+  const n = raw === undefined || raw.trim() === "" ? NaN : Number(raw);
+  return Number.isInteger(n) && n >= 0 ? n : DEFAULT_LIVE_BUDGET;
+}
+
 // ---------- client ----------
 
 function semaphore(n: number) {
@@ -143,6 +235,10 @@ export type CalaClientOptions = {
   cache?: CalaCache;
   concurrency?: number;
   maxRetries?: number;
+  // false: a timeout or network error fails at once. The request may have reached Cala and been
+  // billed, so retrying could pay twice.
+  retryNetworkErrors?: boolean;
+  budget?: CalaBudget;
   timeoutMs?: number;
   log?: (msg: string) => void;
 };
@@ -154,6 +250,7 @@ export function createCalaClient(opts: CalaClientOptions = {}) {
   const apiKey = opts.apiKey ?? process.env.CALA_API_KEY;
   const limit = semaphore(opts.concurrency ?? 4);
   const maxRetries = opts.maxRetries ?? 8;
+  const retryNetworkErrors = opts.retryNetworkErrors ?? true;
   const timeoutMs = opts.timeoutMs ?? 120_000;
   const stats: CalaStats = { calls: 0, ok: 0, cacheHits: 0, retries: 0, byEndpoint: {} };
 
@@ -169,6 +266,7 @@ export function createCalaClient(opts: CalaClientOptions = {}) {
       for (let attempt = 0; ; attempt++) {
         let status = 0;
         let retryAfter = 0;
+        if (opts.budget && !(await opts.budget.tryConsume())) throw new CalaBudgetError();
         try {
           stats.calls++;
           const res = await fetch(CALA_BASE + p, {
@@ -189,6 +287,7 @@ export function createCalaClient(opts: CalaClientOptions = {}) {
           if (status !== 429 && status < 500) throw new CalaError(`Cala ${status}: ${text}`, status);
         } catch (e) {
           if (e instanceof CalaError) throw e;
+          if (!retryNetworkErrors) throw new CalaError(`Cala request failed: ${e instanceof Error ? e.name : e}`, status || 599);
           status = status || 599;
         }
         if (attempt >= maxRetries) throw new CalaError(`Cala ${status} after ${attempt + 1} attempts`, status);
@@ -461,12 +560,31 @@ export function dedupeByKey<T>(items: T[], name: (t: T) => string, prefer?: (a: 
   return [...by.values()];
 }
 
+// Runtime paths, not build inputs: the ignore hint stops Turbopack tracing the cache into the bundle.
+export const CALA_CACHE_DIR = path.join(/* turbopackIgnore: true */ process.cwd(), "data", "cala-cache");
+export const LIVE_USAGE_FILE = path.join(/* turbopackIgnore: true */ process.cwd(), "data", ".cala-live-usage.json");
+
+// The live-route client: memory LRU over the same on-disk cache the ingest uses, a persistent
+// live-call budget, one retry for 429/5xx and none for timeouts. Also used by scripts/prewarm.ts
+// so prewarmed entries are exactly the ones the routes look up.
+export function createRouteCala(extra: { budget?: CalaBudget; log?: (msg: string) => void } = {}): CalaClient {
+  const live = fileBudget(LIVE_USAGE_FILE, liveBudgetLimit());
+  return createCalaClient({
+    cache: tieredCache(new MemoryLRU(300), diskCache(CALA_CACHE_DIR)),
+    budget: extra.budget ? allBudgets(extra.budget, live) : live,
+    timeoutMs: 120_000,
+    maxRetries: 1,
+    retryNetworkErrors: false,
+    log: extra.log,
+  });
+}
+
 let routeClient: CalaClient | undefined;
 
-// Shared by the /api/cala/* route handlers: in-memory LRU, no disk writes at request time.
+// Shared by the /api/cala/* route handlers.
 export function getRouteCala(): CalaClient | null {
   if (process.env.E2E_MOCK === "1" || !process.env.CALA_API_KEY) return null;
-  routeClient ??= createCalaClient({ cache: new MemoryLRU(300), timeoutMs: 60_000, maxRetries: 2 });
+  routeClient ??= createRouteCala({ log: console.warn });
   return routeClient;
 }
 

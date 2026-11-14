@@ -18,7 +18,8 @@ env.local
 .vercel
 data/.ingest-checkpoint.json
 data/raw/
-data/cala-cache/
+data/cala-cache
+data/.cala-live-usage.json
 tests/screenshots/
 next-env.d.ts
 .claude/worktrees/

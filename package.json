@@ -14,7 +14,8 @@
     "make-fixtures": "tsx scripts/make-fixtures.ts",
     "introspect": "tsx scripts/introspect.ts",
     "ingest": "tsx scripts/ingest.ts",
-    "build-replay": "tsx scripts/build-replay.ts"
+    "build-replay": "tsx scripts/build-replay.ts",
+    "prewarm": "tsx scripts/prewarm.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

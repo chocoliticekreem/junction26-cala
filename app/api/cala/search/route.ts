@@ -1,4 +1,4 @@
-import { getRouteCala, searchSources } from "@/lib/cala";
+import { CalaBudgetError, getRouteCala, searchSources } from "@/lib/cala";
 
 const MAX_QUERY = 400;
 
@@ -8,6 +8,16 @@ function mock(query: string) {
     sources: [{ name: "mock", url: "https://cala.ai" }],
     cached: false,
     mock: true,
+  };
+}
+
+function budgetExhausted() {
+  return {
+    answer: "Live Cala lookup paused: the credit budget for this demo is used up. Deals above come from the cached ingest.",
+    sources: [],
+    cached: false,
+    mock: true,
+    budgetExhausted: true,
   };
 }
 
@@ -35,6 +45,7 @@ export async function POST(req: Request) {
       cached: cala.stats.cacheHits > hitsBefore,
     });
   } catch (err) {
+    if (err instanceof CalaBudgetError) return Response.json(budgetExhausted());
     console.warn("cala search:", err instanceof Error ? err.message : err);
     return Response.json({ error: "upstream_error" }, { status: 502 });
   }

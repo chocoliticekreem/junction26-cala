@@ -3,6 +3,10 @@
 ## Cala
 - Nothing blocking. `CALA_API_KEY` works. The real ingest ran against it (see `docs/CALA.md` for calls used).
 - Cala does not report remaining credits in response headers. Check the balance in console.cala.ai (Billing) before re-running the full ingest. A re-run is free for anything already in `data/cala-cache/` (gitignored, on this machine only).
+- **Credits: about 265 left** (about 275 on 14 Nov, minus 10 spent by the first `npm run prewarm`). An estimate only: confirm in console.cala.ai, and other runs on other machines spend from the same account.
+- **Live budget.** The `/api/cala/*` routes and `npm run prewarm` read and write the same disk cache as the ingest (`data/cala-cache/`), so a repeat click or a server restart costs nothing. Every request actually sent to Cala counts in `data/.cala-live-usage.json` (gitignored, per checkout). At `CALA_LIVE_BUDGET` (default 150) the routes stop calling Cala and answer with `budgetExhausted: true` and a "Live Cala lookup paused" message instead. Cached answers keep working. Reset by deleting the file; raise the cap by setting `CALA_LIVE_BUDGET` and restarting. Live routes retry a 429 or 5xx once and never retry a timeout (it may still be billed).
+- **Before the demo:** run `npm run prewarm` (default: zinc, 4bio-capital, syncona, london-business-angels, medicxi; or pass investor ids). It sends the exact requests the panel makes, stops at 15 live calls per run, and prints calls spent vs cache hits. Already done once on this machine; a second run spent 0.
+- UI note: the panel shows the budget message as the live answer with a "mock" tag. A dedicated "paused" tag needs a `components/ProfilePanel.tsx` change (read `budgetExhausted` from the response).
 - Rate limit: bursts of fast calls (introspection, entity search) hit `429 rate_limit_exceeded` within ~15 requests; it cleared after about a minute. The client backs off up to 8 times (max 60 s per wait). If a run logs repeated 429s, re-run with `--concurrency 2`; it resumes from the checkpoint.
 
 ## ElevenLabs (optional)
