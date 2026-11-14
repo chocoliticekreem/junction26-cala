@@ -1,8 +1,111 @@
-# Room: submission notes
+# Room: Junction 2026 submission pack
 
-Junction 2026, Cala challenge "Make Unicorns Real". Repo: `chocoliticekreem/junction26-cala`.
+Challenge: Make Unicorns Real (350), partner Cala. Repo: `chocoliticekreem/junction26-cala`. Form rules are from `CHALLENGE.md`. Character counts were measured with `wc -m` on the exact pasted text.
 
-Every number below was computed from `data/investors.json`, `data/replay/demo-pitch.json`, `data/founders.seed.json` or the code in this repo on 14 Nov 2026. Numbers taken from `docs/CALA.md` (the ingest log) are marked "ingest log".
+## Form fields (paste as is)
+
+### Project Name (max 30)
+
+```
+Room
+```
+
+4 characters.
+
+### Punchline (max 200)
+
+```
+Founders raising in London: speak your pitch and 193 investors active in London rank themselves by the deals they actually backed, sourced from Cala, not by the thesis on their website.
+```
+
+185 characters.
+
+### Description (Markdown, max 5000)
+
+4261 characters, measured on the text between the fences and nothing else.
+
+````markdown
+**Room is a live investor-matching tool for founders raising a pre-seed or seed round in London.** You say your pitch out loud. Within seconds, 193 investors active in London rearrange around you, ranked by what they actually invested in, not what their website says. It is built to be used at Slush next week.
+
+## The problem
+
+Raising in London runs on networks. First-time founders cold-email long lists of investors who were never a fit, and partners lose first meetings to founders outside their stage or sector. Fund websites describe a thesis, but recent deals often say something else. Figures to be filled from quotes collected at Junction, not invented: [N emails per raise], [x% reply rate], [__ hours spent], [share of first meetings that are wrong-fit].
+
+## What we built
+
+- **Live ranking.** Speak a pitch (or press `R` to replay a recorded one). Claude Haiku extracts company, sector, stage, raise, traction and team signals from the transcript every few seconds. A force graph reorders around the founder as the profile fills in.
+- **Evidence.** Each of the top 10 matches shows a score out of 100, a one-line reason, and the portfolio deals behind it with round, date and source link. Selecting an investor draws edges to those companies.
+- **Contradictions.** Where a fund's stated thesis disagrees with its deals, a badge says so using counted deals. Example from the data: London Business Angels says seed and Series A, but 9 of its last 10 deals were pre-seed.
+- **Doors.** Each investor lists the easiest way in: a warm-intro path through its Cala-linked partners, or a request to be considered for a room.
+- **Investor side.** Pick an investor at `/investor`. The same engine ranks a founder pool against that investor's revealed thesis. When 12 or more matched founders share a sector, it suggests a themed room. The investor taps Interested, the founder accepts, both sides verify, and chat unlocks.
+
+## How Cala is core
+
+Remove Cala and Room stops working. The investor universe, every deal, every stated thesis and every partner link come from Cala. Nothing in the ranking is typed in by hand.
+
+- **Investors and deals.** 193 investors and 2,632 deals (between 2024-01-10 and 2026-11-12) come from Cala `knowledge/query` (one dated funding-rounds query per investor), `knowledge/search` and entity retrieval. Investors link to portfolio companies through `INVESTED_IN`.
+- **Evidence chips.** Each chip is a Cala deal with its sources: 68% of deals have at least one URL source and 71% carry a Cala company ID.
+- **Contradictions.** The badge compares the thesis text Cala returns with the revealed vector built from Cala deals. 12 investors carry one.
+- **Verification.** An investor's name is checked against partners built from Cala `WORKS_AT` and Person entities: 133 of 193 investors have a linked partner, 350 partner links in all.
+- **Live panels.** Selecting an investor calls Cala's entity and knowledge-search endpoints at runtime and shows the answer with its sources. Cold queries take 20-60 s, so the ranking itself reads an ingest-time cache.
+
+## Why it is different
+
+Dealroom, Crunchbase and LinkedIn search are databases you query by filter, and they show stated focus. Room listens to your pitch, ranks by revealed behaviour with a source on every claim, shows where a fund's words and deals disagree, and gives a way in. The score has no fund-size or brand term. Only pitch content is scored.
+
+## Real versus mocked
+
+Real: the 193 investors, 2,632 deals, sources, partners, scoring, extraction and the live Cala panels (with a key). Local or mocked: 40 seeded founder profiles and the demo pitch from a fictional founder (Amara, Helixa Bio); seeded debriefs; interest, verification and chat state live in the browser's localStorage; email checks are format checks only and no email is sent; room pages are mock screens. Dates are month-accurate at best, because Cala often returns month-only dates. 19% of deals have no parsed amount. A contradiction badge is a prompt to look at the deals, not a verdict. Pitch audio is not stored. LinkedIn is linked, never scraped.
+
+## Stack
+
+Next.js, TypeScript, Claude Haiku for extraction, the Cala API for all investor data, the Web Speech API for the microphone. MIT licensed.
+````
+
+### Challenge
+
+Make Unicorns Real (350), partner Cala.
+
+### Tech challenges genuinely used
+
+None claimed. Leave "Tech Challenge Participation" empty.
+
+- ElevenLabs (50): a realtime speech-to-text client exists (`lib/stt.ts`, `app/api/stt-token/route.ts`), but Web Speech is the default and `ELEVENLABS_API_KEY` is not set. Claim it only after the key is set, a live run through ElevenLabs is verified, and the code is claimed at mlh.link/junction-26 (see `BLOCKED.md`).
+- Gemini, Context.dev, Oxylabs: not used.
+
+### 2-minute demo script
+
+Total running time: 1:55 (115 s), 5 s under the 2:00 limit. Record at 1440 px wide in Chrome, founder window first. Facts come from `docs/DEMO.md` (scores computed 14 Nov 2026; check the order on screen before recording). Setup: clear localStorage for `localhost:3000`, open `/` and `/investor` side by side, and open Zinc's profile once beforehand so the live Cala panel is warm (cold queries take 20-60 s).
+
+The recorded pitch runs 60.8 s. Segment 0:15-0:40 shows it sped up in the edit, or cut to the key moments ("therapeutics", "pre-seed", "raising"). No voiceover over that segment.
+
+| Time | Secs | Screen | Voiceover / action |
+|---|---|---|---|
+| 0:00-0:08 | 8 | Founder view loads. 193 investor points sit dim before any pitch | "A hundred and ninety-three investors active in London. Ranked by what they did, not what they say." |
+| 0:08-0:15 | 7 | Press `R`. Transcript starts streaming | Replay audio or caption: "Hi, I'm Amara, founder of Helixa Bio, a London startup." |
+| 0:15-0:40 | 25 | Words stream. The "Helixa Bio" company chip appears, then the biotech chip on "therapeutics" and the pre-seed chip. Biotech investors move inward | Silent. The motion carries it |
+| 0:40-0:52 | 12 | Graph settles. Top 10 cards: Zinc, 4BIO Capital, Syncona at the top | "Ten matches. Every one is backed by real deals from Cala." |
+| 0:52-1:05 | 13 | Click Zinc. Evidence edges light to Serenatis Bio, Microsol and Nascent Therapeutics with round and year. Source links and the live Cala panel visible | "Zinc: five biotech deals in 24 months. Rounds, dates and sources, straight from Cala." |
+| 1:05-1:15 | 10 | Click London Business Angels (#9). Contradiction badge | "This one says seed and Series A. Nine of its last ten deals were pre-seed." |
+| 1:15-1:22 | 7 | Easiest-door section in the investor panel | "And the easiest way in, for each one." |
+| 1:22-1:45 | 23 | Split screen. Investor window: pick Zinc, show "15 matched founders in biotech/therapeutics". Switch to Medicxi, tap Interested on the live founder. Founder window: accept in the inbox. Investor verifies as Francesco De Rubertis with a `medicxi.com` address ("Partner on Cala" passes). Lock opens, chat appears | "Investors reach out only when the fit is real. Zinc can fill a biotech room with fifteen matched founders. Medicxi taps interested and verifies against its Cala partner record. Then you talk." |
+| 1:45-1:55 | 10 | Title card: "Room. Built on Cala." | "Two thousand six hundred deals, a hundred and ninety-three investors, all from Cala." |
+
+Sum: 8 + 7 + 25 + 12 + 13 + 10 + 7 + 23 + 10 = 115 s = 1:55.
+
+Say aloud or caption that chat and email checks are local to the browser (format check only). Do not imply an email was sent. Do not narrate the order of matches #4 to #10 (scores are close). Do not show a cluster or halo count. "193 investors" and "2,632 deals" are from `data/investors.json`.
+
+### Peer review (3 minutes)
+
+Scored on Innovation, Impact and Implementation. Flow follows the "3-minute live pitch flow" in `docs/DEMO.md`. If the mic or Wi-Fi fails, press `R`.
+
+- **Innovation.** Investor tools show what a fund says. Room ranks investors by what they did: it extracts sector, stage and raise from a spoken pitch every few seconds and re-ranks 193 investors active in London against their dated deals. A contradiction badge shows where a fund's stated thesis disagrees with its deals (London Business Angels: says seed and Series A, 9 of its last 10 deals were pre-seed). The score has no fund-size or brand term.
+- **Impact.** The user is a founder raising pre-seed or seed in London, often first-time, who cold-emails investors who were never a fit. On the investor side the need is fewer wrong-fit first meetings. Room gives the 10 best-fit investors, the evidence behind each and an easiest door in. Do not quote a statistic: the problem-section numbers are placeholders until quotes are collected at Junction. Quote only what is in `data/quotes.json`.
+- **Implementation.** Works end to end on real data: 193 investors and 2,632 deals from Cala, no fixture records. Ranking is a pure function in the browser. Every match traces to Cala entity IDs and rounds, and Cala is required: without it there is no investor universe, evidence or verification. Be upfront about what is local: seeded founders and debriefs, localStorage interest and chat, format-only email checks, mock room pages. Roadmap: accounts and hosted Postgres, real debriefs, scheduled re-ingest.
+
+---
+
+Source notes for everything below: every number was computed from `data/investors.json`, `data/replay/demo-pitch.json`, `data/founders.seed.json` or the code in this repo on 14 Nov 2026. Numbers taken from `docs/CALA.md` (the ingest log) are marked "ingest log".
 
 ## One-line pitch
 

@@ -92,6 +92,84 @@ describe("fallbackExtract", () => {
     expect(e.sectors.map((s) => s.label)).toEqual(expect.arrayContaining(["cybersecurity", "other"]));
   });
 
+  it("extracts company, founder name and one-liner from the demo opening", () => {
+    const e = fallbackExtract(
+      "Hi, I'm Amara, founder of Helixa Bio, a London startup. We're building therapeutics for autoimmune disease, specifically AI-designed antibody drugs.",
+    );
+    expect(e.company).toEqual({ value: "Helixa Bio", confidence: 0.85 });
+    expect(e.founder_name?.value).toBe("Amara");
+    expect(e.one_liner?.value).toBe("Therapeutics for autoimmune disease");
+    expect(e.geography?.value).toBe("London");
+  });
+
+  it("recognises other company phrasings", () => {
+    const company = (t: string) => fallbackExtract(t).company?.value;
+    expect(company("I'm Joe Bloggs, co-founder and CEO of Acme.ai.")).toBe("Acme.ai");
+    expect(company("I'm the founder of Helixa.")).toBe("Helixa");
+    expect(company("Helixa Bio is a London biotech startup.")).toBe("Helixa Bio");
+    expect(company("We're Helixa Bio, a London startup.")).toBe("Helixa Bio");
+    expect(company("At Helixa we design antibodies.")).toBe("Helixa");
+    expect(company("I'm the founder of Helixa Bio London")).toBe("Helixa Bio");
+  });
+
+  it("prefers the strongest company phrasing in a chunk", () => {
+    const e = fallbackExtract("At Nimbus we love science. I'm the founder of Helixa Bio.");
+    expect(e.company).toEqual({ value: "Helixa Bio", confidence: 0.85 });
+  });
+
+  it("does not invent a company from stages, places, people or past roles", () => {
+    for (const text of [
+      "I'm excited to be here. We're pre-seed.",
+      "We're Series A, raising $10m.",
+      "We're Amara and Kwame, and we love science.",
+      "We're London-based.",
+      "At Imperial, we spun out the platform.",
+      "At Imperial College we ran the first study.",
+      "I was previously a founder of Stripe.",
+      "founder of a london startup",
+      "This is a great company.",
+    ]) {
+      expect(fallbackExtract(text).company, text).toBeUndefined();
+    }
+  });
+
+  it("captures the founder name only next to a founder role or a greeting", () => {
+    const name = (t: string) => fallbackExtract(t).founder_name?.value;
+    expect(name("Hi everyone, I'm Amara.")).toBe("Amara");
+    expect(name("My name is Joe Bloggs and I run a lab.")).toBe("Joe Bloggs");
+    expect(name("I'm Really Tired today.")).toBeUndefined();
+    expect(name("My name is Joe Bloggs, the CEO of Acme.")).toBe("Joe Bloggs");
+    expect(name("I'm excited to be here.")).toBeUndefined();
+    expect(name("I'm British, and I'm a founder.")).toBeUndefined();
+    expect(name("I'm London based, founder of Acme.")).toBeUndefined();
+  });
+
+  it("builds a short one-liner from the pitch's own words", () => {
+    const line = (t: string) => fallbackExtract(t).one_liner?.value;
+    expect(line("We help pharma companies find drug candidates faster.")).toBe(
+      "Helps pharma companies find drug candidates faster",
+    );
+    expect(line("We are building a payments app for freelancers - it's great.")).toBe(
+      "Payments app for freelancers",
+    );
+    expect(line("We build developer tools for data teams.")).toBe("Developer tools for data teams");
+    const long = line(
+      "We build developer tools for data teams who struggle with flaky pipelines and slow continuous integration across many repositories.",
+    );
+    expect(long!.length).toBeLessThanOrEqual(80);
+    expect(long).toMatch(/^Developer tools for data teams/);
+    expect(long).not.toMatch(/\s$/);
+  });
+
+  it("skips one-liners that are not about the product", () => {
+    const line = (t: string) => fallbackExtract(t).one_liner;
+    expect(line("We make money by licensing.")).toBeUndefined();
+    expect(line("We're building our team.")).toBeUndefined();
+    expect(line("We're making progress.")).toBeUndefined();
+    expect(line("We help them.")).toBeUndefined();
+    expect(line("we use machine learning to design candidates")).toBeUndefined();
+  });
+
   it("runs in under 5ms on a pitch-length chunk", () => {
     const text = "We are a London biotech building CRISPR therapeutics, raising a £1.5m pre-seed. ".repeat(5);
     fallbackExtract(text);

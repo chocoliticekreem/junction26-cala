@@ -51,6 +51,27 @@ describe("mergeProfile", () => {
     expect(p.confidence.teamSignals).toBe(0.9);
   });
 
+  it("sets company, one-liner and name, replacing only on equal-or-higher confidence", () => {
+    let p = mergeProfile(emptyProfile(), {
+      sectors: [],
+      company: { value: "Helixa Bio", confidence: 0.85 },
+      one_liner: { value: "Therapeutics for autoimmune disease", confidence: 0.7 },
+      founder_name: { value: "Amara", confidence: 0.8 },
+    });
+    expect(p).toMatchObject({ company: "Helixa Bio", oneLiner: "Therapeutics for autoimmune disease", name: "Amara" });
+    expect(p.confidence).toMatchObject({ company: 0.85, oneLiner: 0.7, name: 0.8 });
+    p = mergeProfile(p, {
+      sectors: [],
+      company: { value: "Nimbus", confidence: 0.6 },
+      one_liner: { value: "AI-designed antibody drugs", confidence: 0.7 },
+    });
+    expect(p.company).toBe("Helixa Bio");
+    expect(p.oneLiner).toBe("AI-designed antibody drugs");
+    expect(p.name).toBe("Amara");
+    p = mergeProfile(p, { sectors: [{ label: "fintech", confidence: 0.5 }] });
+    expect(p).toMatchObject({ company: "Helixa Bio", name: "Amara" });
+  });
+
   it("does not mutate its input", () => {
     const p = emptyProfile();
     mergeProfile(p, { sectors: [{ label: "fintech", confidence: 0.7 }], team_signals: [{ value: "PhD", confidence: 1 }] });

@@ -59,6 +59,24 @@ export const EXTRACTION_TOOL: { name: string; description: string; input_schema:
         properties: { value: { type: "string" }, confidence },
         required: ["value", "confidence"],
       },
+      company: {
+        type: "object",
+        description: "Startup name, only when the founder states it",
+        properties: { value: { type: "string" }, confidence },
+        required: ["value", "confidence"],
+      },
+      one_liner: {
+        type: "object",
+        description: "What the startup does, in the founder's own words, at most 80 characters",
+        properties: { value: { type: "string" }, confidence },
+        required: ["value", "confidence"],
+      },
+      founder_name: {
+        type: "object",
+        description: "The speaking founder's first name, only when stated",
+        properties: { value: { type: "string" }, confidence },
+        required: ["value", "confidence"],
+      },
       triggers: {
         type: "object",
         description: "Field name (or sector label) to the exact transcript word that triggered it",
@@ -100,6 +118,16 @@ function toStage(x: unknown): Stage | undefined {
   if (!s) return undefined;
   if (isStage(s)) return s;
   return STAGE_ALIASES[s] ?? STAGE_ALIASES[s.replace(/-/g, " ")];
+}
+
+const ONE_LINER_MAX = 80;
+
+// Strict tool schemas cannot cap string length, so an over-long one-liner is cut at a word here.
+function oneLinerText(x: unknown): string | undefined {
+  const s = str(x);
+  if (!s || s.length <= ONE_LINER_MAX) return s;
+  const cut = s.lastIndexOf(" ", ONE_LINER_MAX);
+  return s.slice(0, cut > 0 ? cut : ONE_LINER_MAX).replace(/[\s,;:.-]+$/, "");
 }
 
 function valued<T>(x: unknown, parse: (v: unknown) => T | undefined) {
@@ -157,6 +185,12 @@ export function parseExtraction(x: unknown): Extraction | null {
   if (geo) out.geography = geo;
   const model = valued(x.business_model, str);
   if (model) out.business_model = model;
+  const company = valued(x.company, str);
+  if (company) out.company = company;
+  const oneLiner = valued(x.one_liner, oneLinerText);
+  if (oneLiner) out.one_liner = oneLiner;
+  const founderName = valued(x.founder_name, str);
+  if (founderName) out.founder_name = founderName;
 
   if (isObj(x.triggers)) {
     const triggers: Record<string, string> = {};

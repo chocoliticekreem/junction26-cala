@@ -417,6 +417,131 @@ function detectTeam(text: string, ex: Extraction, triggers: Record<string, strin
   if (found.length) ex.team_signals = found;
 }
 
+// Identity (display only, never scored: spec 9.4). Names are matched case-sensitively on
+// capitalised words, so lowercase STT output yields nothing rather than a wrong name.
+const NAME_TOKEN = "[A-Z][A-Za-z0-9&]*(?:\\.[a-z]{2,4})?";
+const COMPANY = `(${NAME_TOKEN}(?:\\s+${NAME_TOKEN}){0,2})`;
+const PERSON_TOKEN = "[A-Z][a-z]+(?:[-'’][A-Z]?[a-z]+)?";
+const PERSON = `(${PERSON_TOKEN}(?:\\s+${PERSON_TOKEN})?)`;
+
+// Capitalised words that are never a company or person name on their own: sentence starters,
+// stages and places (which the extractor reads as geography instead).
+const NOT_A_NAME = new Set([
+  "I", "We", "Our", "My", "The", "A", "An", "This", "That", "It", "There", "Today", "So", "And",
+  "But", "Hi", "Hello", "Hey", "Thanks", "Everyone", "Everything", "What", "Here", "Now", "Series",
+  "Pre", "Seed", "London", "Manchester", "Cambridge", "Oxford", "Edinburgh", "Bristol", "UK",
+  "Britain", "British", "England", "Europe", "European", "Berlin", "Paris", "US", "USA",
+  "America", "American", "Imperial", "UCL", "MIT", "Stanford", "Harvard", "Really", "Very", "Just",
+]);
+const INSTITUTION_RE = /\b(?:University|College|Institute|School|Hospital|Lab|Labs)\b/;
+const PAST_ROLE_RE = /\b(?:was|previously|formerly|former|last|ex-?)\s*(?:a\s+|the\s+)?$/i;
+
+function cleanName(raw: string): string | undefined {
+  const tokens = raw.split(/\s+/);
+  if (NOT_A_NAME.has(tokens[0])) return undefined;
+  while (tokens.length > 1 && NOT_A_NAME.has(tokens[tokens.length - 1])) tokens.pop();
+  const name = tokens.join(" ");
+  return INSTITUTION_RE.test(name) ? undefined : name;
+}
+
+const COMPANY_PATTERNS: { re: RegExp; confidence: number }[] = [
+  {
+    re: new RegExp(
+      `\\b(?:(?:[Cc]o-?)?[Ff]ounder(?:\\s+(?:and|&)\\s+(?:CEO|CTO|COO))?|CEO|CTO)\\s+(?:of|at)\\s+${COMPANY}`,
+      "g",
+    ),
+    confidence: 0.85,
+  },
+  {
+    re: new RegExp(
+      `(?:^|[.!?]\\s+|,\\s+)${COMPANY}\\s+is\\s+an?\\s+(?:[\\w-]+\\s+){0,3}(?:startup|company)\\b`,
+      "g",
+    ),
+    confidence: 0.75,
+  },
+  // "We're Helixa Bio, a London startup": only before an article or a sentence end, so
+  // "We're Amara and Kwame" or "We're Series A, raising" never become a company.
+  {
+    re: new RegExp(`\\b[Ww]e(?:['’]re| are)\\s+${COMPANY}(?=,?\\s+an?\\s|[.!?](?:\\s|$))`, "g"),
+    confidence: 0.7,
+  },
+  { re: new RegExp(`\\b[Aa]t\\s+${COMPANY},?\\s+we\\b`, "g"), confidence: 0.6 },
+];
+
+const I_AM = "(?:[Ii]['’]m|[Ii] am)";
+const FOUNDER_NAME_PATTERNS = [
+  new RegExp(
+    `\\b(?:${I_AM}|[Mm]y name is|[Mm]y name['’]s)\\s+${PERSON}(?=,?\\s+(?:the\\s+|a\\s+)?(?:(?:[Cc]o-?)?[Ff]ounder|CEO|CTO)\\b|,?\\s+and\\s+I\\b)`,
+    "g",
+  ),
+  new RegExp(
+    `\\b(?:[Hh]i|[Hh]ello|[Hh]ey)(?:\\s+(?:everyone|all|there))?,?\\s+${I_AM}\\s+${PERSON}(?=[.!?](?:\\s|$))`,
+    "g",
+  ),
+];
+
+const ONE_LINER_RE =
+  /\b[Ww]e(?:['’]re| are)\s+(?:building|making|developing|creating)\s+([^.!?;]+)|\b[Ww]e\s+(?:build|make|develop|create)\s+([^.!?;]+)|\b[Ww]e\s+help\s+([^.!?;]+)/g;
+const ONE_LINER_BAD_START =
+  /^(?:money|sure|it|its|them|this|that|these|those|our|my|your|their|up|out|progress|use|sense|something|things|everything|lots|a lot|decisions|mistakes)\b/i;
+const ONE_LINER_CUT =
+  /,\s+(?:specifically|and|but|so|which|because|while|then)\b|\s+[—–-]\s+|\s+(?:right now|today|at the moment)\b/;
+const ONE_LINER_MAX = 80;
+
+function cleanOneLiner(raw: string, prefix: string): string | undefined {
+  const clause = raw.split(ONE_LINER_CUT)[0].trim().replace(/,$/, "");
+  if (ONE_LINER_BAD_START.test(clause)) return undefined;
+  let text = `${prefix}${clause.replace(/^(?:a|an|the)\s+/i, "")}`.replace(/\s+/g, " ");
+  if (text.split(" ").length < 2) return undefined;
+  if (text.length > ONE_LINER_MAX) {
+    const comma = text.lastIndexOf(",", ONE_LINER_MAX);
+    const space = text.lastIndexOf(" ", ONE_LINER_MAX);
+    text = text.slice(0, comma > 20 ? comma : space).trim();
+  }
+  return text[0].toUpperCase() + text.slice(1);
+}
+
+function detectCompany(text: string) {
+  let best: { value: string; confidence: number } | undefined;
+  for (const p of COMPANY_PATTERNS) {
+    for (const m of text.matchAll(p.re)) {
+      const index = m.index ?? 0;
+      if (PAST_ROLE_RE.test(text.slice(Math.max(0, index - 20), index))) continue;
+      const value = cleanName(m[1]);
+      if (!value) continue;
+      if (!best || p.confidence > best.confidence) best = { value, confidence: p.confidence };
+      break;
+    }
+  }
+  return best;
+}
+
+function detectIdentity(text: string, ex: Extraction, triggers: Record<string, string>) {
+  const company = detectCompany(text);
+  if (company) {
+    ex.company = company;
+    triggers.company = company.value;
+  }
+
+  for (const re of FOUNDER_NAME_PATTERNS) {
+    const value = [...text.matchAll(re)].map((m) => cleanName(m[1])).find(Boolean);
+    if (value && value !== company?.value) {
+      ex.founder_name = { value, confidence: 0.8 };
+      triggers.founder_name = value;
+      break;
+    }
+  }
+
+  for (const m of text.matchAll(ONE_LINER_RE)) {
+    const value = m[3] ? cleanOneLiner(m[3], "helps ") : cleanOneLiner(m[1] ?? m[2], "");
+    if (value) {
+      ex.one_liner = { value, confidence: 0.7 };
+      triggers.one_liner = m[0].trim();
+      break;
+    }
+  }
+}
+
 function firstMatch(text: string, patterns: { value: string; re: RegExp }[]) {
   let best: { value: string; word: string; index: number } | undefined;
   for (const p of patterns) {
@@ -436,6 +561,7 @@ export function fallbackExtract(text: string): Extraction {
   const revenue = detectMoney(text, ex, triggers);
   detectTraction(text, revenue, ex, triggers);
   detectTeam(text, ex, triggers);
+  detectIdentity(text, ex, triggers);
 
   const geo = firstMatch(text, GEO_PATTERNS);
   if (geo) {

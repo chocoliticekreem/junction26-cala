@@ -54,7 +54,10 @@ function isEmpty(e: Extraction): boolean {
     !e.traction &&
     !e.team_signals?.length &&
     !e.geography &&
-    !e.business_model
+    !e.business_model &&
+    !e.company &&
+    !e.one_liner &&
+    !e.founder_name
   );
 }
 

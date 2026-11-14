@@ -23,6 +23,9 @@ function profileToExtraction(ev: ReplayEvent): Extraction | undefined {
     ex.team_signals = p.teamSignals.map((value) => ({ value, confidence: c("teamSignals") }));
   if (p.geography) ex.geography = { value: p.geography, confidence: c("geography") };
   if (p.businessModel) ex.business_model = { value: p.businessModel, confidence: c("businessModel") };
+  if (p.company) ex.company = { value: p.company, confidence: c("company") };
+  if (p.oneLiner) ex.one_liner = { value: p.oneLiner, confidence: c("oneLiner") };
+  if (p.name) ex.founder_name = { value: p.name, confidence: c("name") };
   return ex;
 }
 
