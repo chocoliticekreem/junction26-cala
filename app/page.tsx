@@ -81,6 +81,7 @@ export default function FounderPage() {
             onSelect={setSelectedInvestorId}
             center={{ label: profile.company ?? "You" }}
             padLeft={selected ? 392 : 0}
+            idle={!replaying && micState !== "listening" && tokens.length === 0}
           />
           {selected && (
             <ProfilePanel investor={selected} match={selectedMatch} onClose={() => setSelectedInvestorId(undefined)} />
@@ -95,7 +96,7 @@ export default function FounderPage() {
           </div>
         </section>
         <aside className="rail">
-          <TranscriptRail tokens={tokens} live={replaying || micState === "listening"} />
+          <TranscriptRail tokens={tokens} live={replaying || micState === "listening"} triggers={triggers} />
           <ProfileChips profile={profile} triggers={triggers} />
           <MatchList
             matches={matches}

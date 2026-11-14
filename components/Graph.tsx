@@ -12,6 +12,7 @@ export type GraphProps = {
   center?: { label: string };
   reducedMotion?: boolean;
   padLeft?: number;
+  idle?: boolean;
 };
 
 const GraphCanvas = dynamic(() => import("./GraphCanvas"), {
@@ -46,7 +47,19 @@ export default function Graph(props: GraphProps) {
   return (
     <div ref={wrap} className="relative h-full w-full overflow-hidden" data-testid="graph">
       {size.width > 0 && size.height > 0 && (
-        <GraphCanvas {...props} width={size.width} height={size.height} reducedMotion={props.reducedMotion ?? systemReduced} padLeft={props.padLeft ?? 0} />
+        <GraphCanvas
+          {...props}
+          width={size.width}
+          height={size.height}
+          reducedMotion={props.reducedMotion ?? systemReduced}
+          padLeft={props.padLeft ?? 0}
+          idle={props.idle ?? false}
+        />
+      )}
+      {props.idle && (
+        <p className="graph-hint" data-testid="graph-hint">
+          Press <kbd>R</kbd> to replay a pitch, or the mic to pitch live
+        </p>
       )}
     </div>
   );

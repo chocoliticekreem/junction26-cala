@@ -23,7 +23,7 @@ function chipsFor(p: FounderProfile, triggers: Record<string, string>): Chip[] {
   const chips: Chip[] = [];
   const sectors = (Object.entries(p.sectors) as [Sector, number][]).sort((a, b) => b[1] - a[1]);
   for (const [s, w] of sectors) {
-    chips.push({ key: `sector:${s}`, label: "Sector", value: `${SECTOR_SHORT[s]} ${Math.round(w * 100)}%`, color: SECTOR_COLOR[s], trigger: triggers.sectors });
+    chips.push({ key: `sector:${s}`, label: "Sector", value: `${SECTOR_SHORT[s]} ${Math.round(w * 100)}%`, color: SECTOR_COLOR[s], trigger: triggers[`sector:${s}`] });
   }
   if (p.stage) chips.push({ key: "stage", label: "Stage", value: STAGE_LABELS[p.stage], trigger: triggers.stage });
   if (p.raise) chips.push({ key: "raise", label: "Raise", value: formatRaise(p.raise), trigger: triggers.raise });
