@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 export default function RoleSwitcher() {
   const path = usePathname();
-  const isInvestor = path?.startsWith("/investor");
+  const isInvestor = path?.startsWith("/investor") || path?.startsWith("/path/investor");
   return (
     <nav className="role-switch" aria-label="Role">
       <Link href="/" className={!isInvestor ? "is-active" : ""} aria-current={!isInvestor ? "page" : undefined}>
