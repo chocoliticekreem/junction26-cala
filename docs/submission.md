@@ -22,7 +22,7 @@ Founders raising in London: speak your pitch and 193 investors active in London 
 
 ### Description (Markdown, max 5000)
 
-4261 characters, measured on the text between the fences and nothing else.
+4702 characters, measured on the text between the fences and nothing else.
 
 ````markdown
 **Room is a live investor-matching tool for founders raising a pre-seed or seed round in London.** You say your pitch out loud. Within seconds, 193 investors active in London rearrange around you, ranked by what they actually invested in, not what their website says. It is built to be used at Slush next week.
@@ -43,9 +43,10 @@ Raising in London runs on networks. First-time founders cold-email long lists of
 
 Remove Cala and Room stops working. The investor universe, every deal, every stated thesis and every partner link come from Cala. Nothing in the ranking is typed in by hand.
 
-- **Investors and deals.** 193 investors and 2,632 deals (between 2024-01-10 and 2026-11-12) come from Cala `knowledge/query` (one dated funding-rounds query per investor), `knowledge/search` and entity retrieval. Investors link to portfolio companies through `INVESTED_IN`.
+- **Investors and deals.** 193 investors and 2,710 deals (between 2024-01-10 and 2026-11-12) come from Cala `knowledge/query` (one dated funding-rounds query per investor), `knowledge/search` and entity retrieval. Investors link to portfolio companies through `INVESTED_IN`.
 - **Evidence chips.** Each chip is a Cala deal with its sources: 68% of deals have at least one URL source and 71% carry a Cala company ID.
-- **Contradictions.** The badge compares the thesis text Cala returns with the revealed vector built from Cala deals. 12 investors carry one.
+- **Funding-round graph.** 120 deals on 48 investors are read from Cala `FundingRound` entities: issuer, amount, date, who led (`is_lead`, known for 88%) and the kind of source (filing, company, press, database). A led round counts 1.5x in the revealed thesis and the chip says "Led". Investors listed as participants of a Cala `Event` entity carry a chip with the event's name (one event loaded so far: Slush 2026, 2 of our 193 investors).
+- **Contradictions.** The badge compares the thesis text Cala returns with the revealed vector built from Cala deals. 13 investors carry one.
 - **Verification.** An investor's name is checked against partners built from Cala `WORKS_AT` and Person entities: 133 of 193 investors have a linked partner, 350 partner links in all.
 - **Live panels.** Selecting an investor calls Cala's entity and knowledge-search endpoints at runtime and shows the answer with its sources. Cold queries take 20-60 s, so the ranking itself reads an ingest-time cache.
 
@@ -55,7 +56,7 @@ Dealroom, Crunchbase and LinkedIn search are databases you query by filter, and 
 
 ## Real versus mocked
 
-Real: the 193 investors, 2,632 deals, sources, partners, scoring, extraction and the live Cala panels (with a key). Local or mocked: 40 seeded founder profiles and the demo pitch from a fictional founder (Amara, Helixa Bio); seeded debriefs; interest, verification and chat state live in the browser's localStorage; email checks are format checks only and no email is sent; room pages are mock screens. Dates are month-accurate at best, because Cala often returns month-only dates. 19% of deals have no parsed amount. A contradiction badge is a prompt to look at the deals, not a verdict. Pitch audio is not stored. LinkedIn is linked, never scraped.
+Real: the 193 investors, 2,710 deals, sources, partners, scoring, extraction and the live Cala panels (with a key). Local or mocked: 40 seeded founder profiles and the demo pitch from a fictional founder (Amara, Helixa Bio); seeded debriefs; interest, verification and chat state live in the browser's localStorage; email checks are format checks only and no email is sent; room pages are mock screens. Dates are month-accurate at best, because Cala often returns month-only dates. 19% of deals have no parsed amount. A contradiction badge is a prompt to look at the deals, not a verdict. Pitch audio is not stored. LinkedIn is linked, never scraped.
 
 ## Stack
 
@@ -94,7 +95,7 @@ The recorded pitch runs 60.8 s. Segment 0:15-0:40 shows it sped up in the edit, 
 
 Sum: 8 + 7 + 25 + 12 + 13 + 10 + 7 + 23 + 10 = 115 s = 1:55.
 
-Say aloud or caption that chat and email checks are local to the browser (format check only). Do not imply an email was sent. Do not narrate the order of matches #4 to #10 (scores are close). Do not show a cluster or halo count. "193 investors" and "2,632 deals" are from `data/investors.json`.
+Say aloud or caption that chat and email checks are local to the browser (format check only). Do not imply an email was sent. Do not narrate the order of matches #4 to #10 (scores are close). Do not show a cluster or halo count. "193 investors" and "2,710 deals" are from `data/investors.json`.
 
 ### Peer review (3 minutes)
 
@@ -102,7 +103,7 @@ Scored on Innovation, Impact and Implementation. Flow follows the "3-minute live
 
 - **Innovation.** Investor tools show what a fund says. Room ranks investors by what they did: it extracts sector, stage and raise from a spoken pitch every few seconds and re-ranks 193 investors active in London against their dated deals. A contradiction badge shows where a fund's stated thesis disagrees with its deals (London Business Angels: says seed and Series A, 9 of its last 10 deals were pre-seed). The score has no fund-size or brand term.
 - **Impact.** The user is a founder raising pre-seed or seed in London, often first-time, who cold-emails investors who were never a fit. On the investor side the need is fewer wrong-fit first meetings. Room gives the 10 best-fit investors, the evidence behind each and an easiest door in. Do not quote a statistic: the problem-section numbers are placeholders until quotes are collected at Junction. Quote only what is in `data/quotes.json`.
-- **Implementation.** Works end to end on real data: 193 investors and 2,632 deals from Cala, no fixture records. Ranking is a pure function in the browser. Every match traces to Cala entity IDs and rounds, and Cala is required: without it there is no investor universe, evidence or verification. Be upfront about what is local: seeded founders and debriefs, localStorage interest and chat, format-only email checks, mock room pages. Roadmap: accounts and hosted Postgres, real debriefs, scheduled re-ingest.
+- **Implementation.** Works end to end on real data: 193 investors and 2,710 deals from Cala, no fixture records. Ranking is a pure function in the browser. Every match traces to Cala entity IDs and rounds, and Cala is required: without it there is no investor universe, evidence or verification. Be upfront about what is local: seeded founders and debriefs, localStorage interest and chat, format-only email checks, mock room pages. Roadmap: accounts and hosted Postgres, real debriefs, scheduled re-ingest.
 
 ---
 
@@ -131,8 +132,8 @@ Without Cala there is no ranking, no evidence, no contradiction badge and no inv
 | `POST /v1/knowledge/query` | Ingest: discovery of investor names (14 query variants) and one deals query per investor |
 | `POST /v1/knowledge/search` | Ingest: stated thesis, partners and deal citations per investor. Live: `app/api/cala/search/route.ts` |
 | `GET /v1/entities?name=&entity_types=` | Ingest: resolve investor names that discovery did not link to an entity |
-| `POST /v1/entities/{id}` | Ingest: investor edges, partners, website. Live: `app/api/cala/entity/[id]/route.ts` |
-| `GET /v1/entities/{id}/introspection` | `scripts/introspect.ts`, to find which relationships exist on real funds |
+| `POST /v1/entities/{id}` | Ingest: investor edges, partners, website. `scripts/ingest-rounds.ts`: investor round lists, `FundingRound` entities with participants. `scripts/ingest-events.ts`: Event participants. Live: `app/api/cala/entity/[id]/route.ts` |
+| `GET /v1/entities/{id}/introspection` | `scripts/introspect.ts` and the FundingRound probe, to find which relationships exist on real funds |
 
 Full shapes and caveats: `docs/CALA.md`.
 
@@ -140,6 +141,8 @@ Full shapes and caveats: `docs/CALA.md`.
 
 - `INVESTED_IN` (investor to portfolio company, with per-edge sources): the portfolio and the source URLs for deals. Fetched with limit 300 per investor.
 - `PARTICIPATES_IN_CORPORATE_EVENT` (investor to a funding round, with `event_date` and `round_type`): found by `scripts/introspect.ts` and documented in `docs/CALA.md`, but not read at ingest. Reading it costs one retrieve per round, too slow for 193 investors, so the dated round list comes from the dot-notation query below.
+- `PARTICIPATES_IN_FUNDING_ROUND` (investor to `FundingRound`, with `role` and `is_lead`; then the round's incoming participants): the funding-round graph Cala's field guide recommends. One retrieve per round gives the issuer, `round_label`, `transaction_value` and units, the date, every investor with `is_lead`, and sources with `source_rank` (FILING, PRIMARY, PRESS, AGGREGATOR). Measured: 99 investors listed and 129 rounds retrieved gave 120 deals on 48 investors, 42 replacing a knowledge-query deal for the same round and 78 new; lead status is known for 106 of 120 (88%), 46 were led, and 44 cite a Companies House filing as their best source. A round fetched for one investor also yields the deal for every co-investor of ours. Rebuilding all 193 investors this way is about 412 calls; the demo pitch's top 15 cost 36. Method and per-call breakdown: `docs/CALA.md`, "Entity graph: FundingRound".
+- `PARTICIPATES_IN_EVENT` (incoming on any `Event` entity, paged 1000 at a time): `scripts/ingest-events.ts --event <id>` stores matching investors' events. Loaded so far: Slush 2026, 2,989 participants in 3 calls, 2 of our 193 investors (EWOR by entity id, Point Nine by name).
 - `WORKS_AT` (Person to fund, incoming, limit 25): partners. Person entities named in `knowledge/search` results are merged in. This is what the verification check and warm-intro doors read.
 
 ### The per-investor knowledge query
@@ -158,6 +161,8 @@ funding_rounds.investors=<Fund>.date>=2024-05-01.return(company, round_type, dat
 |---|---|
 | Revealed thesis | Per-investor `funding_rounds` rows from the query above (round type, date, amount, sector), weighted by recency. See Method |
 | Evidence chips and edges | The deals that contribute most to a match, each with its sources: `INVESTED_IN` edge sources for the same company plus origins of `knowledge/search` KnowBits that mention it. Deals with no URL source keep `companyCalaId`, so the app can live-retrieve that company's sources |
+| Led rounds | `is_lead` on `FundingRound` participants: a led round weighs 1.5x in the revealed sector and stage vectors, `leadShare` is stored where known (41 investors), and the reason adds "led N <sector> rounds since <year>". Chips show "Led" and the source rank ("Filing", "Company", "Press", "Database") linked to that source |
+| Event chips | Any Cala `Event` entity's incoming `PARTICIPATES_IN_EVENT` (`scripts/ingest-events.ts --event <id>`) |
 | Stated thesis | `knowledge/search` text, mapped by Haiku to sector and stage weights, once at ingest |
 | Contradiction badge | Distance between stated thesis (Cala search text) and revealed vector (Cala deals). The line is built only from counted deals |
 | Investor verification | The name a visitor types must match a partner in `partners[]` of that fund, which is built from Cala `WORKS_AT` and Person entities (`lib/verification.ts`, `verifyInvestor`) |
@@ -171,18 +176,18 @@ Computed with a short Python script over the committed file.
 |---|---|
 | Investors | 193 (148 funds, 17 accelerators, 14 CVCs, 14 angel networks) |
 | Fixture records | 0 |
-| Deals | 2,632 (4 duplicate rounds merged), between 2024-01-10 and 2026-11-12 |
-| Deals with a date | 2,622 (99.6%) |
-| Deals with a parsed USD amount | 2,132 (81.0%) |
-| Deals with a known round type | 2,162 (82.1%) |
-| Deals with at least one URL source | 1,792 (68.1%) |
-| Deals with a Cala company ID | 1,865 (70.9%) |
-| Deals classified sector `other` | 107 (4.1%) |
-| Investors with 3+ dated deals in 24 months | 161 |
-| Investors flagged thin history | 32 |
+| Deals | 2,710 (4 duplicate rounds merged; 120 read from Cala FundingRound entities), between 2024-01-10 and 2026-11-12 |
+| Deals with a date | 2,700 (99.6%) |
+| Deals with a parsed USD amount | 2,209 (81.5%) |
+| Deals with a known round type | 2,243 (82.8%) |
+| Deals with at least one URL source | 1,878 (69.3%) |
+| Deals with a Cala company ID | 1,950 (72.0%) |
+| Deals classified sector `other` | 147 (5.4%) |
+| Investors with 3+ dated deals in 24 months | 163 |
+| Investors flagged thin history | 30 |
 | Investors with at least one partner linked to a Cala Person | 133 (350 partner links in total) |
 | Investors with a contradiction score above 0.4 | 22 |
-| Investors with a contradiction line (the badge) | 12 |
+| Investors with a contradiction line (the badge) | 13 |
 | Stated-thesis sources | 1,139 across the 193 investors; 192 investors have at least one URL |
 
 From the ingest log in `docs/CALA.md` (not recomputed): about 725 successful Cala calls in the ingest, 155 further requests that were 429 retries, 201 candidates reduced to 193 investors.
@@ -234,7 +239,7 @@ score = 100 * (0.40 * sectorFit + 0.30 * stageFit + 0.15 * chequeFit + 0.10 * ac
 - **Real data.** `data/investors.json` is the real Cala ingest: 193 investors, 0 fixture records. `data/investors.fixture.json` is synthetic and only loads if `investors.json` is empty; a "FIXTURE DATA" banner shows whenever any synthetic investor is loaded.
 - **Approximated dates.** Cala often returns month-only or year-only dates. The ingest pins them (month to the 15th, year to 1 July, "Late 2025" to 1 Oct 2025, quarter to mid-quarter). It computes an approximate flag per deal but discards it, so the committed file cannot tell exact dates from pinned ones. Month-only dates for November 2026 had been pinned to the 15th, which put 57 deals after the ingest date. The data was re-finalized: those dates are clamped to the 1st of their month, and 0 deals are now dated after 14 Nov 2026. Treat all dates as month-accurate at best.
 - **Amounts and rounds.** 19.1% of deals have no parsed USD amount and 18.0% have no round type. Amounts in GBP or EUR are converted at fixed rates (x1.27, x1.08).
-- **Contradictions are classifier-dependent.** Stated-thesis weights come from a Haiku classification of Cala search text. A badge is a prompt to look at the deals, not a verdict. Only 12 investors carry one, and each line is built from counted deals.
+- **Contradictions are classifier-dependent.** Stated-thesis weights come from a Haiku classification of Cala search text. A badge is a prompt to look at the deals, not a verdict. Only 13 investors carry one, and each line is built from counted deals.
 - **Mocked or local.**
   - Seeded founders: 40 synthetic profiles in `data/founders.seed.json`, labelled seeded, plus the demo pitch from a fictional founder (Amara, Helixa Bio).
   - Seeded debriefs in `data/debriefs.seed.json`, labelled seeded in reasons.

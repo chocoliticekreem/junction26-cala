@@ -5,7 +5,7 @@ import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } fro
 import type { Investor, Match, Source } from "@/lib/types";
 import CacheBadge from "./CacheBadge";
 import DoorPanel from "./DoorPanel";
-import { EvidenceChip } from "./MatchList";
+import { EventChips, EvidenceChip } from "./MatchList";
 
 export type ProfilePanelProps = {
   investor: Investor;
@@ -118,7 +118,9 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
     <aside className="profile-panel" aria-label={`${investor.name} profile`} data-testid="profile-panel">
       <header className="profile-head">
         <div>
-          <div className="profile-kind font-mono">{KIND_LABEL[investor.kind]}</div>
+          <div className="profile-kind font-mono">
+            {KIND_LABEL[investor.kind]} <EventChips investor={investor} />
+          </div>
           <h2>{investor.name}</h2>
           {investor.description && <p className="muted">{investor.description}</p>}
         </div>

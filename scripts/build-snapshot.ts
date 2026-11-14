@@ -33,6 +33,8 @@ async function readCache() {
     if (ent) {
       const e = value as CalaEntity;
       if (e?.id !== ent[1]) continue;
+      // scripts/ingest-rounds.ts projections carry only a name and graph edges, not a profile.
+      if (/PARTICIPATES_IN_(FUNDING_ROUND|EVENT)/.test(ent[2]) && !/"description"/.test(ent[2])) continue;
       (ent[2] ? projected : plain).set(ent[1], e);
       continue;
     }

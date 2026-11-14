@@ -7,6 +7,9 @@ export const CONTRADICTION_THRESHOLD = 0.4;
 // 12 dated deals in the last 12 months saturates activity at 1.
 export const ACTIVITY_SATURATION = 12;
 export const THIN_HISTORY_MIN_DEALS = 3;
+// A round the investor led says more about its focus than one it joined, so it weighs 1.5x in the
+// sector and stage distributions. Only Cala FundingRound participants carry is_lead.
+export const LEAD_WEIGHT = 1.5;
 
 const DAY_MS = 86_400_000;
 const MONTH_DAYS = 30.4375;
@@ -60,8 +63,14 @@ export function computeRevealed(deals: Deal[], now: Date = new Date()): Revealed
   const G: Partial<Record<Stage, number>> = {};
   const amounts: number[] = [];
   let last12 = 0;
+  let led = 0;
+  let leadKnown = 0;
   for (const { deal, months } of counted) {
-    const w = Math.pow(0.5, months / HALF_LIFE_MONTHS);
+    const w = Math.pow(0.5, months / HALF_LIFE_MONTHS) * (deal.isLead ? LEAD_WEIGHT : 1);
+    if (deal.isLead !== undefined) {
+      leadKnown++;
+      if (deal.isLead) led++;
+    }
     S[deal.sector] = (S[deal.sector] ?? 0) + w;
     if (deal.round !== "unknown") G[deal.round] = (G[deal.round] ?? 0) + w;
     if (typeof deal.amountUsd === "number" && deal.amountUsd > 0) amounts.push(deal.amountUsd);
@@ -71,7 +80,7 @@ export function computeRevealed(deals: Deal[], now: Date = new Date()): Revealed
   const chequeBand: [number, number] = amounts.length
     ? [quantile(amounts, 0.25), quantile(amounts, 0.75)]
     : [0, 0];
-  return {
+  const revealed: Revealed = {
     S: normalize(S),
     G: normalize(G),
     chequeBand,
@@ -79,6 +88,9 @@ export function computeRevealed(deals: Deal[], now: Date = new Date()): Revealed
     activity: Math.min(1, Math.log1p(last12) / Math.log1p(ACTIVITY_SATURATION)),
     dealCount24m: counted.length,
   };
+  // L_i: share of counted deals it led, over the deals whose lead status is known.
+  if (leadKnown > 0) revealed.leadShare = led / leadKnown;
+  return revealed;
 }
 
 function tvd<K extends string>(p: Partial<Record<K, number>>, q: Partial<Record<K, number>>) {

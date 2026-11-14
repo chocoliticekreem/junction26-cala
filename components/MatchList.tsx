@@ -1,7 +1,7 @@
 "use client";
 
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
-import type { Deal, Investor, Match } from "@/lib/types";
+import type { Deal, Investor, Match, SourceRank } from "@/lib/types";
 import { dominantSector } from "@/lib/physics";
 
 export type MatchListProps = {
@@ -19,21 +19,45 @@ function sourceTitle(deal: Deal): string | undefined {
   return s.date ? `${s.name} · ${s.date}` : s.name;
 }
 
+export const SOURCE_RANK_LABEL: Record<SourceRank, string> = {
+  FILING: "Filing",
+  PRIMARY: "Company",
+  PRESS: "Press",
+  AGGREGATOR: "Database",
+};
+
 export function EvidenceChip({ deal }: { deal: Deal }) {
   const round = deal.round === "unknown" ? "round n/a" : STAGE_LABELS[deal.round];
   const year = deal.date ? deal.date.slice(0, 4) : "";
   const text = [deal.company, round, year].filter(Boolean).join(" · ");
-  const url = deal.sources.find((s) => s.url)?.url;
-  const title = sourceTitle(deal);
-  return url ? (
-    <a className="evidence" href={url} target="_blank" rel="noreferrer" title={title}>
+  // A ranked deal's first source is the one carrying its rank, so the tag and the link agree.
+  const url = (deal.sourceRank ? deal.sources[0]?.url : undefined) ?? deal.sources.find((s) => s.url)?.url;
+  const rank = deal.sourceRank ? SOURCE_RANK_LABEL[deal.sourceRank] : undefined;
+  const title = [sourceTitle(deal), rank && `${rank} source`, deal.isLead && "led this round"].filter(Boolean).join(" · ");
+  const body = (
+    <>
       {text}
+      {deal.isLead && <b className="evidence-led">Led</b>}
+      {rank && <span className="evidence-rank">{rank}</span>}
+    </>
+  );
+  return url ? (
+    <a className="evidence" href={url} target="_blank" rel="noreferrer" title={title || undefined}>
+      {body}
     </a>
   ) : (
-    <span className="evidence" title={title}>
-      {text}
+    <span className="evidence" title={title || undefined}>
+      {body}
     </span>
   );
+}
+
+export function EventChips({ investor }: { investor: Investor }) {
+  return (investor.events ?? []).map((e) => (
+    <span key={e.id} className="tag" data-testid="event-chip" title={`Linked to ${e.name} in Cala${e.date ? ` (${e.date})` : ""}`}>
+      {e.name}
+    </span>
+  ));
 }
 
 // The single stated-vs-revealed pair with the widest gap, across stages then sectors.
@@ -116,6 +140,7 @@ export default function MatchList({ matches, investors, selectedId, onSelect, li
                         {SECTOR_SHORT[sector]}
                       </span>
                       {inv.thinHistory && <span className="tag">thin history</span>}
+                      <EventChips investor={inv} />
                       {contradicts && (
                         <span className="tag tag-accent" title={inv.contradictionLine}>
                           contradiction
