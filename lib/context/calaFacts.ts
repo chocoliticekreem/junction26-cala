@@ -14,6 +14,7 @@ import {
   type CalaRawSource,
 } from "@/lib/cala";
 import { pickRoundDate } from "@/lib/rounds";
+import { loadCohortLite } from "@/lib/context/cohortRead";
 import type {
   CalaFacts,
   CompanyCandidate,
@@ -149,10 +150,22 @@ export function scoreCandidate(
 }
 
 // Never auto-picks on name alone when several candidates exist.
-export function pickCandidate(cands: CompanyCandidate[]): string | undefined {
+export function pickCandidate(
+  cands: CompanyCandidate[],
+  opts: { name?: string; fundedIds?: Set<string> } = {},
+): string | undefined {
   const byWebsite = cands.filter((c) => c.confidence === "website");
   if (byWebsite.length) return byWebsite[0].calaId;
   if (cands.length === 1 && cands[0].score >= 0.5) return cands[0].calaId;
+  // Name only: pick the one exact-name candidate whose funding history we hold. Registry shells
+  // with the same name have no rounds, so this separates the startup from them.
+  if (opts.name && opts.fundedIds?.size) {
+    const key = companyKey(opts.name);
+    const funded = cands.filter(
+      (c) => companyKey(c.name) === key && [c.calaId, ...(c.siblingIds ?? [])].some((id) => opts.fundedIds!.has(id)),
+    );
+    if (funded.length === 1) return funded[0].calaId;
+  }
   return undefined;
 }
 
@@ -367,7 +380,8 @@ export async function resolveCompany(
   const top = ranked.slice(0, MAX_RESOLVE_RETRIEVALS);
   const entities = await Promise.all(top.map((m) => soft(cala.retrieve(m.id, PROFILE_PROJECTION))));
   const cands = groupSiblings(top.map((m, i) => candidateFromEntity(input, entities[i], m))).sort((a, b) => b.score - a.score);
-  const autoPick = pickCandidate(cands);
+  const cohort = loadCohortLite();
+  const autoPick = pickCandidate(cands, { name: input.name, fundedIds: cohort ? new Set(Object.keys(cohort.companies)) : undefined });
   return { candidates: cands, ...(autoPick ? { autoPick } : {}) };
 }
 

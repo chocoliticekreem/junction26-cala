@@ -81,6 +81,7 @@ export function parseVisionTool(out: unknown, text: string): Vision | null {
     horizonYears: Math.min(10, Math.max(1, Math.round(num(o.horizonYears) ?? 5))),
   };
   // The model sometimes invents a horizon; only trust one the founder actually stated.
+  const horizonOverridden = !STATES_HORIZON.test(text) && v.horizonYears !== 5;
   if (!STATES_HORIZON.test(text)) v.horizonYears = 5;
   const set = <K extends keyof Vision>(k: K, x: Vision[K] | undefined) => {
     if (x !== undefined) v[k] = x;
@@ -94,9 +95,9 @@ export function parseVisionTool(out: unknown, text: string): Vision | null {
   if (typeof o.sector === "string" && isSector(o.sector) && o.sector !== "other") v.sector = o.sector;
   applyGlossary(v);
   const line = typeof o.interpretation === "string" ? o.interpretation.trim().slice(0, 160) : "";
-  // A glossary override makes the model's own line stale, so the deterministic one is used then.
+  // A glossary or horizon override makes the model's own line stale, so the deterministic one is used then.
   const glossaryChanged = v.targetValuationUsd !== num(o.targetValuationUsd);
-  v.interpretation = line && !glossaryChanged ? line : interpretVision(v);
+  v.interpretation = line && !glossaryChanged && !horizonOverridden ? line : interpretVision(v);
   return v;
 }
 
