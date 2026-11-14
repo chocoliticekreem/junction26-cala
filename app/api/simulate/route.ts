@@ -21,7 +21,7 @@ const RUNS = 5000;
 const SEED = 20261114;
 const MAX_VISION = 1500;
 const MAX_PITCH = 4000;
-const CACHE_VERSION = 5;
+const CACHE_VERSION = 6;
 
 function parseDecision(x: unknown): Decision | undefined {
   if (!x || typeof x !== "object") return undefined;

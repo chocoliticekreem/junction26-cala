@@ -25,17 +25,29 @@
 //      mixed over cap-table members (lead weight 1, others 0.5), then x sectorFit x geoFit again so a
 //      tie does not pull a fund far outside its sectors or region. Candidates are lead-eligible
 //      investors only (quality.ts). geoFit (geo.ts) is 1 when the founder's geography is unknown.
+//      geoFit is stage-dependent (geo.ts stageGeoWeight): the measured share of leads at that stage
+//      based in the company's country / region / elsewhere, so seeds lean local and later rounds less.
+//      Size fit: the round's amount is drawn first (step 6) and each candidate is weighted by how
+//      well it fits the sizes of rounds that candidate led at that stage:
+//        sizeFit(i, x) = mean_k exp(-(ln x - ln a_k)^2 / (2 h^2)),  h = SIZE_BW = 0.5
+//      over its led amounts a_k at the stage (a 3x miss scores 0.09, 5x 0.006), floored at
+//      SIZE_FLOOR; an investor with lead rounds there but no sized one backs off to its kind's led
+//      sizes at the stage x KIND_SIZE_DISCOUNT. A seed fund is then all but out of a $25M Series A.
 //      Re-lead: the current lead's share is then set to the cohort's measured re-lead rate for
-//      that stage transition (about 11-13%), so one fund does not lead seed, A and B by default.
+//      that stage transition (about 11-13%), so one fund does not lead seed, A and B by default,
+//      scaled down when the insider's own led sizes do not fit (x min(1, sizeFit / SIZE_OK)).
 //   5. Co-investors: each current member re-ups with its real re-up rate, then the lead's real
 //      co-investors fill up to a count drawn from the stage's real participant counts (max 3).
-//   6. Amounts: drawn from the stage's real round sizes (5th-95th percentile); Series B+ rounds by
-//      ordinal (a company's 1st, 2nd, 3rd, 4th+ B+ round), since later rounds are much larger.
+//   6. Amounts: with the previous round's size known, previous x a step-up drawn from the cohort's
+//      real step-ups out of that stage (next/previous round size), kept within the next stage's
+//      2nd-98th size percentile; so a $7.6M seed leads to the Series A sizes such seeds really
+//      raised. Without a previous size (or < MIN_STEP_UPS step-ups): the stage's real round sizes
+//      (5th-95th percentile), Series B+ by ordinal (1st, 2nd, 3rd, 4th+ B+ round).
 //   7. Stop at the vision (see vision.ts), a stall, or the horizon.
 import { STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import { wilson } from "./calibration";
 import { SECTOR_SHRINK_K } from "./fit";
-import { investorGeoWeight, parseGeo } from "./geo";
+import { parseGeo, stageGeoWeight } from "./geo";
 import { effectiveStage, sizeTercile, stageNote } from "./stageSize";
 import type {
   Agent,
@@ -66,6 +78,22 @@ const MAX_B_PLUS_ROUNDS = 4;
 const LEAD_BRANCHES = 4;
 const MIN_ORDINAL_AMOUNTS = 5;
 const SECTOR_RATIO_RANGE: [number, number] = [0.5, 1.5];
+export const SIZE_BW = 0.5;
+export const SIZE_FLOOR = 0.005;
+const KIND_SIZE_DISCOUNT = 0.5;
+const SIZE_OK = 0.25;
+const MIN_STEP_UPS = 10;
+// Amounts are bucketed at 5% in log space for the size-fit cache.
+const SIZE_BUCKET = 0.05;
+
+// Gaussian kernel in log space, mean over the observed sizes; 0 when there are none.
+export function logSizeFit(x: number, sizes: number[] | undefined, h = SIZE_BW): number {
+  if (!sizes?.length || !(x > 0)) return 0;
+  const lx = Math.log(x);
+  let s = 0;
+  for (const a of sizes) s += Math.exp(-((lx - Math.log(a)) ** 2) / (2 * h * h));
+  return s / sizes.length;
+}
 
 export type RunOutcome = {
   branch: number;
@@ -156,10 +184,11 @@ export function prepare(start: StartState, vision: Vision, model: SimModel) {
 }
 
 export class Engine {
-  private cdfCache = new Map<string, Cdf>();
   private pg = new Map<string, { cand: Int32Array; pg: Float64Array; fit: Float64Array }>();
   private memberCache = new Map<string, Float64Array>();
   private baseCache = new Map<string, number>();
+  private memberMix = new Map<string, Float64Array>();
+  private sizeCache = new Map<string, Float64Array>();
   constructor(
     readonly model: SimModel,
     readonly prep: Prepared,
@@ -229,8 +258,44 @@ export class Engine {
     return Math.max(0.2, 1 - (ratio - 1) / 2);
   }
 
-  geoFit(a: Agent): number {
-    return investorGeoWeight(a.geo, this.model.geoBase, this.prep.geo);
+  geoFit(a: Agent, stage: Stage): number {
+    const g = this.model.leadGeoShares;
+    return stageGeoWeight(a.geo, this.model.geoBase, this.prep.geo, { stage: g.byStage[stage], overall: g.overall });
+  }
+
+  // How well a round of amountUsd at `stage` fits the sizes this investor led there (header, step 4).
+  sizeFit(a: Agent, stage: Stage, amountUsd: number): number {
+    const own = a.ledAmounts[stage];
+    if (own?.length) return Math.max(SIZE_FLOOR, logSizeFit(amountUsd, own));
+    const kind = logSizeFit(amountUsd, this.model.kindLedAmounts[a.kind]?.[stage]);
+    return Math.max(SIZE_FLOOR, KIND_SIZE_DISCOUNT * kind);
+  }
+
+  private sizeVector(stage: Stage, sector: Sector | null, amountUsd: number): Float64Array {
+    const bucket = Math.round(Math.log(amountUsd) / SIZE_BUCKET);
+    const key = `${stage}|${sector}|${bucket}`;
+    const hit = this.sizeCache.get(key);
+    if (hit) return hit;
+    const { cand } = this.globalPrior(stage, sector);
+    const x = Math.exp(bucket * SIZE_BUCKET);
+    const v = Float64Array.from(cand, (j) => this.sizeFit(this.model.agents[j], stage, x));
+    this.sizeCache.set(key, v);
+    return v;
+  }
+
+  // Median of the step-up amount distribution (or the stage median): the size a decision-tree
+  // branch assumes before any run draws one.
+  typicalAmount(stage: Stage, prevUsd: number | undefined, prevStage: Stage | undefined): number | undefined {
+    const ups = prevStage ? this.model.stepUps[prevStage] : undefined;
+    if (prevUsd && ups && ups.length >= MIN_STEP_UPS) return this.clampToStage(stage, prevUsd * quantile(ups, 0.5)!);
+    const xs = this.model.stageAmounts[stage];
+    return xs?.length ? quantile(xs, 0.5) : undefined;
+  }
+
+  private clampToStage(stage: Stage, x: number): number {
+    const xs = this.model.stageAmounts[stage];
+    if (!xs?.length) return x;
+    return Math.min(quantile(xs, 0.98)!, Math.max(quantile(xs, 0.02)!, x));
   }
 
   // Lead candidates at a stage: lead-eligible investors that led at least one real round there
@@ -250,7 +315,7 @@ export class Engine {
     let tot = 0;
     cand.forEach((j, k) => {
       const { led, part } = stageCounts(ags[j], stage);
-      fit[k] = this.sectorFit(ags[j], sector) * this.geoFit(ags[j]);
+      fit[k] = this.sectorFit(ags[j], sector) * this.geoFit(ags[j], stage);
       pg[k] = (led + 0.25 * part + 0.1) * fit[k] * (roundStageIndex(stage) <= 1 ? this.chequeFit(ags[j]) : 1);
       tot += pg[k];
     });
@@ -286,10 +351,10 @@ export class Engine {
     return v;
   }
 
-  // fromStage: the stage of the round the current lead led; sets the re-lead rate (header, step 4).
-  leadWeights(stage: Stage, sector: Sector | null, members: string[], leadId: string | undefined, kinds?: InvestorKind[], fromStage?: Stage): Cdf {
-    const key = `${stage}|${sector}|${leadId ?? ""}|${members.join(",")}|${kinds?.join(",") ?? ""}|${fromStage ?? ""}`;
-    const hit = this.cdfCache.get(key);
+  // Cap-table mix of member vectors x fit, before size and re-lead (header, step 4).
+  private mixWeights(stage: Stage, sector: Sector | null, members: string[], leadId: string | undefined): Float64Array {
+    const key = `${stage}|${sector}|${leadId ?? ""}|${members.join(",")}`;
+    const hit = this.memberMix.get(key);
     if (hit) return hit;
     const m = this.model;
     const { cand, pg, fit } = this.globalPrior(stage, sector);
@@ -308,12 +373,26 @@ export class Engine {
       }
       for (let k = 0; k < n; k++) w[k] = (w[k] / wsum) * fit[k];
     }
+    this.memberMix.set(key, w);
+    return w;
+  }
+
+  // fromStage: the stage of the round the current lead led; sets the re-lead rate (header, step 4).
+  // amountUsd: the size of the round being led; weights candidates by size fit when known.
+  leadWeights(stage: Stage, sector: Sector | null, members: string[], leadId: string | undefined, kinds?: InvestorKind[], fromStage?: Stage, amountUsd?: number): Cdf {
+    const m = this.model;
+    const { cand } = this.globalPrior(stage, sector);
+    const n = cand.length;
+    const w = Float64Array.from(this.mixWeights(stage, sector, members, leadId));
+    const size = amountUsd && amountUsd > 0 ? this.sizeVector(stage, sector, amountUsd) : undefined;
+    if (size) for (let k = 0; k < n; k++) w[k] *= size[k];
     const self = leadId !== undefined && fromStage ? cand.indexOf(m.agentIndex[leadId] ?? -1) : -1;
     if (self >= 0) {
       let others = 0;
       for (let k = 0; k < n; k++) if (k !== self) others += w[k];
       const r = this.reLeadRate(fromStage!);
-      if (others > 0) w[self] = (r / (1 - r)) * others;
+      const fits = size ? Math.min(1, size[self] / SIZE_OK) : 1;
+      if (others > 0) w[self] = (r / (1 - r)) * others * fits;
     }
     const idx: number[] = [];
     const cum: number[] = [];
@@ -325,9 +404,7 @@ export class Engine {
       idx.push(cand[k]);
       cum.push(acc);
     }
-    const out = { idx: Int32Array.from(idx), cdf: Float64Array.from(cum.map((c) => c / (acc || 1))) };
-    this.cdfCache.set(key, out);
-    return out;
+    return { idx: Int32Array.from(idx), cdf: Float64Array.from(cum.map((c) => c / (acc || 1))) };
   }
 
   sampleFrom(c: Cdf, rnd: () => number): number | undefined {
@@ -373,7 +450,12 @@ export class Engine {
   }
 
   // bPlusOrdinal: how many Series B+ rounds the company has already closed (0 = this is its first).
-  amount(stage: Stage, rnd: () => number, bPlusOrdinal = 0): number | undefined {
+  // prevUsd / prevStage: the company's previous round; when known, the amount is a real step-up.
+  amount(stage: Stage, rnd: () => number, bPlusOrdinal = 0, prevUsd?: number, prevStage?: Stage): number | undefined {
+    const ups = prevStage ? this.model.stepUps[prevStage] : undefined;
+    if (prevUsd && ups && ups.length >= MIN_STEP_UPS) {
+      return Math.round(this.clampToStage(stage, prevUsd * ups[Math.floor(rnd() * ups.length)]) / 1e4) * 1e4;
+    }
     const byOrdinal = stage === "series-b-plus" ? this.model.bPlusAmounts[Math.min(this.model.bPlusAmounts.length - 1, bPlusOrdinal)] : undefined;
     const xs = byOrdinal && byOrdinal.length >= MIN_ORDINAL_AMOUNTS ? byOrdinal : this.model.stageAmounts[stage];
     if (!xs?.length) return undefined;
@@ -425,10 +507,10 @@ export class Engine {
     let firstRound = true;
     if (!p.company) {
       const stage = p.firstStage;
-      const c = this.leadWeights(stage, sector, members, leadId, branch.kindFilter);
+      const amt = this.amount(stage, rnd, p.bPlusSoFar);
+      const c = this.leadWeights(stage, sector, members, leadId, branch.kindFilter, undefined, this.raiseUsd ?? amt);
       const li = branch.forcedLeadIdx ?? this.sampleFrom(c, rnd);
       const co = this.coInvestors(stage, li, members, rnd);
-      const amt = this.amount(stage, rnd, p.bPlusSoFar);
       funded += amt ?? 0;
       roundUsd = this.raiseUsd ?? amt;
       steps.push(this.step(stage, li, co, month, amt));
@@ -459,9 +541,9 @@ export class Engine {
       const next = ROUND_STAGES[nextIdx];
       const kinds = firstRound ? branch.kindFilter : undefined;
       const forced = firstRound ? branch.forcedLeadIdx : undefined;
-      const li = forced ?? this.sampleFrom(this.leadWeights(next, sector, members, leadId, kinds, stageIdx >= 0 ? cur : undefined), rnd);
+      const amt = this.amount(next, rnd, p.bPlusSoFar + bPlusRounds, stageIdx >= 0 ? roundUsd : undefined, stageIdx >= 0 ? cur : undefined);
+      const li = forced ?? this.sampleFrom(this.leadWeights(next, sector, members, leadId, kinds, stageIdx >= 0 ? cur : undefined, amt), rnd);
       const co = this.coInvestors(next, li, members, rnd);
-      const amt = this.amount(next, rnd, p.bPlusSoFar + bPlusRounds);
       funded += amt ?? 0;
       roundUsd = amt;
       steps.push(this.step(next, li, co, month, amt));
@@ -586,7 +668,7 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
     const next = prep.firstStage;
     const seedSector = prep.sectors[0]?.[0] ?? model.cohort.companies[prep.company.id]?.sector ?? null;
     const from = prep.lastStageIdx >= 0 ? ROUND_STAGES[prep.lastStageIdx] : undefined;
-    const c = engine.leadWeights(next, seedSector, prep.members, prep.lastLead, undefined, from);
+    const c = engine.leadWeights(next, seedSector, prep.members, prep.lastLead, undefined, from, engine.typicalAmount(next, prep.lastAmountUsd, from));
     const w = Array.from(c.idx).map((j, i) => ({ j, p: c.cdf[i] - (i ? c.cdf[i - 1] : 0) }));
     w.sort((a, b) => b.p - a.p);
     l1 = w.slice(0, LEAD_BRANCHES).map(({ j }) => {

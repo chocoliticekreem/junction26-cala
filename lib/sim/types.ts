@@ -283,7 +283,13 @@ export type Agent = {
   // Passes the lead quality filter (quality.ts): a resolved Cala entity or >= 2 rounds.
   leadEligible: boolean;
   geo: GeoCounts;
+  // USD sizes of the rounds it led, by effective stage (simulate.ts sizeFit).
+  ledAmounts: Partial<Record<Stage, number[]>>;
 };
+
+// Where the lead of a round at a stage is based, relative to the company: same country, another
+// country in the same region, elsewhere (fit.ts leadGeoShares).
+export type LeadGeoShares = { n: number; country: number; region: number; elsewhere: number };
 
 export type TransitionStats = {
   n: number;
@@ -346,5 +352,11 @@ export type SimModel = {
   bPlusAmounts: number[][];
   stageHeadcounts: Partial<Record<Stage, number[]>>;
   stageCoInvestorCounts: Partial<Record<Stage, number[]>>;
+  // Sizes of rounds led by each investor kind, by stage: backoff for an investor with no sized lead.
+  kindLedAmounts: Partial<Record<InvestorKind, Partial<Record<Stage, number[]>>>>;
+  // Next-round size / this-round size, by the stage of this round (next stage one above it).
+  stepUps: Partial<Record<Stage, number[]>>;
+  // Measured lead geography by the stage of the round led, plus all stages pooled.
+  leadGeoShares: { byStage: Partial<Record<Stage, LeadGeoShares>>; overall: LeadGeoShares };
   cohort: Cohort;
 };
