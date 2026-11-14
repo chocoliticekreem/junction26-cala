@@ -15,11 +15,13 @@ export type NextMovesProps = {
   leadIds: string[];
   // Store id of the built company file; the action and watch routes read it. Undefined until built.
   docId?: string;
+  // The vision in a word ("Unicorn"), so the long-shot odds say what they are odds of.
+  goal?: string;
 };
 
 const sameDecision = (a?: Decision | null, b?: Decision | null) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: DecisionNode; selected?: Decision; onSelect: (d?: Decision) => void; onCaseStudy?: (node: DecisionNode) => void; depth: number }) {
+function Branch({ node, selected, onSelect, onCaseStudy, depth, goal = "vision", best }: { node: DecisionNode; selected?: Decision; onSelect: (d?: Decision) => void; onCaseStudy?: (node: DecisionNode) => void; depth: number; goal?: string; best?: boolean }) {
   const isSel = !!node.decision && sameDecision(node.decision, selected);
   const [open, setOpen] = useState(false);
   // Older cached results have no nextRound: they fall back to the vision share.
@@ -43,12 +45,15 @@ function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: Decisi
           {odds(headline, node.runs)}
         </b>
         <span className="path-branch-main">
-          <span className="path-branch-label">{node.label}</span>
+          <span className="path-branch-label">
+            {node.label}
+            {best && <span className="path-best" data-testid="best-goal">best {goal.toLowerCase()} odds</span>}
+          </span>
           <span className="path-branch-meta font-mono">
             {node.nextRound && <span>raises {STAGE_LABELS[node.nextRound.stage]}</span>}
             {node.nextRound && (
               <span title={`Runs that reach the vision; typical company at this stage: ${node.typical ? odds(node.typical.reachVisionShare, node.runs) : "n/a"}`}>
-                vision {odds(node.reachVisionShare, node.runs)}
+                {goal.toLowerCase()} {odds(node.reachVisionShare, node.runs)}
                 {rel ? ` · ${rel}` : ""}
               </span>
             )}
@@ -95,7 +100,7 @@ function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: Decisi
           {node.children.length > 0 && (
             <ul className="path-branches path-branches-sub">
               {node.children.map((c) => (
-                <Branch key={c.label} node={c} selected={selected} onSelect={onSelect} onCaseStudy={onCaseStudy} depth={depth + 1} />
+                <Branch key={c.label} node={c} selected={selected} onSelect={onSelect} onCaseStudy={onCaseStudy} depth={depth + 1} goal={goal} />
               ))}
             </ul>
           )}
@@ -212,9 +217,12 @@ function Action({ card }: { card: InvestorAction }) {
 
 type Leads = { key: string; actions: InvestorAction[]; unknown: string[]; error?: string };
 
-export default function NextMoves({ tree, selected, onSelect, onCaseStudy, leadIds, docId }: NextMovesProps) {
+export default function NextMoves({ tree, selected, onSelect, onCaseStudy, leadIds, docId, goal }: NextMovesProps) {
   const [leads, setLeads] = useState<Leads | undefined>();
   const branches = [...tree.children].sort((a, b) => (b.nextRound?.share ?? 0) - (a.nextRound?.share ?? 0) || b.reachVisionShare - a.reachVisionShare);
+  // The move with the best long-shot odds gets a tag, unless it is tied or already listed first.
+  const topGoal = Math.max(0, ...branches.map((b) => b.reachVisionShare));
+  const bestGoal = branches.filter((b) => b.reachVisionShare === topGoal).length === 1 && topGoal > 0 ? branches.find((b) => b.reachVisionShare === topGoal) : undefined;
   const leadKey = leadIds.join("|");
   const key = `${docId ?? ""}#${leadKey}`;
 
@@ -246,7 +254,7 @@ export default function NextMoves({ tree, selected, onSelect, onCaseStudy, leadI
       </header>
       <ul className="path-branches" data-testid="tree">
         {branches.map((b) => (
-          <Branch key={b.label} node={b} selected={selected} onSelect={onSelect} onCaseStudy={onCaseStudy} depth={1} />
+          <Branch key={b.label} node={b} selected={selected} onSelect={onSelect} onCaseStudy={onCaseStudy} depth={1} goal={goal} best={b === bestGoal && b !== branches[0]} />
         ))}
       </ul>
       {leadsSection && (
