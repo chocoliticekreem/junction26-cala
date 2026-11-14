@@ -13,6 +13,23 @@ const EXPIRY_MS = EXPIRY_DAYS * 86_400_000;
 
 export type Result = { ok: true; store: InterestStore } | { ok: false; error: string };
 
+const ERROR_COPY: Record<string, string> = {
+  already_interested: "You already sent this founder a request",
+  declined: "They said not now",
+  cap_reached: `You have ${INVESTOR_OPEN_CAP} open requests; wait for answers before sending more`,
+  not_found: "That request no longer exists",
+  expired: "This request expired",
+  chat_locked: "Chat opens once both sides are verified",
+  empty_message: "Write a message first",
+  open_request_exists: "You already have an open seat request",
+  already_decided: "The host has already answered this seat request",
+};
+
+// Result error codes stay machine-readable; this is what a person sees.
+export function errorMessage(code: string): string {
+  return ERROR_COPY[code] ?? "That did not work; try again";
+}
+
 const ok = (store: InterestStore): Result => ({ ok: true, store });
 const fail = (error: string): Result => ({ ok: false, error });
 

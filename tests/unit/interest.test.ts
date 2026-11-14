@@ -4,6 +4,7 @@ import {
   EXPIRY_DAYS,
   INVESTOR_OPEN_CAP,
   acceptInterest,
+  errorMessage,
   declineInterest,
   decideSeat,
   emptyStore,
@@ -156,5 +157,14 @@ describe("seat requests", () => {
     w = store(decideSeat(w, "room1", "f1", "waitlisted", T0));
     expect(store(decideSeat(w, "room1", "f1", "seated", T0)).seats[0].state).toBe("seated");
     expect(err(decideSeat(emptyStore(), "room1", "f1", "seated", T0))).toBe("not_found");
+  });
+});
+
+describe("errorMessage", () => {
+  it("turns result codes into human copy", () => {
+    expect(errorMessage("cap_reached")).toBe(`You have ${INVESTOR_OPEN_CAP} open requests; wait for answers before sending more`);
+    expect(errorMessage("declined")).toBe("They said not now");
+    expect(errorMessage("open_request_exists")).toBe("You already have an open seat request");
+    expect(errorMessage("cannot_accept_from_declined")).not.toMatch(/_/);
   });
 });

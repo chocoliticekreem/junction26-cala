@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fallbackExtract } from "@/lib/fallbackExtract";
+import { addFallback, addLlm, buildProfile, closeChunk, emptyLog, type LiveLog } from "@/lib/liveProfile";
 import { emptyProfile, mergeProfile } from "@/lib/mergeProfile";
 import { createReplay, type ReplayPlayer } from "@/lib/replay";
 import { pickProvider, type SttSession } from "@/lib/stt";
@@ -41,6 +42,8 @@ function isEmpty(e: Extraction): boolean {
   );
 }
 
+type QueuedChunk = { epoch: number; text: string; ids: number[] };
+
 export function usePitch(replayEvents: ReplayEvent[]) {
   const [transcript, setTranscript] = useState<TranscriptToken[]>([]);
   const [interim, setInterim] = useState("");
@@ -53,20 +56,28 @@ export function usePitch(replayEvents: ReplayEvent[]) {
   const player = useRef<ReplayPlayer | null>(null);
   const session = useRef<SttSession | null>(null);
   const profileRef = useRef(profile);
+  const log = useRef<LiveLog>(emptyLog());
   const pending = useRef("");
-  const inFlight = useRef(false);
-  const queued = useRef<string | null>(null);
+  const inFlightEpoch = useRef<number | null>(null);
+  const queued = useRef<QueuedChunk | null>(null);
   const lastSent = useRef(0);
   const epoch = useRef(0);
 
-  const apply = useCallback((e: Extraction) => {
-    if (isEmpty(e)) return;
-    const next = mergeProfile(profileRef.current, e);
+  const commit = useCallback((nextLog: LiveLog, e: Extraction) => {
+    log.current = nextLog;
+    const next = buildProfile(nextLog);
     profileRef.current = next;
     setProfile(next);
     const tr = chipTriggers(e);
     if (Object.keys(tr).length) setTriggers((prev) => ({ ...prev, ...tr }));
   }, []);
+
+  const apply = useCallback(
+    (e: Extraction) => {
+      if (!isEmpty(e)) commit(addFallback(log.current, e), e);
+    },
+    [commit],
+  );
 
   const reset = useCallback(() => {
     epoch.current += 1;
@@ -76,6 +87,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     session.current = null;
     pending.current = "";
     queued.current = null;
+    log.current = emptyLog();
     const p = emptyProfile();
     profileRef.current = p;
     setProfile(p);
@@ -87,38 +99,60 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     setExtractSource(null);
   }, []);
 
-  // One LLM request in flight; a newer chunk replaces any queued one (spec 5.6).
+  // One LLM request in flight per session. The queued request holds all text sent since the
+  // in-flight one, not just the newest chunk, so the LLM never misses words (spec 5.6 deviation).
   const sendChunk = useCallback(
-    async (first: string) => {
-      if (inFlight.current) {
-        queued.current = queued.current ? `${queued.current} ${first}` : first;
+    async (text: string, id: number) => {
+      const myEpoch = epoch.current;
+      if (inFlightEpoch.current === myEpoch) {
+        const q = queued.current?.epoch === myEpoch ? queued.current : null;
+        queued.current = q
+          ? { epoch: myEpoch, text: `${q.text} ${text}`, ids: [...q.ids, id] }
+          : { epoch: myEpoch, text, ids: [id] };
         return;
       }
-      inFlight.current = true;
-      const myEpoch = epoch.current;
-      let chunk: string | null = first;
-      while (chunk && myEpoch === epoch.current) {
+      inFlightEpoch.current = myEpoch;
+      let job: QueuedChunk | null = { epoch: myEpoch, text, ids: [id] };
+      while (job) {
         try {
           const res = await fetch("/api/extract", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ chunk, profile: profileRef.current }),
+            body: JSON.stringify({ chunk: job.text, profile: profileRef.current }),
           });
           if (res.ok && myEpoch === epoch.current) {
             const body = (await res.json()) as { extraction?: Extraction; source?: "llm" | "fallback" };
-            if (body.source === "llm" && body.extraction) apply(body.extraction);
-            if (body.source) setExtractSource(body.source);
+            if (myEpoch === epoch.current) {
+              if (body.source === "llm" && body.extraction)
+                commit(addLlm(log.current, job.ids, body.extraction), body.extraction);
+              if (body.source) setExtractSource(body.source);
+            }
           }
         } catch {
           // Network loss: the keyword fallback has already moved the graph.
         }
-        chunk = queued.current;
-        queued.current = null;
+        // A reset during the request starts a new epoch; its queued work belongs to the new loop.
+        const next: QueuedChunk | null = queued.current;
+        if (myEpoch === epoch.current && next && next.epoch === myEpoch) {
+          queued.current = null;
+          job = next;
+        } else {
+          job = null;
+        }
       }
-      inFlight.current = false;
+      if (inFlightEpoch.current === myEpoch) inFlightEpoch.current = null;
     },
-    [apply],
+    [commit],
   );
+
+  const flush = useCallback(() => {
+    const text = pending.current;
+    pending.current = "";
+    lastSent.current = Date.now();
+    const closed = closeChunk(log.current);
+    log.current = closed.log;
+    void sendChunk(text, closed.id);
+  }, [sendChunk]);
 
   const onFinal = useCallback(
     (text: string) => {
@@ -127,29 +161,19 @@ export function usePitch(replayEvents: ReplayEvent[]) {
       apply(fallbackExtract(text));
       pending.current = pending.current ? `${pending.current} ${text}` : text;
       const sentenceEnd = /[.!?]\s*$/.test(text);
-      if (sentenceEnd || Date.now() - lastSent.current > CHUNK_MS) {
-        const chunk = pending.current;
-        pending.current = "";
-        lastSent.current = Date.now();
-        void sendChunk(chunk);
-      }
+      if (sentenceEnd || Date.now() - lastSent.current > CHUNK_MS) flush();
     },
-    [apply, sendChunk],
+    [apply, flush],
   );
 
   // Flush a half-sentence chunk if the speaker pauses without a full stop.
   useEffect(() => {
     if (!micOn) return;
     const id = window.setInterval(() => {
-      if (pending.current && Date.now() - lastSent.current > CHUNK_MS) {
-        const chunk = pending.current;
-        pending.current = "";
-        lastSent.current = Date.now();
-        void sendChunk(chunk);
-      }
+      if (pending.current && Date.now() - lastSent.current > CHUNK_MS) flush();
     }, 1000);
     return () => window.clearInterval(id);
-  }, [micOn, sendChunk]);
+  }, [micOn, flush]);
 
   const replay = useCallback(() => {
     reset();

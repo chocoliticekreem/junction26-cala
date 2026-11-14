@@ -11,6 +11,7 @@ export {
   declineInterest,
   recheckVerification,
   expireStale,
+  errorMessage,
   openInterestCount,
   sendMessage,
   requestSeat,
@@ -24,16 +25,23 @@ export { rankFounders, type FounderMatch } from "@/lib/scoring";
 export { suggestRooms, buildRoom, type RoomSuggestion } from "@/lib/roomBuilder";
 export { loadInvestors, loadFounders, loadDebriefs, usingFixtures } from "@/lib/data";
 
-const seedLineup = buildRoom("biotech/therapeutics", loadFounders(), loadInvestors(), loadDebriefs());
+let seedRoom: Room | undefined;
 
-export const SEED_ROOM: Room = {
-  id: "room-seed-1",
-  title: "Biotech pre-seed room",
-  sector: "biotech/therapeutics",
-  date: "2026-12-03",
-  venue: "Venue TBC, London",
-  founderIds: seedLineup.founderIds,
-  investorIds: seedLineup.investorIds,
-  hostInvestorId: seedLineup.investorIds[0],
-  seeded: true,
-};
+// Built on first use: the lineup scores the whole founder pool against every investor, which is
+// too much work to do at import time on every page.
+export function getSeedRoom(): Room {
+  if (seedRoom) return seedRoom;
+  const lineup = buildRoom("biotech/therapeutics", loadFounders(), loadInvestors(), loadDebriefs());
+  seedRoom = {
+    id: "room-seed-1",
+    title: "Biotech pre-seed room",
+    sector: "biotech/therapeutics",
+    date: "2026-12-03",
+    venue: "Venue TBC, London",
+    founderIds: lineup.founderIds,
+    investorIds: lineup.investorIds,
+    hostInvestorId: lineup.investorIds[0],
+    seeded: true,
+  };
+  return seedRoom;
+}

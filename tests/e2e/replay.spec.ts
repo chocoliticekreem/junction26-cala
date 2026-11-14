@@ -4,8 +4,10 @@ import { expect, test } from "@playwright/test";
 // within the replay window. Runs offline: replay never calls the network.
 test("replay moves a biotech investor into the top 3", async ({ page }) => {
   await page.goto("/");
+  // Pressed straight after load, before hydration may have finished: the early key script
+  // in app/layout.tsx must hand it to the page instead of dropping it.
+  await page.keyboard.press("r");
   await expect(page.getByTestId("match-row")).toHaveCount(10);
-  await page.locator("body").press("r");
 
   await expect(page.locator('[data-chip^="sector"]').filter({ hasText: "Biotech" }).first()).toBeVisible({
     timeout: 15_000,
