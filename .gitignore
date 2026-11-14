@@ -25,3 +25,4 @@ next-env.d.ts
 .claude/worktrees/
 data/context-cache/
 data/.context-store/
+data/verify-cache/

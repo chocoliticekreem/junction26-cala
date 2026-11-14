@@ -4,6 +4,7 @@ import { docToMarkdown } from "@/lib/context/doc";
 import { MAX_UPLOAD_CHARS } from "@/lib/context/founderClaims";
 import type { Upload } from "@/lib/context/types";
 import type { FounderProfile } from "@/lib/types";
+import { contextTrust } from "@/lib/verify/load";
 
 const MAX_UPLOADS = 5;
 const TEXT_FILE = /\.(md|markdown|txt)$/i;
@@ -77,7 +78,8 @@ export async function POST(req: Request) {
   }
   try {
     const { doc, markdown, stored, notes } = await buildContext(input);
-    return Response.json({ doc, markdown, stored, notes });
+    const { trust, unconfirmed } = contextTrust(doc);
+    return Response.json({ doc, markdown, stored, notes, verification: { trust, unconfirmed } });
   } catch (e) {
     console.warn("context build:", e instanceof Error ? e.message : e);
     const doc = mockDoc(input);

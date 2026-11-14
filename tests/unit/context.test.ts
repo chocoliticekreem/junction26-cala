@@ -74,9 +74,9 @@ describe("doc assembly from recorded Cala fixtures", () => {
     expect(issuerRoundIds(sibling)).toEqual([round.id]);
   });
 
-  it("parses the round: label, stage, date, amount, lead", () => {
+  it("parses the round: label, stage, date (announcement over the 2025-01-01 event_date year pin), amount, lead", () => {
     const r = roundFromEntity(round);
-    expect(r).toMatchObject({ label: "Pre-Seed", stage: "pre-seed", date: "2025-01-01", amountText: "EUR 7,000,000", amountUsd: 7_560_000 });
+    expect(r).toMatchObject({ label: "Pre-Seed", stage: "pre-seed", date: "2026-05-11", amountText: "EUR 7,000,000", amountUsd: 7_560_000 });
     expect(r.leads).toEqual(["Lightspeed Venture Partners"]);
     expect(r.investors).not.toContain("Cala AI");
     expect(r.sources[0].url).toMatch(/^https:/);
