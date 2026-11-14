@@ -60,8 +60,15 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   expect(await branches.count()).toBeGreaterThanOrEqual(2);
   await expect(page.getByTestId("brief")).toContainText("Cala");
   await expect(page.getByTestId("interview")).toHaveCount(0);
+  await expect(page.getByTestId("headline")).toContainText("simulated futures");
+  // Precedents and the company file sit behind toggles so the column stays short.
+  await expect(page.getByTestId("precedent")).toHaveCount(0);
+  await page.getByTestId("toggle-precedents").click();
   await expect(page.getByTestId("precedent").first()).toBeVisible();
+  await expect(page.getByTestId("company-file")).toHaveCount(0);
+  await page.getByTestId("toggle-file").click();
   await expect(page.getByTestId("company-file")).toBeVisible();
+  await page.getByTestId("toggle-file").click();
 
   // Every explanation lives behind the one (i); the cache counter is gone from the founder UI.
   await expect(page.getByTestId("honesty")).toHaveCount(0);
@@ -73,10 +80,20 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await page.waitForTimeout(1500);
   expect(await mapHasContent(page)).toBe(true);
 
-  // Selecting a reality highlights it and re-routes the map.
+  // Selecting a reality highlights it and re-routes the map; clicking empty map space clears it.
   await realities.nth(1).click();
   await expect(realities.nth(1)).toHaveAttribute("aria-pressed", "true");
-  await realities.nth(1).click();
+  await page.mouse.click(1500, 850);
+  await expect(realities.nth(1)).toHaveAttribute("aria-pressed", "false");
+
+  // A precedent's case study opens over the map with its real rounds and closes on Escape.
+  await page.getByTestId("case-study").first().click();
+  await expect(page.getByTestId("case-study-panel")).toBeVisible();
+  await expect(page.getByTestId("case-study-panel")).toContainText("real rounds");
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("case-study-panel")).toHaveCount(0);
+  await expect(realities.first()).toHaveAttribute("aria-pressed", "true");
+  await realities.first().click();
 
   // Flipping a branch re-simulates with that decision and selects it.
   const first = branches.first();

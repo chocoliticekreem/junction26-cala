@@ -107,7 +107,7 @@ export default function CompanyFile({ doc, markdown, verification, onAddContext 
   return (
     <section className="path-file" aria-label="Your company file" data-testid="company-file">
       <header className="path-section-head">
-        <span>Your company file</span>
+        <span className="muted">Sources: Cala · website · you</span>
         <span className="path-file-tools">
           <button type="button" className="path-link" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
             {open ? "Less" : "More"}
