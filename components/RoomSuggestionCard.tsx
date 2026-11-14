@@ -20,7 +20,7 @@ export function RoomSuggestionCard({ suggestion, onOpen }: RoomSuggestionCardPro
         @media (prefers-reduced-motion: reduce) { .room-pulse { animation: none; } }
       `}</style>
       <div className="flex items-center gap-4">
-        <div className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10" style={{ background: `${SECTOR_COLOR[suggestion.sector]}22` }}>
+        <div className="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-white/10" style={{ background: `color-mix(in srgb, ${SECTOR_COLOR[suggestion.sector]} 13%, transparent)` }}>
           <span className="size-3 rounded-full" style={{ background: SECTOR_COLOR[suggestion.sector] }} />
           <span className="absolute -top-1 -right-1 rounded-full bg-[#FF6A3D] px-1.5 font-mono text-[10px] font-semibold leading-4 text-[#0B0E17]">
             {suggestion.count}

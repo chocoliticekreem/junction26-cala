@@ -5,9 +5,13 @@ import Link from "next/link";
 import { InboxBadge, InterestInbox } from "@/components/InterestInbox";
 import { useLiveProfile, writeLiveProfile, LIVE_FOUNDER_ID } from "@/lib/interestStore";
 import { Button, Chip } from "@/components/ui";
+import FixtureBanner from "@/components/FixtureBanner";
+import { usingFixtures } from "@/lib/data";
 
 // Founder-side harness for the two-window demo and the e2e smoke test. Track D's page.tsx
 // mounts InboxBadge + InterestInbox in the real top bar; this page only hosts them.
+
+const FIXTURES = usingFixtures();
 
 const DEMO_LIVE = {
   id: LIVE_FOUNDER_ID,
@@ -46,6 +50,7 @@ export default function InboxTestPage() {
             <InboxBadge onClick={() => setOpen(true)} />
           </div>
         </div>
+        <FixtureBanner show={FIXTURES} />
       </header>
       <div className="mx-auto max-w-3xl px-6 py-6">
         <InterestInbox />

@@ -5,12 +5,16 @@ import Link from "next/link";
 import type { FounderProfile } from "@/lib/types";
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS } from "@/lib/taxonomy";
 import { loadDebriefs, loadFounders, loadInvestors, rankFounders } from "@/lib/engine";
+import { usingFixtures } from "@/lib/data";
 import { useInterestStore, useLiveProfile, useRooms } from "@/lib/interestStore";
 import { SeatRequest } from "@/components/SeatRequest";
 import { DebriefPanel } from "@/components/DebriefPanel";
+import FixtureBanner from "@/components/FixtureBanner";
 import { Avatar, Button, Chip, Label, Panel, formatDate } from "@/components/ui";
 
 type Role = "founder" | "host";
+
+const FIXTURES = usingFixtures();
 
 export function RoomView({ id }: { id: string }) {
   const { rooms } = useRooms();
@@ -75,6 +79,7 @@ export function RoomView({ id }: { id: string }) {
             ))}
           </div>
         </div>
+        <FixtureBanner show={FIXTURES} />
       </header>
 
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-6">

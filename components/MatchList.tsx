@@ -25,7 +25,7 @@ export function EvidenceChip({ deal }: { deal: Deal }) {
   const url = deal.sources.find((s) => s.url)?.url;
   const title = sourceTitle(deal);
   return url ? (
-    <a className="evidence" href={url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} title={title}>
+    <a className="evidence" href={url} target="_blank" rel="noreferrer" title={title}>
       {text}
     </a>
   ) : (
@@ -88,43 +88,42 @@ export default function MatchList({ matches, investors, selectedId, onSelect, li
           const contradicts = inv.contradiction > 0.4;
           return (
             <li key={m.investorId} data-testid="match-row" data-sector={sector} data-investor-id={m.investorId}>
-              <button
-                type="button"
-                className={`match ${selected ? "is-selected" : ""}`}
-                onClick={() => onSelect(selected ? undefined : m.investorId)}
-                aria-pressed={selected}
-              >
-                <span className="match-rank font-mono">{String(i + 1).padStart(2, "0")}</span>
-                <span className="match-main">
-                  <span className="match-title">
-                    <i className="dot" style={{ background: SECTOR_COLOR[sector] }} aria-hidden />
-                    <span className="match-name">{inv.name}</span>
-                    <span className="sr-only">, {SECTOR_SHORT[sector]}</span>
-                    {inv.thinHistory && <span className="tag">thin history</span>}
-                    {contradicts && (
-                      <span className="tag tag-accent" title={inv.contradictionLine}>
-                        contradiction
+              <div className={`match ${selected ? "is-selected" : ""}`}>
+                <button type="button" className="match-select" onClick={() => onSelect(selected ? undefined : m.investorId)} aria-pressed={selected}>
+                  <span className="match-rank font-mono">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="match-main">
+                    <span className="match-title">
+                      <i className="dot" style={{ background: SECTOR_COLOR[sector] }} aria-hidden />
+                      <span className="match-name">{inv.name}</span>
+                      <span className="match-sector" style={{ color: SECTOR_COLOR[sector] }}>
+                        {SECTOR_SHORT[sector]}
+                      </span>
+                      {inv.thinHistory && <span className="tag">thin history</span>}
+                      {contradicts && (
+                        <span className="tag tag-accent" title={inv.contradictionLine}>
+                          contradiction
+                        </span>
+                      )}
+                    </span>
+                    <span className="match-reason">{m.reason}</span>
+                    {contradicts && inv.contradictionLine && (
+                      <span className="match-contra">
+                        {inv.contradictionLine}
+                        <MiniBars inv={inv} />
                       </span>
                     )}
                   </span>
-                  <span className="match-reason">{m.reason}</span>
-                  {contradicts && inv.contradictionLine && (
-                    <span className="match-contra">
-                      {inv.contradictionLine}
-                      <MiniBars inv={inv} />
-                    </span>
-                  )}
-                  <span className="match-evidence">
-                    {m.evidence.slice(0, 3).map((d, k) => (
-                      <EvidenceChip key={`${d.company}-${k}`} deal={d} />
-                    ))}
+                  <span className="match-score font-mono">
+                    {Math.round(m.score)}
+                    <small>/100</small>
                   </span>
+                </button>
+                <span className="match-evidence">
+                  {m.evidence.slice(0, 3).map((d, k) => (
+                    <EvidenceChip key={`${d.company}-${k}`} deal={d} />
+                  ))}
                 </span>
-                <span className="match-score font-mono">
-                  {Math.round(m.score)}
-                  <small>/100</small>
-                </span>
-              </button>
+              </div>
             </li>
           );
         })}
