@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { aiUnavailableReason, analyzeFounder, type FounderResult } from "@/lib/ai/analyzeFounder";
 import { analyzeVision, type VisionResult } from "@/lib/ai/analyzeVision";
 import { cleanTags, type Analysis } from "@/lib/ai/strict";
-import { findCompanyByName, loadCohort, loadCohortModel, usingCohortFixture } from "@/lib/cohort";
+import { NoCohortError, findCompanyByName, loadCohort, loadCohortModel, usingCohortFixture } from "@/lib/cohort";
 import { narrate } from "@/lib/sim/llm";
 import { simulate } from "@/lib/sim/simulate";
 import type { Decision, StartState, Vision } from "@/lib/sim/types";
@@ -21,7 +21,7 @@ const RUNS = 5000;
 const SEED = 20261114;
 const MAX_VISION = 1500;
 const MAX_PITCH = 4000;
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 
 function parseDecision(x: unknown): Decision | undefined {
   if (!x || typeof x !== "object") return undefined;
@@ -61,7 +61,13 @@ export async function POST(req: Request) {
   const decision = parseDecision(body.decision);
   const companyName = typeof body.companyName === "string" ? body.companyName.slice(0, 200) : "";
 
-  const cohort = loadCohort();
+  let cohort;
+  try {
+    cohort = loadCohort();
+  } catch (e) {
+    if (e instanceof NoCohortError) return Response.json({ error: "no_cohort" }, { status: 503 });
+    throw e;
+  }
   const fixture = usingCohortFixture();
   const company = companyName ? findCompanyByName(cohort, companyName) : undefined;
   const useLlm = !aiUnavailableReason();

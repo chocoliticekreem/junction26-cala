@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import FixtureBanner from "./FixtureBanner";
 import RoleSwitcher from "./RoleSwitcher";
@@ -16,6 +18,7 @@ export type TopBarProps = {
 };
 
 export default function TopBar({ inbox, subtitle, tools, onReplay, replaying, micState = "idle", onMic, showFixtureBanner }: TopBarProps) {
+  const pathname = usePathname();
   return (
     <header className="topbar">
       <div className="topbar-row">
@@ -25,6 +28,9 @@ export default function TopBar({ inbox, subtitle, tools, onReplay, replaying, mi
           {subtitle && <span className="brand-sub">{subtitle}</span>}
         </div>
         <RoleSwitcher />
+        <Link href="/path" className={`path-nav ${pathname?.startsWith("/path") ? "is-active" : ""}`} data-testid="nav-path">
+          Path
+        </Link>
         <div className="topbar-actions">
           {inbox}
           {tools}
