@@ -98,7 +98,7 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(realities.first()).toHaveAttribute("aria-pressed", "true");
   await realities.first().click();
 
-  // Flipping a branch re-simulates with that decision and selects it.
+  // Choosing a branch selects it and highlights its paths without re-simulating.
   const first = branches.first();
   await first.locator("button").first().click();
   await expect(first).toHaveClass(/is-selected/, { timeout: 15_000 });
