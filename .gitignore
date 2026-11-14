@@ -13,3 +13,11 @@ playwright-report/
 env.local
 .env*
 !.env.example
+/coverage
+*.tsbuildinfo
+.vercel
+data/.ingest-checkpoint.json
+data/raw/
+data/cala-cache/
+tests/screenshots/
+next-env.d.ts
