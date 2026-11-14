@@ -23,3 +23,14 @@ describe("pickCandidate by name", () => {
     expect(pickCandidate(twin, { name: "Cala", fundedIds: new Set(["a", "d"]) })).toBeUndefined();
   });
 });
+
+describe("pickCandidate with mutual siblings", () => {
+  it("prefers the entity we hold directly when brand and legal entities point at each other", () => {
+    const cands = [
+      cand("a", "Cala", { siblingIds: ["b"] }),
+      cand("b", "Cala AI", { siblingIds: ["a"] }),
+      cand("c", "CALA CALA LIMITED"),
+    ];
+    expect(pickCandidate(cands, { name: "Cala", fundedIds: new Set(["a"]) })).toBe("a");
+  });
+});
