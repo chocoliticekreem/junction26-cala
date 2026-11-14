@@ -25,9 +25,21 @@ export type ExtractionField =
   | "traction"
   | "team_signals"
   | "geography"
-  | "business_model";
+  | "business_model"
+  | "company"
+  | "one_liner"
+  | "founder_name";
 
-const OPTIONAL_FIELDS = ["stage", "raise_amount", "traction", "geography", "business_model"] as const;
+const OPTIONAL_FIELDS = [
+  "stage",
+  "raise_amount",
+  "traction",
+  "geography",
+  "business_model",
+  "company",
+  "one_liner",
+  "founder_name",
+] as const;
 
 export function reportedFields(e: Extraction): ExtractionField[] {
   const out: ExtractionField[] = [];

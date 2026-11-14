@@ -54,6 +54,22 @@ describe("scoreInvestor", () => {
     expect(m.score).toBeLessThanOrEqual(100);
   });
 
+  it("ignores founder name, company and one-liner (spec 9.4: only pitch content is scored)", () => {
+    const named = {
+      ...bioFounder,
+      name: "Amara",
+      company: "Helixa Bio",
+      oneLiner: "Therapeutics for autoimmune disease",
+      confidence: { ...bioFounder.confidence, name: 0.9, company: 0.9, oneLiner: 0.85 },
+    };
+    const renamed = { ...named, name: "Zoë", company: "Stanford Ventures Labs", oneLiner: "x" };
+    const investors = [fintechA, bioPreSeed];
+    const plain = rankInvestors(bioFounder, investors);
+    expect(rankInvestors(named, investors)).toEqual(plain);
+    expect(rankInvestors(renamed, investors)).toEqual(plain);
+    expect(rankFounders(bioPreSeed, [named], [], NOW)[0]).toEqual(rankFounders(bioPreSeed, [bioFounder], [], NOW)[0]);
+  });
+
   it("gives unknown founder fields a neutral 0.5", () => {
     const m = scoreInvestor(founder(), fintechA, undefined, NOW);
     expect(m.breakdown.sectorFit).toBe(0.5);

@@ -11,7 +11,8 @@ Sectors (use these labels only, else "other"): ${SECTORS.join("; ")}.
 Stages: ${STAGES.join(", ")}.
 Transcripts contain misspellings ("crisper"=CRISPR, "fin tech"=fintech, "sass"=SaaS): read for meaning.
 Only report what the newest chunk says or clearly implies; the running profile is context, do not repeat it.
-Raise amounts in USD (GBP x1.27, EUR x1.08). Be terse.`;
+Raise amounts in USD (GBP x1.27, EUR x1.08). Be terse.
+Fill company, one_liner and founder_name only when the founder states them; never guess. one_liner is what the startup does in the founder's own words, at most 80 characters.`;
 
 const TRIGGER_KEYS = ["sectors", "stage", "raise_amount", "traction", "team_signals", "geography", "business_model"];
 
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
       system: SYSTEM,
       user: `Running profile: ${compactProfile(body.profile)}\nNewest chunk: """${chunk}"""`,
       tool: STRICT_TOOL,
-      maxTokens: 200,
+      maxTokens: 300,
       strict: true,
       timeoutMs: 6000,
       // A retry would hold the client's single in-flight slot past the latency budget; the

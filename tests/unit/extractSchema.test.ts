@@ -49,6 +49,20 @@ describe("parseExtraction", () => {
     });
   });
 
+  it("reads company, founder name and a one-liner capped at 80 characters", () => {
+    const long = "AI-designed antibody drugs for autoimmune disease, tested in our own wet lab in London";
+    const e = parseExtraction({
+      company: { value: " Helixa Bio ", confidence: 0.9 },
+      founder_name: { value: "Amara", confidence: 0.8 },
+      one_liner: { value: long, confidence: 0.7 },
+    });
+    expect(e?.company).toEqual({ value: "Helixa Bio", confidence: 0.9 });
+    expect(e?.founder_name).toEqual({ value: "Amara", confidence: 0.8 });
+    expect(e?.one_liner?.value.length).toBeLessThanOrEqual(80);
+    expect(long.startsWith(e!.one_liner!.value)).toBe(true);
+    expect(parseExtraction({ company: { value: "", confidence: 0.9 } })).toEqual({ sectors: [] });
+  });
+
   it("drops an invalid stage and tolerates missing sectors", () => {
     expect(parseExtraction({ stage: { value: "growth hacking", confidence: 0.9 } })).toEqual({ sectors: [] });
   });
