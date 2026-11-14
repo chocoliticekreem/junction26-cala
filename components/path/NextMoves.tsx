@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { STAGE_LABELS } from "@/lib/taxonomy";
 import { calaEntityHref, errorMessage, fetchActions } from "./api";
+import { odds, vsTypical } from "./odds";
 import type { Decision, DecisionNode, InvestorAction } from "./types";
 
 export type NextMovesProps = {
@@ -16,12 +17,14 @@ export type NextMovesProps = {
   docId?: string;
 };
 
-const pct = (p: number) => `${Math.round(p * 100)}%`;
 const sameDecision = (a?: Decision | null, b?: Decision | null) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: DecisionNode; selected?: Decision; onSelect: (d?: Decision) => void; onCaseStudy?: (node: DecisionNode) => void; depth: number }) {
   const isSel = !!node.decision && sameDecision(node.decision, selected);
   const [open, setOpen] = useState(false);
+  // Older cached results have no nextRound: they fall back to the vision share.
+  const headline = node.nextRound?.share ?? node.reachVisionShare;
+  const rel = node.typical ? vsTypical(node.reachVisionShare, node.typical.reachVisionShare) : undefined;
   return (
     <li className={`path-branch ${isSel ? "is-selected" : ""}`} data-testid="branch" data-depth={depth}>
       <button
@@ -33,10 +36,22 @@ function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: Decisi
         }}
         aria-pressed={isSel}
       >
-        <b className="path-branch-share font-mono">{pct(node.reachVisionShare)}</b>
+        <b
+          className="path-branch-share font-mono"
+          title={node.nextRound ? `Runs on this branch that close a ${STAGE_LABELS[node.nextRound.stage]} round within the horizon${node.typical ? ` (typical company at this stage: ${odds(node.typical.nextRoundShare, node.runs)})` : ""}` : "Runs on this branch that reach the vision"}
+        >
+          {odds(headline, node.runs)}
+        </b>
         <span className="path-branch-main">
           <span className="path-branch-label">{node.label}</span>
           <span className="path-branch-meta font-mono">
+            {node.nextRound && <span>raises {STAGE_LABELS[node.nextRound.stage]}</span>}
+            {node.nextRound && (
+              <span title={`Runs that reach the vision; typical company at this stage: ${node.typical ? odds(node.typical.reachVisionShare, node.runs) : "n/a"}`}>
+                vision {odds(node.reachVisionShare, node.runs)}
+                {rel ? ` · ${rel}` : ""}
+              </span>
+            )}
             {node.medianMonthsToNextRound !== undefined && <span title="Median months to the next round">{node.medianMonthsToNextRound}mo</span>}
             <span className="path-n" title={`${node.sampleSize} real precedent transitions behind this branch`}>
               n={node.sampleSize}
@@ -48,7 +63,7 @@ function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: Decisi
             )}
           </span>
         </span>
-        <i className="path-branch-bar" style={{ width: `${node.reachVisionShare * 100}%` }} aria-hidden />
+        <i className="path-branch-bar" style={{ width: `${headline * 100}%` }} aria-hidden />
       </button>
       {(isSel || open) && (
         <div className="path-branch-detail">
@@ -65,7 +80,7 @@ function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: Decisi
           <ol className="path-toppaths">
             {node.topPaths.slice(0, 3).map((p, i) => (
               <li key={i} className={p.reachedVision ? "" : "is-stalled"} title={p.reachedVision ? "Reached the vision" : `Stalled at ${p.stalledAtStage ? STAGE_LABELS[p.stalledAtStage] : "an earlier stage"}`}>
-                <span className="font-mono muted">{pct(p.share)}</span>
+                <span className="font-mono muted">{odds(p.share, node.runs)}</span>
                 {p.steps.map((s, j) => (
                   <span key={j} className="path-stepchip">
                     <b>{STAGE_LABELS[s.stage]}</b>
@@ -176,7 +191,7 @@ type Leads = { key: string; actions: InvestorAction[]; unknown: string[]; error?
 
 export default function NextMoves({ tree, selected, onSelect, onCaseStudy, leadIds, docId }: NextMovesProps) {
   const [leads, setLeads] = useState<Leads | undefined>();
-  const branches = [...tree.children].sort((a, b) => b.reachVisionShare - a.reachVisionShare);
+  const branches = [...tree.children].sort((a, b) => (b.nextRound?.share ?? 0) - (a.nextRound?.share ?? 0) || b.reachVisionShare - a.reachVisionShare);
   const leadKey = leadIds.join("|");
   const key = `${docId ?? ""}#${leadKey}`;
 

@@ -184,7 +184,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
                   style={{ "--delay": reducedMotion ? "0ms" : `${120 + i * 70}ms` } as React.CSSProperties}
                   tabIndex={0}
                   role="button"
-                  aria-label={`${pick.company.name}, rank ${p.rank}, unicorn-like odds ${pct(pick.scores.unicornOdds)}, you on its path ${pct(pick.scores.youOnPath)}`}
+                  aria-label={`${pick.company.name}, rank ${p.rank}, you on its path ${pct(pick.scores.youOnPath)}`}
                   data-testid={`spotter-node-${pick.company.id}`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -209,7 +209,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
                         {pick.company.name}
                       </text>
                       <text className="sp-odds" x={lx} y={12} textAnchor={labelRight ? "start" : "end"}>
-                        {pct(pick.scores.unicornOdds)} · {sectorLabel(pick.company.sector)}
+                        {sectorLabel(pick.company.sector)}
                       </text>
                     </>
                   )}
@@ -222,7 +222,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
 
       {hover && (
         <div className="sp-tip" style={{ left: hover.x, top: hover.y - hover.r - 8 }}>
-          <b>{hover.pick.company.name}</b> · unicorn-like odds {pct(hover.pick.scores.unicornOdds)} ·{" "}
+          <b>{hover.pick.company.name}</b> ·{" "}
           <span style={{ color: "var(--accent)" }}>you&rsquo;re on its path {pct(hover.pick.scores.youOnPath)}</span>
         </div>
       )}

@@ -11,6 +11,7 @@ import type { Extraction, FounderProfile, ReplayEvent } from "@/lib/types";
 export type TranscriptToken = { text: string; t: number; final: boolean };
 
 const CHUNK_MS = 3000;
+const SILENCE_STOP_MS = 2500;
 
 // An extraction carries one team_signals trigger for possibly several signals. It belongs to the
 // signal whose text contains it (or is contained by it); with a single signal it is that one's.
@@ -93,6 +94,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
   const queued = useRef<QueuedChunk | null>(null);
   const lastSent = useRef(0);
   const epoch = useRef(0);
+  const lastHeard = useRef(0);
 
   const commit = useCallback((nextLog: LiveLog, e: Extraction) => {
     log.current = nextLog;
@@ -225,21 +227,31 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     player.current.start();
   }, [apply, replayEvents, reset]);
 
+  const stopMic = useCallback(() => {
+    if (!session.current) return;
+    // The service only finalises on a pause; whatever was heard when the founder stops is kept.
+    const heard = interimRef.current.trim();
+    session.current.stop();
+    session.current = null;
+    setMicOn(false);
+    setInterim("");
+    if (heard) onFinal(heard);
+  }, [onFinal, setInterim]);
+
   const toggleMic = useCallback(() => {
-    if (session.current) {
-      // The service only finalises on a pause; whatever was heard when the founder stops is kept.
-      const heard = interimRef.current.trim();
-      session.current.stop();
-      session.current = null;
-      setMicOn(false);
-      setInterim("");
-      if (heard) onFinal(heard);
-      return;
-    }
+    if (session.current) return stopMic();
     reset();
+    lastHeard.current = 0;
     session.current = pickProvider().start({
-      onInterim: setInterim,
-      onFinal,
+      onInterim: (t) => {
+        // The service can repeat the same partial during silence; only new words count as speech.
+        if (t !== interimRef.current) lastHeard.current = Date.now();
+        setInterim(t);
+      },
+      onFinal: (t) => {
+        lastHeard.current = Date.now();
+        onFinal(t);
+      },
       onError: () => {
         setMicOn(false);
         session.current = null;
@@ -250,7 +262,16 @@ export function usePitch(replayEvents: ReplayEvent[]) {
       },
     });
     setMicOn(true);
-  }, [onFinal, reset, setInterim]);
+  }, [onFinal, reset, setInterim, stopMic]);
+
+  // Once the founder has spoken and then gone quiet, the mic stops by itself and keeps the words.
+  useEffect(() => {
+    if (!micOn) return;
+    const id = window.setInterval(() => {
+      if (lastHeard.current && Date.now() - lastHeard.current > SILENCE_STOP_MS) stopMic();
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [micOn, stopMic]);
 
   useEffect(
     () => () => {

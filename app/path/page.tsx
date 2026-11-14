@@ -1,5 +1,6 @@
 "use client";
 
+import { odds, vsTypical } from "@/components/path/odds";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import TopBar from "@/components/TopBar";
@@ -34,7 +35,6 @@ const subscribeNever = () => () => {};
 // Stage geometry (px): the brief bar and the results column the map lays out around.
 const BAR_H = 76;
 const LEFT_W = 440;
-const pct = (p: number) => `${Math.round(p * 100)}%`;
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const SPRING = { duration: 0.55, ease: EASE };
 
@@ -602,9 +602,15 @@ export default function PathPage() {
                 data-testid="results"
               >
                 <header className="fx-headline" data-testid="headline">
-                  <b className="fx-odds font-mono">{pct(result.tree.reachVisionShare)}</b>
+                  <b className="fx-odds font-mono">{odds(result.tree.nextRound.share)}</b>
                   <span className="fx-odds-text">
-                    of {result.runs.toLocaleString()} simulated futures reach <b>{visionTarget ?? "the vision"}</b>
+                    of {result.runs.toLocaleString()} simulated futures raise <b>{STAGE_LABELS[result.tree.nextRound.stage]}</b>
+                    <br />
+                    <span className="muted">
+                      {visionTarget ?? "Vision"}: {odds(result.tree.reachVisionShare, result.runs)}
+                      {vsTypical(result.tree.reachVisionShare, result.tree.typical.reachVisionShare) &&
+                        ` · ${vsTypical(result.tree.reachVisionShare, result.tree.typical.reachVisionShare)}`}
+                    </span>
                   </span>
                 </header>
                 <p className="path-start-line" data-testid="start-line">

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { STAGE_LABELS } from "@/lib/taxonomy";
+import { odds } from "./odds";
 import type { Precedent, Reality } from "./types";
 
 export type RealitiesProps = {
@@ -11,8 +12,6 @@ export type RealitiesProps = {
   onCaseStudy: (p: Precedent, reality: Reality) => void;
   horizonYears?: number;
 };
-
-const pct = (p: number) => `${Math.round(p * 100)}%`;
 
 // Step labels sit below the track; a label that would start inside the previous one on that side
 // goes above instead. Width is estimated from the character count as a share of the ~330px
@@ -82,7 +81,7 @@ export default function Realities({ realities, selectedId, onSelect, onCaseStudy
               >
                 <span className="fx-lane-head">
                   <b className="fx-lane-prob font-mono" style={{ "--p": r.probability / maxP } as React.CSSProperties}>
-                    {pct(r.probability)}
+                    {odds(r.probability)}
                   </b>
                   <span className="fx-lane-name">
                     <span className="fx-lane-rank font-mono">{i + 1}</span>
