@@ -2,8 +2,8 @@
 
 import type { FounderProfile, InterestState } from "@/lib/types";
 import type { Sector } from "@/lib/taxonomy";
-import type { FounderMatch } from "@/components/dev-e/engine";
-import { Avatar, Button, Chip, Score, SectorChip, StageChip, formatMoney } from "@/components/dev-e/ui";
+import type { FounderMatch } from "@/lib/engine";
+import { Avatar, Button, Chip, Score, SectorChip, StageChip, formatMoney } from "@/components/ui";
 
 export type FounderCardProps = {
   founder: FounderProfile;

@@ -16,7 +16,7 @@ import {
   SEED_ROOM,
   type InterestStore,
   type Result,
-} from "@/components/dev-e/engine";
+} from "@/lib/engine";
 
 export const INTEREST_KEY = "room.interest.v1";
 export const ROOMS_KEY = "room.rooms.v1";

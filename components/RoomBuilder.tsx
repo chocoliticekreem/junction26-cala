@@ -3,8 +3,8 @@
 import { useMemo } from "react";
 import type { Debrief, FounderProfile, Investor, Room } from "@/lib/types";
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector } from "@/lib/taxonomy";
-import { buildRoom, rankFounders } from "@/components/dev-e/engine";
-import { Avatar, Button, Label, Panel, Score } from "@/components/dev-e/ui";
+import { buildRoom, rankFounders } from "@/lib/engine";
+import { Avatar, Button, Label, Panel, Score } from "@/components/ui";
 
 export type RoomBuilderProps = {
   sector: Sector;

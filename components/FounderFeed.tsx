@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import type { FounderProfile, InterestState } from "@/lib/types";
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, STAGES, type Sector, type Stage } from "@/lib/taxonomy";
-import type { FounderMatch } from "@/components/dev-e/engine";
+import type { FounderMatch } from "@/lib/engine";
 import { FounderCard } from "@/components/FounderCard";
-import { Label } from "@/components/dev-e/ui";
+import { Label } from "@/components/ui";
 
 export type FounderFeedProps = {
   founders: FounderProfile[];

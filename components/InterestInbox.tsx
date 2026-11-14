@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Deal, FounderProfile, Interest, Investor } from "@/lib/types";
 import { SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
-import { loadInvestors, rankFounders } from "@/components/dev-e/engine";
+import { loadInvestors, rankFounders } from "@/lib/engine";
 import { useInterestStore, useLiveProfile } from "@/lib/interestStore";
 import { VerificationChecklist } from "@/components/VerificationChecklist";
 import { ChatThread } from "@/components/ChatThread";
-import { Avatar, Button, Chip, Label, dealsSince } from "@/components/dev-e/ui";
+import { Avatar, Button, Chip, Label, dealsSince } from "@/components/ui";
 
 // Mount points for Track D's top bar:
 //   <InboxBadge onClick={() => setOpen(true)} />          count + pulse on a new request

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Interest, Message } from "@/lib/types";
-import { Button, Label } from "@/components/dev-e/ui";
+import { Button, Label } from "@/components/ui";
 
 export type ChatThreadProps = {
   interest: Interest;

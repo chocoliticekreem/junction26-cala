@@ -6,7 +6,8 @@ test("investor taps Interested; founder accepts; both verify; chat unlocks", asy
   const investor = await context.newPage();
   await investor.goto("/investor");
   await investor.getByTestId("investor-picker").click();
-  await investor.getByTestId("pick-inv-helix").click();
+  await investor.getByPlaceholder("Act as investor…").fill("Heron Mill");
+  await investor.getByTestId("pick-fx-009").click();
   await expect(investor.locator("[data-testid^=founder-card-]").first()).toBeVisible();
 
   const founder = await context.newPage();
@@ -33,8 +34,8 @@ test("investor taps Interested; founder accepts; both verify; chat unlocks", asy
   await founder.getByTestId("founder-verify-submit").click();
   await expect(request).toHaveAttribute("data-state", "pending_verification");
 
-  await investor.getByTestId("verify-name").fill("Mara Lindqvist");
-  await investor.getByTestId("verify-email").fill("mara@helix.vc");
+  await investor.getByTestId("verify-name").fill("Juno Marchetti");
+  await investor.getByTestId("verify-email").fill("juno@heron-mill-bio-capital.example");
   await investor.getByTestId("verify-submit").click();
   await expect(investor.getByText("Verified via Cala partner record", { exact: true })).toBeVisible();
 
@@ -43,8 +44,8 @@ test("investor taps Interested; founder accepts; both verify; chat unlocks", asy
   const draft = founder.getByTestId("chat-draft");
   await expect(draft).not.toHaveValue("");
   await founder.getByTestId("chat-send").click();
-  await expect(founder.getByTestId("chat-thread")).toContainText("Hi Mara");
-  await expect(investor.getByTestId("chat-thread")).toContainText("Hi Mara", { timeout: 2000 });
+  await expect(founder.getByTestId("chat-thread")).toContainText("Hi Juno");
+  await expect(investor.getByTestId("chat-thread")).toContainText("Hi Juno", { timeout: 2000 });
 
   await founder.screenshot({ path: "tests/screenshots/interest-mock.png" });
 });
@@ -52,7 +53,8 @@ test("investor taps Interested; founder accepts; both verify; chat unlocks", asy
 test("room suggestion builds a room; founder requests a seat; host seats them", async ({ page }) => {
   await page.goto("/investor");
   await page.getByTestId("investor-picker").click();
-  await page.getByTestId("pick-inv-helix").click();
+  await page.getByPlaceholder("Act as investor…").fill("Heron Mill");
+  await page.getByTestId("pick-fx-009").click();
   await page.getByTestId("open-room-builder").click();
   await page.getByTestId("create-room").click();
   await page.waitForURL(/\/room\//);

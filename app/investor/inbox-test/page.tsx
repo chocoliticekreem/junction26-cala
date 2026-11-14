@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { InboxBadge, InterestInbox } from "@/components/InterestInbox";
 import { useLiveProfile, writeLiveProfile, LIVE_FOUNDER_ID } from "@/lib/interestStore";
-import { Button, Chip } from "@/components/dev-e/ui";
+import { Button, Chip } from "@/components/ui";
 
 // Founder-side harness for the two-window demo and the e2e smoke test. Track D's page.tsx
 // mounts InboxBadge + InterestInbox in the real top bar; this page only hosts them.

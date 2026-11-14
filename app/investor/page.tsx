@@ -14,14 +14,14 @@ import {
   rankFounders,
   suggestRooms,
   usingFixtures,
-} from "@/components/dev-e/engine";
+} from "@/lib/engine";
 import { useInterestStore, useLiveProfile, useRooms } from "@/lib/interestStore";
 import { FounderFeed } from "@/components/FounderFeed";
 import { RoomSuggestionCard } from "@/components/RoomSuggestionCard";
 import { RoomBuilder } from "@/components/RoomBuilder";
 import { InvestorVerifyForm } from "@/components/VerificationChecklist";
 import { ChatThread } from "@/components/ChatThread";
-import { Avatar, Chip, Label, Panel } from "@/components/dev-e/ui";
+import { Avatar, Chip, Label, Panel } from "@/components/ui";
 
 function InvestorPicker({ investors, value, onChange }: { investors: Investor[]; value: Investor | null; onChange: (i: Investor) => void }) {
   const [q, setQ] = useState("");

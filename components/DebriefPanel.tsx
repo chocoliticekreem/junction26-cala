@@ -1,7 +1,7 @@
 "use client";
 
 import type { Debrief, FounderProfile, Investor, Room } from "@/lib/types";
-import { Chip, Label, Panel } from "@/components/dev-e/ui";
+import { Chip, Label, Panel } from "@/components/ui";
 
 export type DebriefPanelProps = { room: Room; debriefs: Debrief[]; founders: FounderProfile[]; investors: Investor[] };
 

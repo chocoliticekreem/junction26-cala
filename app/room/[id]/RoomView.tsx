@@ -4,11 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { FounderProfile } from "@/lib/types";
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS } from "@/lib/taxonomy";
-import { loadDebriefs, loadFounders, loadInvestors, rankFounders } from "@/components/dev-e/engine";
+import { loadDebriefs, loadFounders, loadInvestors, rankFounders } from "@/lib/engine";
 import { useInterestStore, useLiveProfile, useRooms } from "@/lib/interestStore";
 import { SeatRequest } from "@/components/SeatRequest";
 import { DebriefPanel } from "@/components/DebriefPanel";
-import { Avatar, Button, Chip, Label, Panel, formatDate } from "@/components/dev-e/ui";
+import { Avatar, Button, Chip, Label, Panel, formatDate } from "@/components/ui";
 
 type Role = "founder" | "host";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { SeatRequest as SeatRequestRecord } from "@/lib/types";
 import { useInterestStore } from "@/lib/interestStore";
-import { Button, Chip } from "@/components/dev-e/ui";
+import { Button, Chip } from "@/components/ui";
 
 export type SeatRequestProps = { roomId: string; founderId?: string };
 

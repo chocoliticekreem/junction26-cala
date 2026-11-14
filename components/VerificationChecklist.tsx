@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import type { FounderProfile, Interest, Investor, Verification } from "@/lib/types";
-import { verifyFounder, verifyInvestor, type InterestStore } from "@/components/dev-e/engine";
-import { Button, Label } from "@/components/dev-e/ui";
+import { verifyFounder, verifyInvestor, type InterestStore } from "@/lib/engine";
+import { Button, Label } from "@/components/ui";
 
 export type VerificationChecklistProps = {
   interest: Interest;

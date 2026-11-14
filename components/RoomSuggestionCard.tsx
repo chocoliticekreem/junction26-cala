@@ -1,8 +1,8 @@
 "use client";
 
 import { SECTOR_COLOR, SECTOR_SHORT } from "@/lib/taxonomy";
-import type { RoomSuggestion } from "@/components/dev-e/engine";
-import { Button } from "@/components/dev-e/ui";
+import type { RoomSuggestion } from "@/lib/engine";
+import { Button } from "@/components/ui";
 
 export type RoomSuggestionCardProps = { suggestion: RoomSuggestion; onOpen: () => void };
 
