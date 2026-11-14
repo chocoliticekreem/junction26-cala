@@ -9,7 +9,7 @@ test("slow Cala search shows a loading state, never blocks the panel, and is cac
     await new Promise((r) => setTimeout(r, 3000));
     await route.fulfill({ json: { answer: "Slow answer from Cala.", sources: [{ name: "slow-source" }] } });
   });
-  await page.goto("/");
+  await page.goto("/match");
   await expect(page.getByTestId("match-row")).toHaveCount(10);
   // The top-10 rail is a placeholder until the profile has a signal; start the replay first.
   await page.locator("body").press("r");
@@ -20,8 +20,8 @@ test("slow Cala search shows a loading state, never blocks the panel, and is cac
   const panel = page.getByTestId("profile-panel");
   await expect(panel.getByTestId("cala-loading")).toContainText("this can take up to a minute");
   await expect(panel.locator(".cala-progress")).toBeVisible();
-  await expect(panel.locator(".deals li").first()).toBeVisible();
-  await expect(page.getByTestId("door-panel")).toBeVisible();
+  await expect(panel.getByTestId("profile-fit")).toBeVisible();
+  await expect(page.getByTestId("intro-email")).toBeVisible();
   await page.screenshot({ path: "tests/screenshots/cala-loading.png" });
 
   await expect(panel.getByTestId("cala-live")).toContainText("Slow answer from Cala.", { timeout: 10_000 });

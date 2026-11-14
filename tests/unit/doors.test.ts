@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { doorsFor } from "@/lib/doors";
+import { doorsFor, publicDoors } from "@/lib/doors";
 import type { Programme } from "@/lib/types";
 import { founder, investor } from "./helpers";
 
@@ -26,24 +26,23 @@ const PROGRAMMES: Programme[] = [
 const inv = investor("acme", [], {}, {
   name: "Acme Ventures",
   doors: [
-    { kind: "warm_intro", label: "Warm intro to Zoë", via: ["Zoë"] },
+    { kind: "warm_intro", label: "Warm intro to Zoë", via: ["Zoë", "Max"] },
     { kind: "scout", label: "Acme scout network" },
-    { kind: "office_hours", label: "Acme office hours" },
+    { kind: "office_hours", label: "Acme office hours", url: "https://acme.example/office-hours" },
+    { kind: "room", label: "Ask to be considered for a room" },
   ],
 });
 
 describe("doorsFor", () => {
-  it("orders programme, office hours, scout, warm intro, room", () => {
+  it("orders programme, office hours, scout; never a room, a warm intro or an email", () => {
     const doors = doorsFor(inv, PROGRAMMES, founder({ stage: "pre-seed" }));
-    expect(doors.map((d) => d.kind)).toEqual([
-      "programme",
-      "programme",
-      "office_hours",
-      "scout",
-      "warm_intro",
-      "room",
-    ]);
+    expect(doors.map((d) => d.kind)).toEqual(["programme", "programme", "office_hours"]);
     expect(doors.some((d) => /email/i.test(d.label))).toBe(false);
+    expect(doors.every((d) => !!d.url)).toBe(true);
+  });
+
+  it("drops doors without a public URL", () => {
+    expect(publicDoors(inv.doors).map((d) => d.kind)).toEqual(["office_hours"]);
   });
 
   it("matches open programmes to the founder's stage and top sector, at most two", () => {
@@ -74,9 +73,8 @@ describe("doorsFor", () => {
     expect(doors.filter((d) => d.kind === "programme")).toHaveLength(2);
   });
 
-  it("offers no general programme without a founder signal, but always a room", () => {
-    const doors = doorsFor(inv, PROGRAMMES);
-    expect(doors.some((d) => d.kind === "programme")).toBe(false);
-    expect(doors.at(-1)?.kind).toBe("room");
+  it("offers nothing without a founder signal or a public door of the investor's own", () => {
+    const doors = doorsFor(investor("x", [], {}, { name: "X Capital", doors: inv.doors.filter((d) => d.kind !== "office_hours") }), PROGRAMMES);
+    expect(doors).toEqual([]);
   });
 });

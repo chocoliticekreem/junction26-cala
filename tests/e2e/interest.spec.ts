@@ -2,7 +2,7 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 async function setup(context: BrowserContext): Promise<{ founder: Page; investor: Page }> {
   const founder = await context.newPage();
-  await founder.goto("/");
+  await founder.goto("/match");
   await founder.locator("body").press("r");
   await founder.waitForTimeout(10_000);
 

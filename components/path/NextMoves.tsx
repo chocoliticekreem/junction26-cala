@@ -121,7 +121,7 @@ function Action({ card, onWatch, watched }: { card: InvestorAction; onWatch: (c:
         <button type="button" className="btn" onClick={copy} title={card.emailDraft.subject}>
           {copied ? "Copied" : "Copy email"}
         </button>
-        <a className="btn" href={card.mailto} title="Opens a draft in your mail app; nothing is sent">
+        <a className="btn is-primary" href={card.mailto} title="Opens a draft in your mail app; nothing is sent">
           Open in mail
         </a>
         <button type="button" className="btn" onClick={() => setShowSources((v) => !v)} aria-expanded={showSources}>

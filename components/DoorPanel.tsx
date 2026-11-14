@@ -1,35 +1,30 @@
+import { publicDoors } from "@/lib/doors";
 import type { Door, DoorKind } from "@/lib/types";
 
 export type DoorPanelProps = { doors: Door[] };
 
-const ORDER: DoorKind[] = ["programme", "office_hours", "scout", "warm_intro", "room"];
-const KIND_LABEL: Record<DoorKind, string> = {
+const ORDER: DoorKind[] = ["programme", "office_hours", "scout"];
+const KIND_LABEL: Partial<Record<DoorKind, string>> = {
   programme: "Programme",
   office_hours: "Office hours",
   scout: "Scout",
-  warm_intro: "Warm intro",
-  room: "Room",
 };
 
+// Only real public routes in (lib/doors.ts publicDoors); nothing to show means no section.
 export default function DoorPanel({ doors }: DoorPanelProps) {
-  const ordered = [...doors].sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
+  const ordered = publicDoors(doors).sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
+  if (ordered.length === 0) return null;
   return (
     <section className="panel-block" aria-label="Easiest door" data-testid="door-panel">
       <h3>Easiest door</h3>
-      {ordered.length === 0 && <p className="muted">No open door yet. Ask to be considered for a room.</p>}
       <ol className="doors">
         {ordered.map((d, i) => (
           <li key={`${d.kind}-${i}`} className={i === 0 ? "door door-first" : "door"}>
             <span className="door-kind font-mono">{KIND_LABEL[d.kind]}</span>
             <span className="door-body">
-              {d.url ? (
-                <a href={d.url} target="_blank" rel="noreferrer">
-                  {d.label}
-                </a>
-              ) : (
-                d.label
-              )}
-              {d.via && d.via.length > 0 && <span className="door-via">via {d.via.join(" → ")}</span>}
+              <a href={d.url} target="_blank" rel="noreferrer">
+                {d.label}
+              </a>
             </span>
             {i === 0 && <span className="tag tag-accent">easiest</span>}
           </li>

@@ -39,7 +39,7 @@ async function canvasHasContent(page: Page): Promise<boolean> {
 test("replay screenshots, canvas content, no console errors", async ({ page }) => {
   test.setTimeout(150_000);
   const errors = trackConsoleErrors(page);
-  await page.goto("/");
+  await page.goto("/match");
   await expect(page.getByTestId("match-row")).toHaveCount(10);
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `${SHOTS}/replay-t0.png` });
@@ -60,7 +60,7 @@ test("investor view and unlocked chat screenshots", async ({ context }) => {
   test.setTimeout(120_000);
   const founder = await context.newPage();
   const errors = trackConsoleErrors(founder);
-  await founder.goto("/");
+  await founder.goto("/match");
   await founder.locator("body").press("r");
   await founder.waitForTimeout(10_000);
 

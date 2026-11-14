@@ -7,7 +7,7 @@ test("replay runs offline and ends on the same ranking as online", async ({ page
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
 
-  await page.goto("/");
+  await page.goto("/match");
   await expect(page.getByTestId("match-row")).toHaveCount(10);
   await context.setOffline(true);
   await page.locator("body").press("r");
@@ -36,8 +36,8 @@ test("replay runs offline and ends on the same ranking as online", async ({ page
   const panel = page.getByTestId("profile-panel");
   await expect(panel).toBeVisible();
   await expect(panel.getByTestId("cala-live")).toContainText("unavailable", { timeout: 10_000 });
-  await expect(panel.locator(".deals li").first()).toBeVisible();
-  await expect(page.getByTestId("door-panel")).toBeVisible();
+  await expect(panel.getByTestId("profile-fit")).toBeVisible();
+  await expect(page.getByTestId("intro-email")).toBeVisible();
   expect(errors).toEqual([]);
   await context.setOffline(false);
 });

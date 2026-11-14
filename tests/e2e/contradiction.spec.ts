@@ -28,7 +28,7 @@ function recount(investorId: string, was: string): { count: number; total: numbe
 
 test("after the replay a counted stated-vs-revealed contradiction is on screen", async ({ page }) => {
   test.setTimeout(150_000);
-  await page.goto("/");
+  await page.goto("/match");
   await expect(page.getByTestId("match-row")).toHaveCount(10);
   await page.locator("body").press("r");
   const expected = replayTopIds();

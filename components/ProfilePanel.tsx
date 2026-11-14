@@ -5,6 +5,7 @@ import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } fro
 import type { Investor, Match, Source } from "@/lib/types";
 import CacheBadge from "./CacheBadge";
 import DoorPanel from "./DoorPanel";
+import Markdown, { markdownBullets } from "./Markdown";
 import { EventChips, EvidenceChip } from "./MatchList";
 
 export type ProfilePanelProps = {
@@ -19,6 +20,8 @@ const KIND_LABEL: Record<Investor["kind"], string> = {
   accelerator: "Accelerator",
   cvc: "Corporate VC",
 };
+
+const CONTRADICTION = 0.4;
 
 type Fetched<T> = { ok: true; data: T } | { ok: false; detail: string };
 type CalaPayload = { answer?: string; sources?: Source[]; mock?: boolean; budgetExhausted?: boolean };
@@ -96,7 +99,46 @@ function Bars({ title, stated, revealed, labelOf, colorOf }: { title: string; st
   );
 }
 
+// The intro the founder would send: one subject, three lines, the evidence that makes it land.
+function introMailto(investor: Investor, match?: Match): string {
+  const evidence = (match?.evidence ?? []).slice(0, 2).map((d) => `${d.company}${d.round !== "unknown" ? ` (${STAGE_LABELS[d.round]})` : ""}`);
+  const subject = `Intro: ${investor.name}`;
+  const body = [
+    `Hi ${investor.partners[0]?.name?.split(" ")[0] ?? "there"},`,
+    "",
+    match?.reason ? `${match.reason}.` : `We are raising and ${investor.name} keeps coming up.`,
+    evidence.length ? `Your rounds in ${evidence.join(" and ")} are close to what we are building.` : "",
+    "",
+    "Could we take 20 minutes this week?",
+  ]
+    .filter((l, i, a) => !(l === "" && a[i - 1] === ""))
+    .join("\n");
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function SourceList({ sources }: { sources: Source[] }) {
+  if (!sources.length) return <p className="muted">No sources on record.</p>;
+  return (
+    <ul className="sources">
+      {sources.slice(0, 8).map((s, i) => (
+        <li key={`${s.name}-${i}`}>
+          {s.url ? (
+            <a href={s.url} target="_blank" rel="noreferrer">
+              {s.name}
+            </a>
+          ) : (
+            s.name
+          )}
+          {s.date && <span className="muted font-mono"> {s.date}</span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function ProfilePanel({ investor, match, onClose }: ProfilePanelProps) {
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [fullOpen, setFullOpen] = useState(false);
   // An empty calaId means no correct Cala entity was found for this investor; skip the fetch.
   const entity = useCala(investor.calaId ? `entity:${investor.calaId}` : null, () =>
     getJson(`/api/cala/entity/${encodeURIComponent(investor.calaId)}`),
@@ -111,18 +153,19 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
   const liveSources = [...(search?.ok ? (search.data.sources ?? []) : []), ...(entity?.ok ? (entity.data.sources ?? []) : [])];
   const budgetPaused = (search?.ok && search.data.budgetExhausted) || (entity?.ok && entity.data.budgetExhausted);
   const liveMock = !budgetPaused && ((search?.ok && search.data.mock) || (entity?.ok && entity.data.mock));
-
-  const recent = [...investor.deals].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "")).slice(0, 5);
+  const answer = search?.ok && !budgetPaused ? search.data.answer : undefined;
+  const bullets = answer ? markdownBullets(answer) : [];
+  const contradicts = investor.contradiction > CONTRADICTION && !!investor.contradictionLine;
+  const sources: Source[] = [...investor.statedThesis.sources, ...(match?.evidence ?? []).flatMap((d) => d.sources), ...liveSources];
 
   return (
-    <aside className="profile-panel" aria-label={`${investor.name} profile`} data-testid="profile-panel">
+    <aside className="profile-panel glass" aria-label={`${investor.name} profile`} data-testid="profile-panel">
       <header className="profile-head">
         <div>
           <div className="profile-kind font-mono">
             {KIND_LABEL[investor.kind]} <EventChips investor={investor} />
           </div>
           <h2>{investor.name}</h2>
-          {investor.description && <p className="muted">{investor.description}</p>}
         </div>
         <div className="profile-score">
           {match && (
@@ -137,83 +180,45 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
         </div>
       </header>
 
-      {investor.contradiction > 0.4 && investor.contradictionLine && (
-        <p className="contradiction" data-testid="contradiction">
-          <span className="tag tag-accent">contradiction</span> {investor.contradictionLine}
+      {match ? (
+        <p className="profile-fit" data-testid="profile-fit">
+          {match.reason}
         </p>
+      ) : (
+        investor.description && <p className="profile-fit muted">{investor.description}</p>
       )}
-      {investor.thinHistory && <p className="muted">Thin deal history: stated thesis weighs more for this investor.</p>}
+      {match && match.evidence.length > 0 && (
+        <div className="match-evidence profile-evidence">
+          {match.evidence.slice(0, 3).map((d, i) => (
+            <EvidenceChip key={`${d.company}-${i}`} deal={d} />
+          ))}
+        </div>
+      )}
 
-      {match && (
+      <div className="profile-actions">
+        <a className="hero-btn hero-btn-primary profile-primary" href={introMailto(investor, match)} title="Opens a drafted intro in your mail app; nothing is sent" data-testid="intro-email">
+          Draft intro email
+        </a>
+        <button type="button" className="btn" onClick={() => setSourcesOpen((v) => !v)} aria-expanded={sourcesOpen} data-testid="profile-sources">
+          Sources
+        </button>
+      </div>
+      {sourcesOpen && (
         <section className="panel-block">
-          <h3>Why this match</h3>
-          <p>{match.reason}</p>
-          <div className="match-evidence">
-            {match.evidence.slice(0, 3).map((d, i) => (
-              <EvidenceChip key={`${d.company}-${i}`} deal={d} />
-            ))}
-          </div>
+          <h3>Sources</h3>
+          <SourceList sources={sources} />
         </section>
       )}
 
-      <section className="panel-block">
-        <h3>Stated vs revealed</h3>
-        <Bars title="Sectors" stated={investor.statedThesis.sectors} revealed={investor.revealed.S} labelOf={(k) => SECTOR_SHORT[k as Sector] ?? k} colorOf={(k) => SECTOR_COLOR[k as Sector]} />
-        <Bars
-          title="Stages"
-          stated={investor.statedThesis.stages}
-          revealed={investor.revealed.G}
-          labelOf={(k) => STAGE_LABELS[k as Stage] ?? k}
-        />
-        {investor.statedThesis.text && (
-          <p className="muted quote">Stated thesis, summarised from Cala sources: {investor.statedThesis.text}</p>
-        )}
-      </section>
-
-      <section className="panel-block">
-        <h3>Recent deals</h3>
-        <ul className="deals">
-          {recent.map((d, i) => (
-            <li key={`${d.company}-${i}`}>
-              <span className="deal-company">{d.company}</span>
-              <span className="deal-meta font-mono">
-                {d.round === "unknown" ? "n/a" : STAGE_LABELS[d.round]}
-                {d.date ? ` · ${d.date.slice(0, 7)}` : ""}
-                {d.amount ? ` · ${d.amount}` : ""}
-              </span>
-              <span className="deal-sector" style={{ color: SECTOR_COLOR[d.sector] }}>
-                {SECTOR_SHORT[d.sector]}
-              </span>
-              {d.sources[0]?.url ? (
-                <a className="deal-src" href={d.sources[0].url} target="_blank" rel="noreferrer">
-                  {d.sources[0].name}
-                </a>
-              ) : (
-                <span className="deal-src">{d.sources[0]?.name ?? "no source"}</span>
-              )}
-            </li>
-          ))}
-          {recent.length === 0 && <li className="muted">No deals on record.</li>}
-        </ul>
-      </section>
-
-      <section className="panel-block">
-        <h3>Partners</h3>
-        <ul className="partners">
-          {investor.partners.map((p) => (
-            <li key={p.calaId}>
-              <span>{p.name}</span>
-              {p.role && <span className="muted"> · {p.role}</span>}
-              {p.linkedinUrl && (
-                <a href={p.linkedinUrl} target="_blank" rel="noreferrer" className="partner-link">
-                  LinkedIn
-                </a>
-              )}
-            </li>
-          ))}
-          {investor.partners.length === 0 && <li className="muted">No partner records.</li>}
-        </ul>
-      </section>
+      {contradicts && (
+        <section className="panel-block">
+          <p className="contradiction" data-testid="contradiction">
+            <span className="tag tag-accent">contradiction</span> {investor.contradictionLine}
+          </p>
+          <Bars title="Sectors" stated={investor.statedThesis.sectors} revealed={investor.revealed.S} labelOf={(k) => SECTOR_SHORT[k as Sector] ?? k} colorOf={(k) => SECTOR_COLOR[k as Sector]} />
+          <Bars title="Stages" stated={investor.statedThesis.stages} revealed={investor.revealed.G} labelOf={(k) => STAGE_LABELS[k as Stage] ?? k} />
+        </section>
+      )}
 
       <section className="panel-block" data-testid="cala-live">
         <h3>
@@ -233,28 +238,25 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
             </span>
           </div>
         )}
-        {search && !search.ok && (!investor.calaId || (entity && !entity.ok)) && (
-          <p className="muted">Live Cala data unavailable ({search.detail}). Showing cached deals above.</p>
-        )}
+        {search && !search.ok && (!investor.calaId || (entity && !entity.ok)) && <p className="muted">Live Cala data unavailable ({search.detail}).</p>}
         {search && !search.ok && entity?.ok && <p className="muted">Live Cala summary unavailable ({search.detail}).</p>}
-        {search?.ok &&
-          !budgetPaused &&
-          (search.data.answer ? <p>{search.data.answer}</p> : <p className="muted">No fresh summary returned.</p>)}
-        {liveSources.length > 0 && (
-          <ul className="sources">
-            {liveSources.slice(0, 5).map((s, i) => (
-              <li key={`${s.name}-${i}`}>
-                {s.url ? (
-                  <a href={s.url} target="_blank" rel="noreferrer">
-                    {s.name}
-                  </a>
-                ) : (
-                  s.name
-                )}
-                {s.date && <span className="muted font-mono"> {s.date}</span>}
-              </li>
-            ))}
-          </ul>
+        {search?.ok && !budgetPaused && !answer && <p className="muted">No fresh summary returned.</p>}
+        {answer && (
+          <>
+            <ul className="profile-bullets" data-testid="cala-bullets">
+              {bullets.map((b, i) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+            <button type="button" className="path-link" onClick={() => setFullOpen((v) => !v)} aria-expanded={fullOpen} data-testid="cala-full-toggle">
+              {fullOpen ? "Hide Cala's full answer" : "Read Cala's full answer"}
+            </button>
+            {fullOpen && (
+              <div className="profile-full" data-testid="cala-full">
+                <Markdown text={answer} />
+              </div>
+            )}
+          </>
         )}
         <CacheBadge result={search?.ok ? search.data : entity?.ok ? entity.data : undefined} />
       </section>

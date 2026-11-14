@@ -50,6 +50,10 @@ type Node = {
   depth: number;
   onHighway: boolean;
   alpha: number;
+  sector: string;
+  // Twinkle phase and rate, fixed per star.
+  tw: number;
+  twf: number;
 };
 
 type Particle = { t: number; speed: number; off: number; size: number };
@@ -64,6 +68,37 @@ type Edge = {
   bend: number;
 };
 type Gather = { x: number; y: number; vx: number; vy: number; life: number };
+type Link = [Node, Node];
+
+const CONSTELLATION_REACH = 150;
+const CONSTELLATION_EVERY = 40;
+
+// Faint lines between nearby stars of the same sector: the sector clusters read as
+// constellations. Recomputed every few dozen frames, not per frame.
+function constellations(nodes: Map<string, Node>): Link[] {
+  const stars = [...nodes.values()].filter((n) => n.id !== YOU_ID && !n.onHighway && n.alpha > 0.1);
+  const bySector = new Map<string, Node[]>();
+  for (const n of stars) bySector.set(n.sector, [...(bySector.get(n.sector) ?? []), n]);
+  const links: Link[] = [];
+  const seen = new Set<string>();
+  for (const group of bySector.values()) {
+    for (const a of group) {
+      const near = group
+        .filter((b) => b !== a)
+        .map((b) => ({ b, d: Math.hypot(a.x - b.x, a.y - b.y) }))
+        .filter((x) => x.d < CONSTELLATION_REACH)
+        .sort((x, y) => x.d - y.d)
+        .slice(0, 2);
+      for (const { b } of near) {
+        const k = a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        links.push([a, b]);
+      }
+    }
+  }
+  return links;
+}
 
 export const edgeKey = (from: string, to: string) => `${from}>${to}`;
 
@@ -193,6 +228,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
   const edgesRef = useRef<Map<string, Edge>>(new Map());
   const simRef = useRef<Simulation<Node, undefined> | null>(null);
   const gatherRef = useRef<Gather[]>([]);
+  const linksRef = useRef<{ links: Link[]; frame: number }>({ links: [], frame: 0 });
   const hoverRef = useRef<Node | null>(null);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const propsRef = useRef({ highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion });
@@ -204,7 +240,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
   useEffect(() => {
     const map = new Map<string, Node>();
     const maxLed = Math.max(1, ...network.nodes.map((n) => n.ledCount));
-    map.set(YOU_ID, { id: YOU_ID, name: youLabel, kind: "unknown", led: 0, r: 9, x: 0, y: 0, tx: 0, ty: 0, depth: 0, onHighway: true, alpha: 1 });
+    map.set(YOU_ID, { id: YOU_ID, name: youLabel, kind: "unknown", led: 0, r: 9, x: 0, y: 0, tx: 0, ty: 0, depth: 0, onHighway: true, alpha: 1, sector: "", tw: 0, twf: 0 });
     for (const n of network.nodes) {
       const rnd = seeded(n.id);
       map.set(n.id, {
@@ -220,6 +256,9 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
         depth: -1,
         onHighway: false,
         alpha: 0,
+        sector: n.sector,
+        tw: rnd() * Math.PI * 2,
+        twf: 0.5 + rnd() * 1.4,
       });
     }
     nodesRef.current = map;
@@ -389,6 +428,18 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
         if (e.target === 0 && e.alpha < 0.01) edges.delete(e.key);
       }
 
+      // Constellations: faint same-sector links behind everything else.
+      const lk = linksRef.current;
+      if (lk.frame++ % CONSTELLATION_EVERY === 0 || (lk.links.length === 0 && lk.frame < 120)) lk.links = constellations(map);
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      for (const [a, b] of lk.links) {
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+      }
+      ctx.strokeStyle = `rgb(190 205 255 / ${results ? 0.07 : 0.1})`;
+      ctx.stroke();
+
       // Highway ribbons under the particles.
       if (results) {
         ctx.lineCap = "round";
@@ -430,6 +481,13 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
           const fade = Math.min(1, q.t * 6, (1 - q.t) * 6);
           const s = q.size * (bright ? 2.4 : 2) * (0.6 + 0.4 * fade);
           ctx.drawImage(spr, x + nx * q.off - s, y + ny * q.off - s, s * 2, s * 2);
+          // Comet tail: two fainter heads trailing along the curve.
+          if (bright && q.t > 0.05) {
+            const [x1, y1] = bezier(e, q.t - 0.018);
+            const [x2, y2] = bezier(e, q.t - 0.036);
+            ctx.drawImage(spr, x1 + nx * q.off - s * 0.7, y1 + ny * q.off - s * 0.7, s * 1.4, s * 1.4);
+            ctx.drawImage(spr, x2 + nx * q.off - s * 0.45, y2 + ny * q.off - s * 0.45, s * 0.9, s * 0.9);
+          }
         }
       }
       ctx.globalAlpha = 1;
@@ -469,26 +527,36 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
       }
       ctx.globalCompositeOperation = "source-over";
 
-      // Investor nodes.
+      // Investor stars: soft glow, a bright core, a slow twinkle; highway stars get a sparkle.
       const backers = new Set(p.backerIds ?? []);
       for (const n of map.values()) {
         if (n.id === YOU_ID || n.alpha < 0.02) continue;
         const color = KIND_COLOR[n.kind];
         const key = n.onHighway && results;
         const isBacker = backers.has(n.id);
-        const glowR = n.r * (key ? 4.2 : 2.6);
-        ctx.globalAlpha = n.alpha * (key ? 0.75 : 0.35);
+        const tw = motion ? 0.8 + 0.2 * Math.sin((now / 1000) * n.twf + n.tw) : 1;
+        const glowR = n.r * (key ? 4.6 : 3) * (key ? 1 : tw);
+        ctx.globalAlpha = n.alpha * (key ? 0.8 : 0.4 * tw);
         ctx.drawImage(sprite(color), n.x - glowR, n.y - glowR, glowR * 2, glowR * 2);
-        ctx.globalAlpha = n.alpha;
-        ctx.fillStyle = key ? color : withAlpha(color, 0.78);
+        ctx.globalAlpha = n.alpha * (key ? 1 : 0.7 + 0.3 * tw);
+        ctx.fillStyle = key ? color : withAlpha(color, 0.85);
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.arc(n.x, n.y, n.r * (key ? 1 : 0.85), 0, Math.PI * 2);
         ctx.fill();
         if (key) {
           ctx.fillStyle = "rgb(255 255 255 / 0.9)";
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.r * 0.4, 0, Math.PI * 2);
           ctx.fill();
+          const sp = n.r * 2.6;
+          ctx.strokeStyle = withAlpha(color, 0.55);
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(n.x - sp, n.y);
+          ctx.lineTo(n.x + sp, n.y);
+          ctx.moveTo(n.x, n.y - sp);
+          ctx.lineTo(n.x, n.y + sp);
+          ctx.stroke();
         }
         if (isBacker) {
           ctx.strokeStyle = withAlpha(ACCENT, 0.9);
@@ -502,14 +570,31 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
       }
       ctx.globalAlpha = 1;
 
-      // You.
+      // You: the galaxy's bright core, with a slow orbit ring.
       if (you) {
         const pulse = motion ? 1 + 0.08 * Math.sin(now / 600) : 1;
         ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = 0.55;
+        ctx.drawImage(sprite(ACCENT), you.x - 110 * pulse, you.y - 110 * pulse, 220 * pulse, 220 * pulse);
         ctx.globalAlpha = 0.9;
-        ctx.drawImage(sprite(ACCENT), you.x - 64 * pulse, you.y - 64 * pulse, 128 * pulse, 128 * pulse);
+        ctx.drawImage(sprite(ACCENT), you.x - 60 * pulse, you.y - 60 * pulse, 120 * pulse, 120 * pulse);
+        ctx.drawImage(sprite(YOU_COLOR, 32), you.x - 22, you.y - 22, 44, 44);
         ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 1;
+        const spin = motion ? now / 9000 : 0;
+        ctx.save();
+        ctx.translate(you.x, you.y);
+        ctx.rotate(-0.35 + spin);
+        ctx.strokeStyle = "rgb(255 220 200 / 0.28)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 30, 12, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "rgb(255 246 234 / 0.95)";
+        ctx.beginPath();
+        ctx.arc(30 * Math.cos(spin * 3), 12 * Math.sin(spin * 3), 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
         ctx.fillStyle = YOU_COLOR;
         ctx.beginPath();
         ctx.arc(you.x, you.y, 10, 0, Math.PI * 2);
