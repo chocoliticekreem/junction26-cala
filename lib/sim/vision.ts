@@ -86,6 +86,22 @@ export function companyFacts(model: SimModel, companyId: string): CompanyFacts {
   return { stageIdx: eps.length ? Math.max(...eps.map((e) => roundStageIndex(e.stage))) : -1, totalUsd, valuationUsd };
 }
 
+// USD raised up to and including a company's first round valued at `target` or more; its total
+// raised when no dated round carries such a valuation (status from company fields only). The total
+// today counts money raised after the company got there (Anthropic, Revolut), which put the bar for a
+// simulated unicorn far above what companies had raised when they first reached it.
+export function raisedWhenValued(model: SimModel, companyId: string, target: number): number {
+  let total = 0;
+  for (const e of model.episodes[companyId] ?? []) {
+    for (const rid of e.roundIds) {
+      const r = model.cohort.rounds[rid];
+      total += r?.amountUsd ?? 0;
+      if ((r?.valuationUsd ?? 0) >= target) return total;
+    }
+  }
+  return companyFacts(model, companyId).totalUsd;
+}
+
 function cohortHasValuations(model: SimModel): boolean {
   return Object.keys(model.episodes).some((id) => companyFacts(model, id).valuationUsd !== undefined);
 }
@@ -102,9 +118,13 @@ function basisCore(vision: Vision, model: SimModel): VisionBasis {
     const targetStage: Stage = "series-b-plus";
     if (cohortHasValuations(model)) {
       const hits = Object.keys(model.episodes)
-        .map((id) => companyFacts(model, id))
-        .filter((f) => (f.valuationUsd ?? 0) >= target && f.totalUsd > 0);
-      const threshold = median(hits.map((h) => h.totalUsd)) ?? PROXY_FUNDING_USD;
+        .filter((id) => {
+          const f = companyFacts(model, id);
+          return (f.valuationUsd ?? 0) >= target && f.totalUsd > 0;
+        })
+        .map((id) => raisedWhenValued(model, id, target))
+        .filter((x) => x > 0);
+      const threshold = median(hits) ?? PROXY_FUNDING_USD;
       return {
         kind: "valuation",
         targetStage,
@@ -113,7 +133,7 @@ function basisCore(vision: Vision, model: SimModel): VisionBasis {
         text:
           `Real companies count when a sourced valuation is at least ${fmtUsd(target)} (${hits.length} in the cohort). ` +
           `Simulated paths count when they reach Series B+ with ${fmtUsd(threshold)}+ raised, ` +
-          (hits.length ? `the median raised by those ${hits.length}.` : `a proxy, since none hit the target.`),
+          (hits.length ? `the median those ${hits.length} had raised when first valued there.` : `a proxy, since none hit the target.`),
       };
     }
     return {
