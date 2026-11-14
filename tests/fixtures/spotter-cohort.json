@@ -1,0 +1,4093 @@
+{
+ "version": 1,
+ "asOf": "2026-06-01",
+ "companies": {
+  "c:u0": {
+   "id": "c:u0",
+   "name": "Tractable (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:u0:0",
+    "r:c:u0:1",
+    "r:c:u0:2",
+    "r:c:u0:3",
+    "r:c:u0:4"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ],
+   "isUnicorn": {
+    "value": true,
+    "basis": "valuation"
+   },
+   "maxValuationUsd": 1500000000.0
+  },
+  "c:u1": {
+   "id": "c:u1",
+   "name": "PolyAI (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:u1:0",
+    "r:c:u1:1",
+    "r:c:u1:2",
+    "r:c:u1:3",
+    "r:c:u1:4"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ],
+   "isUnicorn": {
+    "value": true,
+    "basis": "valuation"
+   },
+   "maxValuationUsd": 1500000000.0
+  },
+  "c:u2": {
+   "id": "c:u2",
+   "name": "Cleo (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:u2:0",
+    "r:c:u2:1",
+    "r:c:u2:2",
+    "r:c:u2:3",
+    "r:c:u2:4"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ],
+   "isUnicorn": {
+    "value": true,
+    "basis": "valuation"
+   },
+   "maxValuationUsd": 1500000000.0
+  },
+  "c:u3": {
+   "id": "c:u3",
+   "name": "Synthesia (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:u3:0",
+    "r:c:u3:1",
+    "r:c:u3:2",
+    "r:c:u3:3",
+    "r:c:u3:4"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ],
+   "isUnicorn": {
+    "value": true,
+    "basis": "valuation"
+   },
+   "maxValuationUsd": 1500000000.0
+  },
+  "c:u4": {
+   "id": "c:u4",
+   "name": "Paddle (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:u4:0",
+    "r:c:u4:1",
+    "r:c:u4:2",
+    "r:c:u4:3",
+    "r:c:u4:4"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ],
+   "isUnicorn": {
+    "value": true,
+    "basis": "valuation"
+   },
+   "maxValuationUsd": 1500000000.0
+  },
+  "c:u5": {
+   "id": "c:u5",
+   "name": "Onfido (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:u5:0",
+    "r:c:u5:1",
+    "r:c:u5:2",
+    "r:c:u5:3",
+    "r:c:u5:4"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ],
+   "isUnicorn": {
+    "value": true,
+    "basis": "valuation"
+   },
+   "maxValuationUsd": 1500000000.0
+  },
+  "c:s0": {
+   "id": "c:s0",
+   "name": "Stalled 0 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "closed",
+   "roundIds": [
+    "r:c:s0:0",
+    "r:c:s0:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s1": {
+   "id": "c:s1",
+   "name": "Stalled 1 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s1:0",
+    "r:c:s1:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s2": {
+   "id": "c:s2",
+   "name": "Stalled 2 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s2:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s3": {
+   "id": "c:s3",
+   "name": "Stalled 3 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s3:0",
+    "r:c:s3:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s4": {
+   "id": "c:s4",
+   "name": "Stalled 4 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "closed",
+   "roundIds": [
+    "r:c:s4:0",
+    "r:c:s4:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s5": {
+   "id": "c:s5",
+   "name": "Stalled 5 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s5:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s6": {
+   "id": "c:s6",
+   "name": "Stalled 6 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s6:0",
+    "r:c:s6:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s7": {
+   "id": "c:s7",
+   "name": "Stalled 7 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s7:0",
+    "r:c:s7:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s8": {
+   "id": "c:s8",
+   "name": "Stalled 8 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "closed",
+   "roundIds": [
+    "r:c:s8:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s9": {
+   "id": "c:s9",
+   "name": "Stalled 9 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s9:0",
+    "r:c:s9:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s10": {
+   "id": "c:s10",
+   "name": "Stalled 10 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s10:0",
+    "r:c:s10:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s11": {
+   "id": "c:s11",
+   "name": "Stalled 11 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s11:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s12": {
+   "id": "c:s12",
+   "name": "Stalled 12 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "closed",
+   "roundIds": [
+    "r:c:s12:0",
+    "r:c:s12:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s13": {
+   "id": "c:s13",
+   "name": "Stalled 13 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:s13:0",
+    "r:c:s13:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:s_honest": {
+   "id": "c:s_honest",
+   "name": "Almost (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "closed",
+   "roundIds": [
+    "r:c:s_honest:0",
+    "r:c:s_honest:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m0": {
+   "id": "c:m0",
+   "name": "Midpath 0 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m0:0",
+    "r:c:m0:1",
+    "r:c:m0:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m1": {
+   "id": "c:m1",
+   "name": "Midpath 1 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m1:0",
+    "r:c:m1:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m2": {
+   "id": "c:m2",
+   "name": "Midpath 2 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m2:0",
+    "r:c:m2:1",
+    "r:c:m2:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m3": {
+   "id": "c:m3",
+   "name": "Midpath 3 (fixture)",
+   "sector": "healthtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m3:0",
+    "r:c:m3:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m4": {
+   "id": "c:m4",
+   "name": "Midpath 4 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m4:0",
+    "r:c:m4:1",
+    "r:c:m4:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m5": {
+   "id": "c:m5",
+   "name": "Midpath 5 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m5:0",
+    "r:c:m5:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m6": {
+   "id": "c:m6",
+   "name": "Midpath 6 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m6:0",
+    "r:c:m6:1",
+    "r:c:m6:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m7": {
+   "id": "c:m7",
+   "name": "Midpath 7 (fixture)",
+   "sector": "healthtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m7:0",
+    "r:c:m7:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m8": {
+   "id": "c:m8",
+   "name": "Midpath 8 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m8:0",
+    "r:c:m8:1",
+    "r:c:m8:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m9": {
+   "id": "c:m9",
+   "name": "Midpath 9 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m9:0",
+    "r:c:m9:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m10": {
+   "id": "c:m10",
+   "name": "Midpath 10 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m10:0",
+    "r:c:m10:1",
+    "r:c:m10:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m11": {
+   "id": "c:m11",
+   "name": "Midpath 11 (fixture)",
+   "sector": "healthtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m11:0",
+    "r:c:m11:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m12": {
+   "id": "c:m12",
+   "name": "Midpath 12 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m12:0",
+    "r:c:m12:1",
+    "r:c:m12:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m13": {
+   "id": "c:m13",
+   "name": "Midpath 13 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m13:0",
+    "r:c:m13:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m14": {
+   "id": "c:m14",
+   "name": "Midpath 14 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m14:0",
+    "r:c:m14:1",
+    "r:c:m14:2"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:m15": {
+   "id": "c:m15",
+   "name": "Midpath 15 (fixture)",
+   "sector": "healthtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:m15:0",
+    "r:c:m15:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:idx_port": {
+   "id": "c:idx_port",
+   "name": "Index Portfolio (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:idx_port:0",
+    "r:c:idx_port:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:good": {
+   "id": "c:good",
+   "name": "Planted Rocket (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:good:0",
+    "r:c:good:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:bad": {
+   "id": "c:bad",
+   "name": "Planted Drift (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:bad:0",
+    "r:c:bad:1"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y0": {
+   "id": "c:y0",
+   "name": "Young 0 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y0:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y1": {
+   "id": "c:y1",
+   "name": "Young 1 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y1:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y2": {
+   "id": "c:y2",
+   "name": "Young 2 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y2:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y3": {
+   "id": "c:y3",
+   "name": "Young 3 (fixture)",
+   "sector": "healthtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y3:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y4": {
+   "id": "c:y4",
+   "name": "Young 4 (fixture)",
+   "sector": "edtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y4:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y5": {
+   "id": "c:y5",
+   "name": "Young 5 (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y5:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y6": {
+   "id": "c:y6",
+   "name": "Young 6 (fixture)",
+   "sector": "applied AI/vertical SaaS",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y6:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y7": {
+   "id": "c:y7",
+   "name": "Young 7 (fixture)",
+   "sector": "consumer",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y7:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y8": {
+   "id": "c:y8",
+   "name": "Young 8 (fixture)",
+   "sector": "healthtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y8:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:y9": {
+   "id": "c:y9",
+   "name": "Young 9 (fixture)",
+   "sector": "edtech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:y9:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  },
+  "c:future": {
+   "id": "c:future",
+   "name": "Future Co (fixture)",
+   "sector": "fintech",
+   "hq": "London, UK",
+   "status": "active",
+   "roundIds": [
+    "r:c:future:0"
+   ],
+   "sources": [
+    {
+     "name": "fixture"
+    }
+   ]
+  }
+ },
+ "rounds": {
+  "r:c:u0:0": {
+   "id": "r:c:u0:0",
+   "companyId": "c:u0",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2014-01-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u0:0"
+    }
+   ]
+  },
+  "r:c:u0:1": {
+   "id": "r:c:u0:1",
+   "companyId": "c:u0",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2014-10-15",
+   "datePrecision": "day",
+   "amountUsd": 2200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u0:1"
+    }
+   ]
+  },
+  "r:c:u0:2": {
+   "id": "r:c:u0:2",
+   "companyId": "c:u0",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2015-10-15",
+   "datePrecision": "day",
+   "amountUsd": 11000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u0:2"
+    }
+   ]
+  },
+  "r:c:u0:3": {
+   "id": "r:c:u0:3",
+   "companyId": "c:u0",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2017-04-15",
+   "datePrecision": "day",
+   "amountUsd": 60000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u0:3"
+    }
+   ]
+  },
+  "r:c:u0:4": {
+   "id": "r:c:u0:4",
+   "companyId": "c:u0",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2018-08-15",
+   "datePrecision": "day",
+   "amountUsd": 150000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u0:4"
+    }
+   ],
+   "valuationUsd": 1200000000.0
+  },
+  "r:c:u1:0": {
+   "id": "r:c:u1:0",
+   "companyId": "c:u1",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2015-03-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u1:0"
+    }
+   ]
+  },
+  "r:c:u1:1": {
+   "id": "r:c:u1:1",
+   "companyId": "c:u1",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-01-15",
+   "datePrecision": "day",
+   "amountUsd": 2200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u1:1"
+    }
+   ]
+  },
+  "r:c:u1:2": {
+   "id": "r:c:u1:2",
+   "companyId": "c:u1",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2017-01-15",
+   "datePrecision": "day",
+   "amountUsd": 11000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u1:2"
+    }
+   ]
+  },
+  "r:c:u1:3": {
+   "id": "r:c:u1:3",
+   "companyId": "c:u1",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2018-07-15",
+   "datePrecision": "day",
+   "amountUsd": 60000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u1:3"
+    }
+   ]
+  },
+  "r:c:u1:4": {
+   "id": "r:c:u1:4",
+   "companyId": "c:u1",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2019-11-15",
+   "datePrecision": "day",
+   "amountUsd": 150000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u1:4"
+    }
+   ],
+   "valuationUsd": 1200000000.0
+  },
+  "r:c:u2:0": {
+   "id": "r:c:u2:0",
+   "companyId": "c:u2",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2016-05-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u2:0"
+    }
+   ]
+  },
+  "r:c:u2:1": {
+   "id": "r:c:u2:1",
+   "companyId": "c:u2",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2017-02-15",
+   "datePrecision": "day",
+   "amountUsd": 2200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u2:1"
+    }
+   ]
+  },
+  "r:c:u2:2": {
+   "id": "r:c:u2:2",
+   "companyId": "c:u2",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2018-02-15",
+   "datePrecision": "day",
+   "amountUsd": 11000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u2:2"
+    }
+   ]
+  },
+  "r:c:u2:3": {
+   "id": "r:c:u2:3",
+   "companyId": "c:u2",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2019-08-15",
+   "datePrecision": "day",
+   "amountUsd": 60000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u2:3"
+    }
+   ]
+  },
+  "r:c:u2:4": {
+   "id": "r:c:u2:4",
+   "companyId": "c:u2",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2020-12-15",
+   "datePrecision": "day",
+   "amountUsd": 150000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u2:4"
+    }
+   ],
+   "valuationUsd": 1200000000.0
+  },
+  "r:c:u3:0": {
+   "id": "r:c:u3:0",
+   "companyId": "c:u3",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2014-07-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u3:0"
+    }
+   ]
+  },
+  "r:c:u3:1": {
+   "id": "r:c:u3:1",
+   "companyId": "c:u3",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2015-05-15",
+   "datePrecision": "day",
+   "amountUsd": 2200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u3:1"
+    }
+   ]
+  },
+  "r:c:u3:2": {
+   "id": "r:c:u3:2",
+   "companyId": "c:u3",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2016-05-15",
+   "datePrecision": "day",
+   "amountUsd": 11000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u3:2"
+    }
+   ]
+  },
+  "r:c:u3:3": {
+   "id": "r:c:u3:3",
+   "companyId": "c:u3",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2017-11-15",
+   "datePrecision": "day",
+   "amountUsd": 60000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u3:3"
+    }
+   ]
+  },
+  "r:c:u3:4": {
+   "id": "r:c:u3:4",
+   "companyId": "c:u3",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2019-03-15",
+   "datePrecision": "day",
+   "amountUsd": 150000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u3:4"
+    }
+   ],
+   "valuationUsd": 1200000000.0
+  },
+  "r:c:u4:0": {
+   "id": "r:c:u4:0",
+   "companyId": "c:u4",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2015-09-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u4:0"
+    }
+   ]
+  },
+  "r:c:u4:1": {
+   "id": "r:c:u4:1",
+   "companyId": "c:u4",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-06-15",
+   "datePrecision": "day",
+   "amountUsd": 2200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u4:1"
+    }
+   ]
+  },
+  "r:c:u4:2": {
+   "id": "r:c:u4:2",
+   "companyId": "c:u4",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2017-06-15",
+   "datePrecision": "day",
+   "amountUsd": 11000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u4:2"
+    }
+   ]
+  },
+  "r:c:u4:3": {
+   "id": "r:c:u4:3",
+   "companyId": "c:u4",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2018-12-15",
+   "datePrecision": "day",
+   "amountUsd": 60000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u4:3"
+    }
+   ]
+  },
+  "r:c:u4:4": {
+   "id": "r:c:u4:4",
+   "companyId": "c:u4",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2020-04-15",
+   "datePrecision": "day",
+   "amountUsd": 150000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u4:4"
+    }
+   ],
+   "valuationUsd": 1200000000.0
+  },
+  "r:c:u5:0": {
+   "id": "r:c:u5:0",
+   "companyId": "c:u5",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2016-11-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u5:0"
+    }
+   ]
+  },
+  "r:c:u5:1": {
+   "id": "r:c:u5:1",
+   "companyId": "c:u5",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2017-09-15",
+   "datePrecision": "day",
+   "amountUsd": 2200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u5:1"
+    }
+   ]
+  },
+  "r:c:u5:2": {
+   "id": "r:c:u5:2",
+   "companyId": "c:u5",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2018-09-15",
+   "datePrecision": "day",
+   "amountUsd": 11000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u5:2"
+    }
+   ]
+  },
+  "r:c:u5:3": {
+   "id": "r:c:u5:3",
+   "companyId": "c:u5",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2020-03-15",
+   "datePrecision": "day",
+   "amountUsd": 60000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u5:3"
+    }
+   ]
+  },
+  "r:c:u5:4": {
+   "id": "r:c:u5:4",
+   "companyId": "c:u5",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2021-07-15",
+   "datePrecision": "day",
+   "amountUsd": 150000000,
+   "participants": [
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:u5:4"
+    }
+   ],
+   "valuationUsd": 1200000000.0
+  },
+  "r:c:s0:0": {
+   "id": "r:c:s0:0",
+   "companyId": "c:s0",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2015-01-15",
+   "datePrecision": "day",
+   "amountUsd": 100000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s0:0"
+    }
+   ]
+  },
+  "r:c:s0:1": {
+   "id": "r:c:s0:1",
+   "companyId": "c:s0",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-09-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s0:1"
+    }
+   ]
+  },
+  "r:c:s1:0": {
+   "id": "r:c:s1:0",
+   "companyId": "c:s1",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2016-06-15",
+   "datePrecision": "day",
+   "amountUsd": 110000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s1:0"
+    }
+   ]
+  },
+  "r:c:s1:1": {
+   "id": "r:c:s1:1",
+   "companyId": "c:s1",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2018-03-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s1:1"
+    }
+   ]
+  },
+  "r:c:s2:0": {
+   "id": "r:c:s2:0",
+   "companyId": "c:s2",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2017-11-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s2:0"
+    }
+   ]
+  },
+  "r:c:s3:0": {
+   "id": "r:c:s3:0",
+   "companyId": "c:s3",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2018-04-15",
+   "datePrecision": "day",
+   "amountUsd": 130000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s3:0"
+    }
+   ]
+  },
+  "r:c:s3:1": {
+   "id": "r:c:s3:1",
+   "companyId": "c:s3",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2020-03-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s3:1"
+    }
+   ]
+  },
+  "r:c:s4:0": {
+   "id": "r:c:s4:0",
+   "companyId": "c:s4",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2019-09-15",
+   "datePrecision": "day",
+   "amountUsd": 100000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s4:0"
+    }
+   ]
+  },
+  "r:c:s4:1": {
+   "id": "r:c:s4:1",
+   "companyId": "c:s4",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2021-09-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s4:1"
+    }
+   ]
+  },
+  "r:c:s5:0": {
+   "id": "r:c:s5:0",
+   "companyId": "c:s5",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2015-02-15",
+   "datePrecision": "day",
+   "amountUsd": 110000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s5:0"
+    }
+   ]
+  },
+  "r:c:s6:0": {
+   "id": "r:c:s6:0",
+   "companyId": "c:s6",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2016-07-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s6:0"
+    }
+   ]
+  },
+  "r:c:s6:1": {
+   "id": "r:c:s6:1",
+   "companyId": "c:s6",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2018-03-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s6:1"
+    }
+   ]
+  },
+  "r:c:s7:0": {
+   "id": "r:c:s7:0",
+   "companyId": "c:s7",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2017-12-15",
+   "datePrecision": "day",
+   "amountUsd": 130000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s7:0"
+    }
+   ]
+  },
+  "r:c:s7:1": {
+   "id": "r:c:s7:1",
+   "companyId": "c:s7",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2019-09-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s7:1"
+    }
+   ]
+  },
+  "r:c:s8:0": {
+   "id": "r:c:s8:0",
+   "companyId": "c:s8",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2018-05-15",
+   "datePrecision": "day",
+   "amountUsd": 100000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s8:0"
+    }
+   ]
+  },
+  "r:c:s9:0": {
+   "id": "r:c:s9:0",
+   "companyId": "c:s9",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2019-10-15",
+   "datePrecision": "day",
+   "amountUsd": 110000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s9:0"
+    }
+   ]
+  },
+  "r:c:s9:1": {
+   "id": "r:c:s9:1",
+   "companyId": "c:s9",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2021-09-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s9:1"
+    }
+   ]
+  },
+  "r:c:s10:0": {
+   "id": "r:c:s10:0",
+   "companyId": "c:s10",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2015-03-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s10:0"
+    }
+   ]
+  },
+  "r:c:s10:1": {
+   "id": "r:c:s10:1",
+   "companyId": "c:s10",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2017-03-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s10:1"
+    }
+   ]
+  },
+  "r:c:s11:0": {
+   "id": "r:c:s11:0",
+   "companyId": "c:s11",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2016-08-15",
+   "datePrecision": "day",
+   "amountUsd": 130000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s11:0"
+    }
+   ]
+  },
+  "r:c:s12:0": {
+   "id": "r:c:s12:0",
+   "companyId": "c:s12",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2017-01-15",
+   "datePrecision": "day",
+   "amountUsd": 100000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s12:0"
+    }
+   ]
+  },
+  "r:c:s12:1": {
+   "id": "r:c:s12:1",
+   "companyId": "c:s12",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2018-09-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s12:1"
+    }
+   ]
+  },
+  "r:c:s13:0": {
+   "id": "r:c:s13:0",
+   "companyId": "c:s13",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2018-06-15",
+   "datePrecision": "day",
+   "amountUsd": 110000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s13:0"
+    }
+   ]
+  },
+  "r:c:s13:1": {
+   "id": "r:c:s13:1",
+   "companyId": "c:s13",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2020-03-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s13:1"
+    }
+   ]
+  },
+  "r:c:s_honest:0": {
+   "id": "r:c:s_honest:0",
+   "companyId": "c:s_honest",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2016-02-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s_honest:0"
+    }
+   ]
+  },
+  "r:c:s_honest:1": {
+   "id": "r:c:s_honest:1",
+   "companyId": "c:s_honest",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-12-15",
+   "datePrecision": "day",
+   "amountUsd": 2000000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:s_honest:1"
+    }
+   ]
+  },
+  "r:c:m0:0": {
+   "id": "r:c:m0:0",
+   "companyId": "c:m0",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-01-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m0:0"
+    }
+   ]
+  },
+  "r:c:m0:1": {
+   "id": "r:c:m0:1",
+   "companyId": "c:m0",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2017-03-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m0:1"
+    }
+   ]
+  },
+  "r:c:m0:2": {
+   "id": "r:c:m0:2",
+   "companyId": "c:m0",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2018-11-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m0:2"
+    }
+   ]
+  },
+  "r:c:m1:0": {
+   "id": "r:c:m1:0",
+   "companyId": "c:m1",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2017-08-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m1:0"
+    }
+   ]
+  },
+  "r:c:m1:1": {
+   "id": "r:c:m1:1",
+   "companyId": "c:m1",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2018-10-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m1:1"
+    }
+   ]
+  },
+  "r:c:m2:0": {
+   "id": "r:c:m2:0",
+   "companyId": "c:m2",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2018-03-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m2:0"
+    }
+   ]
+  },
+  "r:c:m2:1": {
+   "id": "r:c:m2:1",
+   "companyId": "c:m2",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2019-05-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m2:1"
+    }
+   ]
+  },
+  "r:c:m2:2": {
+   "id": "r:c:m2:2",
+   "companyId": "c:m2",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2021-01-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m2:2"
+    }
+   ]
+  },
+  "r:c:m3:0": {
+   "id": "r:c:m3:0",
+   "companyId": "c:m3",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2019-10-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m3:0"
+    }
+   ]
+  },
+  "r:c:m3:1": {
+   "id": "r:c:m3:1",
+   "companyId": "c:m3",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2020-12-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m3:1"
+    }
+   ]
+  },
+  "r:c:m4:0": {
+   "id": "r:c:m4:0",
+   "companyId": "c:m4",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2020-05-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m4:0"
+    }
+   ]
+  },
+  "r:c:m4:1": {
+   "id": "r:c:m4:1",
+   "companyId": "c:m4",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2021-07-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m4:1"
+    }
+   ]
+  },
+  "r:c:m4:2": {
+   "id": "r:c:m4:2",
+   "companyId": "c:m4",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2023-03-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m4:2"
+    }
+   ]
+  },
+  "r:c:m5:0": {
+   "id": "r:c:m5:0",
+   "companyId": "c:m5",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2021-12-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m5:0"
+    }
+   ]
+  },
+  "r:c:m5:1": {
+   "id": "r:c:m5:1",
+   "companyId": "c:m5",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2023-02-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m5:1"
+    }
+   ]
+  },
+  "r:c:m6:0": {
+   "id": "r:c:m6:0",
+   "companyId": "c:m6",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-07-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m6:0"
+    }
+   ]
+  },
+  "r:c:m6:1": {
+   "id": "r:c:m6:1",
+   "companyId": "c:m6",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2017-09-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m6:1"
+    }
+   ]
+  },
+  "r:c:m6:2": {
+   "id": "r:c:m6:2",
+   "companyId": "c:m6",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2019-05-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m6:2"
+    }
+   ]
+  },
+  "r:c:m7:0": {
+   "id": "r:c:m7:0",
+   "companyId": "c:m7",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2017-02-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m7:0"
+    }
+   ]
+  },
+  "r:c:m7:1": {
+   "id": "r:c:m7:1",
+   "companyId": "c:m7",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2018-04-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m7:1"
+    }
+   ]
+  },
+  "r:c:m8:0": {
+   "id": "r:c:m8:0",
+   "companyId": "c:m8",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2018-09-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m8:0"
+    }
+   ]
+  },
+  "r:c:m8:1": {
+   "id": "r:c:m8:1",
+   "companyId": "c:m8",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2019-11-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m8:1"
+    }
+   ]
+  },
+  "r:c:m8:2": {
+   "id": "r:c:m8:2",
+   "companyId": "c:m8",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2021-07-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m8:2"
+    }
+   ]
+  },
+  "r:c:m9:0": {
+   "id": "r:c:m9:0",
+   "companyId": "c:m9",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2019-04-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m9:0"
+    }
+   ]
+  },
+  "r:c:m9:1": {
+   "id": "r:c:m9:1",
+   "companyId": "c:m9",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2020-06-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m9:1"
+    }
+   ]
+  },
+  "r:c:m10:0": {
+   "id": "r:c:m10:0",
+   "companyId": "c:m10",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2020-11-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m10:0"
+    }
+   ]
+  },
+  "r:c:m10:1": {
+   "id": "r:c:m10:1",
+   "companyId": "c:m10",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2022-01-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m10:1"
+    }
+   ]
+  },
+  "r:c:m10:2": {
+   "id": "r:c:m10:2",
+   "companyId": "c:m10",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2023-09-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m10:2"
+    }
+   ]
+  },
+  "r:c:m11:0": {
+   "id": "r:c:m11:0",
+   "companyId": "c:m11",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2021-06-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m11:0"
+    }
+   ]
+  },
+  "r:c:m11:1": {
+   "id": "r:c:m11:1",
+   "companyId": "c:m11",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2022-08-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m11:1"
+    }
+   ]
+  },
+  "r:c:m12:0": {
+   "id": "r:c:m12:0",
+   "companyId": "c:m12",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2016-01-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m12:0"
+    }
+   ]
+  },
+  "r:c:m12:1": {
+   "id": "r:c:m12:1",
+   "companyId": "c:m12",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2017-03-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m12:1"
+    }
+   ]
+  },
+  "r:c:m12:2": {
+   "id": "r:c:m12:2",
+   "companyId": "c:m12",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2018-11-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m12:2"
+    }
+   ]
+  },
+  "r:c:m13:0": {
+   "id": "r:c:m13:0",
+   "companyId": "c:m13",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2017-08-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m13:0"
+    }
+   ]
+  },
+  "r:c:m13:1": {
+   "id": "r:c:m13:1",
+   "companyId": "c:m13",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2018-10-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m13:1"
+    }
+   ]
+  },
+  "r:c:m14:0": {
+   "id": "r:c:m14:0",
+   "companyId": "c:m14",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2018-03-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m14:0"
+    }
+   ]
+  },
+  "r:c:m14:1": {
+   "id": "r:c:m14:1",
+   "companyId": "c:m14",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2019-05-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m14:1"
+    }
+   ]
+  },
+  "r:c:m14:2": {
+   "id": "r:c:m14:2",
+   "companyId": "c:m14",
+   "stage": "series-b-plus",
+   "label": "Series B",
+   "date": "2021-01-15",
+   "datePrecision": "day",
+   "amountUsd": 30000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:growth",
+     "name": "Late Growth Partners (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m14:2"
+    }
+   ]
+  },
+  "r:c:m15:0": {
+   "id": "r:c:m15:0",
+   "companyId": "c:m15",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2019-10-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m15:0"
+    }
+   ]
+  },
+  "r:c:m15:1": {
+   "id": "r:c:m15:1",
+   "companyId": "c:m15",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2020-12-15",
+   "datePrecision": "day",
+   "amountUsd": 8000000,
+   "participants": [
+    {
+     "investorId": "inv:balderton",
+     "name": "Balderton Capital (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:m15:1"
+    }
+   ]
+  },
+  "r:c:idx_port:0": {
+   "id": "r:c:idx_port:0",
+   "companyId": "c:idx_port",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2024-05-15",
+   "datePrecision": "day",
+   "amountUsd": 2500000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:idx_port:0"
+    }
+   ]
+  },
+  "r:c:idx_port:1": {
+   "id": "r:c:idx_port:1",
+   "companyId": "c:idx_port",
+   "stage": "series-a",
+   "label": "Series A",
+   "date": "2025-04-15",
+   "datePrecision": "day",
+   "amountUsd": 12000000,
+   "participants": [
+    {
+     "investorId": "inv:index",
+     "name": "Index Ventures (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:idx_port:1"
+    }
+   ]
+  },
+  "r:c:good:0": {
+   "id": "r:c:good:0",
+   "companyId": "c:good",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2025-01-15",
+   "datePrecision": "day",
+   "amountUsd": 120000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:good:0"
+    }
+   ]
+  },
+  "r:c:good:1": {
+   "id": "r:c:good:1",
+   "companyId": "c:good",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2025-10-15",
+   "datePrecision": "day",
+   "amountUsd": 2300000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator"
+    },
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:good:1"
+    }
+   ]
+  },
+  "r:c:bad:0": {
+   "id": "r:c:bad:0",
+   "companyId": "c:bad",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2023-09-15",
+   "datePrecision": "day",
+   "amountUsd": 100000,
+   "participants": [
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:bad:0"
+    }
+   ]
+  },
+  "r:c:bad:1": {
+   "id": "r:c:bad:1",
+   "companyId": "c:bad",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2025-08-15",
+   "datePrecision": "day",
+   "amountUsd": 450000,
+   "participants": [
+    {
+     "investorId": "inv:angel3",
+     "name": "Angel Three (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:bad:1"
+    }
+   ]
+  },
+  "r:c:y0:0": {
+   "id": "r:c:y0:0",
+   "companyId": "c:y0",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2023-01-15",
+   "datePrecision": "day",
+   "amountUsd": 900000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:thin",
+     "name": "Thin Angel (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y0:0"
+    }
+   ]
+  },
+  "r:c:y1:0": {
+   "id": "r:c:y1:0",
+   "companyId": "c:y1",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2024-04-15",
+   "datePrecision": "day",
+   "amountUsd": 1000000,
+   "participants": [
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:thin",
+     "name": "Thin Angel (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y1:0"
+    }
+   ]
+  },
+  "r:c:y2:0": {
+   "id": "r:c:y2:0",
+   "companyId": "c:y2",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2025-07-15",
+   "datePrecision": "day",
+   "amountUsd": 1100000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y2:0"
+    }
+   ]
+  },
+  "r:c:y3:0": {
+   "id": "r:c:y3:0",
+   "companyId": "c:y3",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2023-10-15",
+   "datePrecision": "day",
+   "amountUsd": 1200000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y3:0"
+    }
+   ]
+  },
+  "r:c:y4:0": {
+   "id": "r:c:y4:0",
+   "companyId": "c:y4",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2024-01-15",
+   "datePrecision": "day",
+   "amountUsd": 1300000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y4:0"
+    }
+   ]
+  },
+  "r:c:y5:0": {
+   "id": "r:c:y5:0",
+   "companyId": "c:y5",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2025-04-15",
+   "datePrecision": "day",
+   "amountUsd": 1400000,
+   "participants": [
+    {
+     "investorId": "inv:localglobe",
+     "name": "LocalGlobe (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y5:0"
+    }
+   ]
+  },
+  "r:c:y6:0": {
+   "id": "r:c:y6:0",
+   "companyId": "c:y6",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2023-07-15",
+   "datePrecision": "day",
+   "amountUsd": 1500000,
+   "participants": [
+    {
+     "investorId": "inv:angel1",
+     "name": "Angel One (fixture)",
+     "kind": "angel",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y6:0"
+    }
+   ]
+  },
+  "r:c:y7:0": {
+   "id": "r:c:y7:0",
+   "companyId": "c:y7",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2024-10-15",
+   "datePrecision": "day",
+   "amountUsd": 1600000,
+   "participants": [
+    {
+     "investorId": "inv:healthfund",
+     "name": "Health Seed Fund (fixture)",
+     "kind": "fund",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y7:0"
+    }
+   ]
+  },
+  "r:c:y8:0": {
+   "id": "r:c:y8:0",
+   "companyId": "c:y8",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2025-01-15",
+   "datePrecision": "day",
+   "amountUsd": 1700000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y8:0"
+    }
+   ]
+  },
+  "r:c:y9:0": {
+   "id": "r:c:y9:0",
+   "companyId": "c:y9",
+   "stage": "pre-seed",
+   "label": "Pre-Seed",
+   "date": "2023-04-15",
+   "datePrecision": "day",
+   "amountUsd": 1800000,
+   "participants": [
+    {
+     "investorId": "inv:ef",
+     "name": "Entrepreneur First (fixture)",
+     "kind": "accelerator",
+     "isLead": true
+    },
+    {
+     "investorId": "inv:angel2",
+     "name": "Angel Two (fixture)",
+     "kind": "angel"
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:y9:0"
+    }
+   ]
+  },
+  "r:c:future:0": {
+   "id": "r:c:future:0",
+   "companyId": "c:future",
+   "stage": "seed",
+   "label": "Seed",
+   "date": "2021-03-15",
+   "datePrecision": "day",
+   "amountUsd": 2000000,
+   "participants": [
+    {
+     "investorId": "inv:seedcamp",
+     "name": "Seedcamp (fixture)",
+     "kind": "fund",
+     "isLead": true
+    }
+   ],
+   "sources": [
+    {
+     "name": "fixture",
+     "url": "https://example.com/r:c:future:0"
+    }
+   ]
+  }
+ },
+ "investors": {
+  "inv:ef": {
+   "id": "inv:ef",
+   "name": "Entrepreneur First (fixture)",
+   "kind": "accelerator"
+  },
+  "inv:seedcamp": {
+   "id": "inv:seedcamp",
+   "name": "Seedcamp (fixture)",
+   "kind": "fund"
+  },
+  "inv:localglobe": {
+   "id": "inv:localglobe",
+   "name": "LocalGlobe (fixture)",
+   "kind": "fund"
+  },
+  "inv:index": {
+   "id": "inv:index",
+   "name": "Index Ventures (fixture)",
+   "kind": "fund",
+   "investorsJsonId": "index-ventures"
+  },
+  "inv:balderton": {
+   "id": "inv:balderton",
+   "name": "Balderton Capital (fixture)",
+   "kind": "fund"
+  },
+  "inv:growth": {
+   "id": "inv:growth",
+   "name": "Late Growth Partners (fixture)",
+   "kind": "fund"
+  },
+  "inv:angel1": {
+   "id": "inv:angel1",
+   "name": "Angel One (fixture)",
+   "kind": "angel"
+  },
+  "inv:angel2": {
+   "id": "inv:angel2",
+   "name": "Angel Two (fixture)",
+   "kind": "angel"
+  },
+  "inv:angel3": {
+   "id": "inv:angel3",
+   "name": "Angel Three (fixture)",
+   "kind": "angel"
+  },
+  "inv:healthfund": {
+   "id": "inv:healthfund",
+   "name": "Health Seed Fund (fixture)",
+   "kind": "fund"
+  },
+  "inv:thin": {
+   "id": "inv:thin",
+   "name": "Thin Angel (fixture)",
+   "kind": "angel"
+  }
+ }
+}
