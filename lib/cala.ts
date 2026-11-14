@@ -128,10 +128,11 @@ export class MemoryLRU implements CalaCache {
   }
 }
 
-// A deploy (e.g. Vercel) has a read-only filesystem: writes fail with EROFS, or EACCES/EPERM.
+// A deploy (e.g. Vercel) has a read-only filesystem: writes fail with EROFS, EACCES/EPERM, or
+// ENOENT when the cache folder was never shipped and cannot be created.
 export function isReadOnlyFsError(e: unknown): boolean {
   const code = (e as { code?: unknown } | null)?.code;
-  return code === "EROFS" || code === "EACCES" || code === "EPERM";
+  return code === "EROFS" || code === "EACCES" || code === "EPERM" || code === "ENOENT";
 }
 
 // On a read-only filesystem the cache stops writing and acts as read-only (usually empty).
