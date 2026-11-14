@@ -17,15 +17,28 @@
 - 06:58 PR #11 Review fixes (logic): honest debrief wording, founder-aware easiest doors, off-taxonomy 'other', live-loop race + LLM-overrides-fallback per chunk, R before hydration, 24-month inbox evidence, scheme-less website crash, human error copy, periodic expiry, lazy seed room, ElevenLabs realtime STT client.
 - 07:08 PR #12 Review fixes (UI): spec alpha 0.3 reheat + idle drift, sector names visible (no colour-only signal), valid match-row HTML, hover evidence edges, #N badges for unplaceable labels, fixture banner on all pages.
 - 07:45 PR #14 Real Cala data: 193 London investors (148 funds, 17 accelerators, 14 CVCs, 14 angel networks), 2,636 sourced deals since May 2024, 133 with Cala-linked partners, real contradiction lines from counted deals; live Cala entity/search routes, Haiku strict-tool extraction route, ElevenLabs token route. ~725 Cala calls. Fixture banner gone. E2E repointed to real investors (4BIO Capital, Medicxi): 14/14.
+- 07:55 PR #15 Lint/typecheck exclude agent worktrees. PR #16 docs/SUBMISSION.md + docs/DEMO.md (every number computed from repo).
+- 08:10 PR #17 DoD proofs: offline replay e2e; live-loop e2e via test hook on the exact STT handlers (3 pitches: 9/11/4 ms to biotech top-3 + chip, keyword path); real contradiction visible in replay top 10 (London Business Angels: 'Says seed and Series A; 9 of last 10 deals were pre-seed', recounted in test); contradiction lines = strongest counted contrast, flat stated = no preference (65 -> 22 badges, 53 -> 12 lines); 57 future-dated deals clamped; copy audit; Cala search loading state; per-signal team triggers. E2E 18/18, unit 188.
 - E2E: founder-smoke, replay (biotech chip + biotech investor in top 3), interest two-window flow, room seat flow: 4/4 green.
 
+## Definition of done (spec 12.6), status 08:12
+- [x] build, typecheck, lint, unit (188) and e2e (18) pass.
+- [x] Replay reproduces the demo with the network off (tests/e2e/offline.spec.ts).
+- [~] Live mic moves the right cluster within ~2.5 s, three times: proven for everything after the microphone (tests/e2e/live-loop.spec.ts drives the same handlers the STT session calls; 4-11 ms on the keyword path, plus ~600 ms graph settle). **Needs Anson: one real-mic run in Chrome** (headless has no Web Speech).
+- [x] Every top-10 match shows a reason and >= 2 evidence chips (scripts/check-matches.ts: 6 pitches, 60/60 rows; thin history tagged).
+- [x] Real stated-vs-revealed contradiction from Cala data on screen with counted deals (tests/e2e/contradiction.spec.ts).
+- [x] Investor view ranks the founder pool and suggests a room (Zinc, 4BIO Capital, Syncona reach the 12-founder biotech threshold).
+- [x] Two-window interest flow: interested, accept, both verified, chat unlocks; caps enforced (tests/e2e/interest*.spec.ts).
+- [x] No keys in the repo; example env file present; README explains run, ingest, replay, demo.
+- [x] No invented statistics in UI copy; no quotes shown (data/quotes.json empty until Anson collects them).
+
 ## In progress
-- DoD proofs agent (opus): offline replay e2e, live-loop timing e2e (3 pitches < 2.5 s, mic path minus the mic), contradiction visible on screen, stronger contradiction lines, UI copy audit for invented stats, top-10 evidence check over 6 pitches, slow Cala search loading state, per-signal team triggers.
+- Second adversarial review (opus, spec + code only) on the finished product.
+- Submission docs number refresh after the data re-finalization.
 
 ## Next
-- Second adversarial review on the full product (with real data), fix findings.
-- Manual for Anson: one live-mic run in Chrome (headless has no Web Speech).
-- Submission notes (Cala usage, video script).
+- Fix second-review findings; then polish backlog 12.7 (remaining: 4 investor group-by transitions, 6 optional 3D toggle; 9 deploy only when Anson says so).
+- Manual for Anson: one live-mic run in Chrome; collect quotes into data/quotes.json; record demo-pitch audio (optional).
 - Polish backlog 12.7 after DoD.
 
 ## Findings
@@ -46,4 +59,4 @@
 - Live-extract queue appends pending text instead of dropping it (deviation from 5.6 'newest replaces queued'; no words lost, still one request in flight).
 
 ## Elapsed
-- 07:50 — 2 h 18 min.
+- 08:12 — 2 h 40 min.
