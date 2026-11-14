@@ -100,7 +100,7 @@ From SPEC 7.2.
 | 2:10-2:40 | Investor window: Zinc room suggestion, then Medicxi, Interested, accept, verify | "A VC told us the value is the room." |
 | 2:40-3:00 | Back to the founder window | "Revealed thesis needs typed, sourced deal data. 2,632 deals, 193 investors, all from Cala." |
 
-Facts to have ready for questions, from `data/investors.json`: 2,632 deals, 68% with at least one URL source, 133 investors with a Cala-linked partner, 12 with a contradiction badge, 32 flagged thin history. See `docs/SUBMISSION.md` for the full table and for the honesty notes (approximate dates, mocked chat and email checks).
+Facts to have ready for questions, from `data/investors.json`: 2,632 deals, 68% with at least one URL source, 133 investors with a Cala-linked partner, 12 with a contradiction badge, 32 flagged thin history. See `docs/submission.md` for the full table and for the honesty notes (approximate dates, mocked chat and email checks).
 
 If a judge pitches a non-biotech idea, the room suggestion will not appear for the investors above. That is expected: only the biotech cluster passes the threshold with the seeded pool.
 
