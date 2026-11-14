@@ -26,8 +26,11 @@ export type SpotterScores = { fit: number; shape: number; unicornOdds: number; y
 
 export type SpotterPrecedent = { id: string; name: string; outcome: "unicorn" | "stalled"; steps: string[] };
 
+export type SpotterEvent = { name: string; date: string; place: string };
+
 export type SpotterPick = {
   company: SpotterCompany;
+  event?: SpotterEvent;
   scores: SpotterScores;
   precedents: SpotterPrecedent[];
   sampleSize: number;
@@ -44,4 +47,5 @@ export type SpotterResponse = {
   considered: { candidates: number; simulated: number; roundsInCohort: number };
 };
 
-export type SpotterRequest = { investorId: string } | { investorName: string };
+// `at` restricts the picks to companies attending that Cala event (today: "slush-2026").
+export type SpotterRequest = ({ investorId: string } | { investorName: string }) & { at?: string };

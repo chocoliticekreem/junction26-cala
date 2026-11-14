@@ -200,6 +200,7 @@ export default function Constellation({ investorName, picks, selectedId, onSelec
                   onMouseLeave={() => setHoverId((h) => (h === pick.company.id ? null : h))}
                 >
                   {selected && <circle className="sp-select" r={24} />}
+                  {pick.event && <circle className="sp-event-ring" r={ringR + 5} />}
                   <circle className="sp-you-track" r={ringR} />
                   <circle className="sp-you" r={ringR} strokeDasharray={circ} strokeDashoffset={circ * (1 - onPath)} transform="rotate(-90)" />
                   <circle className="sp-core" r={p.r} fill={color} />

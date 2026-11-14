@@ -18,6 +18,8 @@ const FIXTURES = usingFixtures();
 const DEFAULT_FUND = "Seedcamp";
 const QUICK = ["Seedcamp", "Entrepreneur First", "Lightspeed Venture Partners"];
 const SHOW = 5;
+const SLUSH = "slush-2026";
+type Scope = "slush" | "all";
 
 // Taste rows come back with short labels; map them back to the sector hue used on the map.
 const SHORT_TO_SECTOR = Object.fromEntries((Object.entries(SECTOR_SHORT) as [Sector, string][]).map(([s, short]) => [short, s])) as Record<string, Sector>;
@@ -56,11 +58,17 @@ export default function Showcase() {
   // The page never waits for a choice: the default fund is ranked the moment the list arrives.
   const investor = chosen ?? options.find((o) => o.name === DEFAULT_FUND) ?? options[0] ?? null;
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+  // The demo story is "who should this fund meet at Slush next week", so the event scope is the default.
+  const [scope, setScope] = useState<Scope>("slush");
   const reducedMotion = useReducedMotion();
-  const { state, retry } = useSpotter(investor ? { investorId: investor.id } : null);
+  const { state, retry } = useSpotter(investor ? { investorId: investor.id, ...(scope === "slush" ? { at: SLUSH } : {}) } : null);
   const pickInvestor = (o: PickerOption) => {
     setSelectedId(undefined);
     setChosen(o);
+  };
+  const pickScope = (next: Scope) => {
+    setSelectedId(undefined);
+    setScope(next);
   };
 
   useEffect(() => {
@@ -107,7 +115,9 @@ export default function Showcase() {
           )}
           {state.status === "ok" && picks.length === 0 && (
             <div className="sp-error" data-testid="spotter-empty">
-              <span>No young company in {data?.investor.name}’s lane yet.</span>
+              <span>
+                No young company in {data?.investor.name}’s lane {scope === "slush" ? "at Slush" : "yet"}.
+              </span>
             </div>
           )}
           {state.status === "error" && (
@@ -137,6 +147,7 @@ export default function Showcase() {
             <p className="hero-kicker">Early spotter</p>
             <div className="sp-h1-row">
               <h1 className="sp-h1">
+                {scope === "slush" && "Meet at Slush: "}
                 {data && picks.length > 0 ? (
                   <>
                     {picks.length} picks for <span className="k">{data.investor.name}</span>
@@ -149,7 +160,14 @@ export default function Showcase() {
               </h1>
               {data && <HowItWorks data={data} />}
             </div>
-            <p className="sp-sub">Young companies in your lane, not yet in your portfolio, whose first rounds look like past unicorns&rsquo;.</p>
+            <div className="sp-scope" role="radiogroup" aria-label="Which companies">
+              <button type="button" role="radio" aria-checked={scope === "slush"} className={`sp-scope-opt ${scope === "slush" ? "is-on" : ""}`} onClick={() => pickScope("slush")} data-testid="spotter-scope-slush">
+                At Slush · Nov 18
+              </button>
+              <button type="button" role="radio" aria-checked={scope === "all"} className={`sp-scope-opt ${scope === "all" ? "is-on" : ""}`} onClick={() => pickScope("all")} data-testid="spotter-scope-all">
+                All early companies
+              </button>
+            </div>
           </div>
 
           {data && <TasteStrip investor={data.investor} sectorColor={tasteColor} />}
@@ -158,7 +176,7 @@ export default function Showcase() {
               {data.considered.roundsInCohort} real rounds in Cala · as of {data.asOf}
             </p>
           )}
-          {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => setSelectedId((cur) => (cur === id ? undefined : id))} />}
+          {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => setSelectedId((cur) => (cur === id ? undefined : id))} tagEvents={scope === "all"} />}
           {picks.length === 0 && (
             <div className="matches-idle" style={{ position: "static", inset: "auto" }} aria-hidden>
               <ul>

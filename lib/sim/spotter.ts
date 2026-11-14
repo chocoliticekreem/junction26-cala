@@ -56,6 +56,7 @@ export type SpotterPick = {
     latestRound: { id: string; stage: Stage; label: string; date?: string; amountUsd?: number; leadName?: string };
     investors: { id: string; name: string }[];
   };
+  event?: { name: string; date: string; place: string };
   scores: {
     combined: number;
     fit: number;
@@ -97,7 +98,16 @@ export type SpotterResult = {
   weights: typeof WEIGHTS;
 };
 
-export type SpotterQuery = { investorId?: string; investorName?: string; asOf?: string; runs?: number; topN?: number; revealedFor?: (investorId: string) => Revealed | undefined };
+export type SpotterQuery = {
+  investorId?: string;
+  investorName?: string;
+  asOf?: string;
+  runs?: number;
+  topN?: number;
+  revealedFor?: (investorId: string) => Revealed | undefined;
+  // Restrict candidates (e.g. to companies attending an event); the ranking itself is unchanged.
+  only?: (company: { id: string; name: string }) => boolean;
+};
 
 export class SpotterError extends Error {
   constructor(
@@ -114,10 +124,11 @@ function nextStage(row: CompanyRow): Stage {
   return ROUND_STAGES[Math.min(ROUND_STAGES.length - 1, stageIdx(row.eps[row.eps.length - 1].stage) + 1)];
 }
 
-export function spotterCandidates(idx: SpotterIndex, taste: InvestorTaste): { row: CompanyRow; fit: number }[] {
+export function spotterCandidates(idx: SpotterIndex, taste: InvestorTaste, only?: SpotterQuery["only"]): { row: CompanyRow; fit: number }[] {
   const windowStart = idx.asOfMs - CANDIDATE_WINDOW_MONTHS * MONTH_MS;
   const rows: CompanyRow[] = [];
   for (const row of idx.rows.values()) {
+    if (only && !only(row.co)) continue;
     if (row.firstMs < windowStart || row.firstMs >= idx.asOfMs) continue;
     if (taste.portfolio.has(row.co.id) || row.outcome === "unicorn") continue;
     if (idx.trustPresent && row.co.status === "closed") continue;
@@ -205,7 +216,7 @@ export function rankSpotter(cohort: Cohort, q: SpotterQuery): { idx: SpotterInde
   if (!investorId) throw new SpotterError("investor_not_found", `No investor "${q.investorName ?? q.investorId}" in the cohort`);
   const taste = tasteFromIndex(idx, investorId, { revealed: q.revealedFor?.(investorId) });
   const runs = q.runs ?? FUTURE_RUNS;
-  const cands = spotterCandidates(idx, taste).map((c) => ({ ...c, shape: unicornShape(idx, c.row) }));
+  const cands = spotterCandidates(idx, taste, q.only).map((c) => ({ ...c, shape: unicornShape(idx, c.row) }));
   const pre = (c: (typeof cands)[number]) => c.fit ** WEIGHTS.fit * c.shape.shape ** WEIGHTS.shape;
   cands.sort((a, b) => pre(b) - pre(a) || a.row.co.id.localeCompare(b.row.co.id));
   const ranked: Ranked[] = cands.map((c, i) => {

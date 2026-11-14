@@ -124,6 +124,12 @@
   color: var(--fg-3);
 }
 
+.sp-how-pop p + p {
+  margin-top: 4px;
+  padding-top: 0;
+  border-top: 0;
+}
+
 .sp-honesty {
   font-size: 10.5px;
   letter-spacing: 0.02em;
@@ -402,12 +408,51 @@
   text-wrap: balance;
 }
 
-.sp-sub {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
+.sp-scope {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgb(20 26 42 / 0.9);
+}
+
+.sp-scope-opt {
+  height: 24px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
   color: var(--fg-2);
-  text-wrap: pretty;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+}
+
+.sp-scope-opt:hover {
+  color: var(--fg);
+}
+
+.sp-scope-opt.is-on {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.sp-chip.sp-event-tag {
+  --chip: rgb(120 200 255 / 0.9);
+  color: rgb(170 215 255);
+}
+
+.sp-action.is-event b {
+  color: rgb(170 215 255);
+}
+
+.sp-node .sp-event-ring {
+  fill: none;
+  stroke: rgb(120 200 255 / 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
 }
 
 .sp-taste {

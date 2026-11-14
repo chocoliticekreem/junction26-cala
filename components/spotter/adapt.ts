@@ -47,6 +47,7 @@ function adaptPick(p: SpotterResult["picks"][number]): SpotterPick {
       latestRound: { stage: p.company.latestRound.stage, date: p.company.latestRound.date, leadName: p.company.latestRound.leadName },
       investors: p.company.investors.map((i) => i.name),
     },
+    event: p.event,
     scores: {
       fit: pct(p.scores.fit),
       shape: pct(p.scores.shape),
