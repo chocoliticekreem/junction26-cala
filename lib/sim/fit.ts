@@ -25,6 +25,7 @@ import type { Sector, Stage } from "@/lib/taxonomy";
 import { STAGE_PRIORS, calibrateStage, reLeadRates, type BaseRate, type OutcomePopulation, type StagePriors } from "./calibration";
 import { addGeo, emptyGeoCounts, parseGeo, type GeoCounts } from "./geo";
 import { investorDropReason, isLeadEligible, type InvestorDropReason } from "./quality";
+import { effectiveStage, sizeBands, sizeTercile, type SizeBands } from "./stageSize";
 import type {
   Agent,
   Cohort,
@@ -33,6 +34,7 @@ import type {
   FollowOnStats,
   InvestorKind,
   SimModel,
+  SizeRates,
   Transition,
   TransitionStats,
 } from "./types";
@@ -45,6 +47,8 @@ const B_PLUS_ORDINALS = 4;
 // Below this many seed-sample gaps at a stage, timing backs off to all cohort gaps (timing is less
 // selection-sensitive than whether a round happens at all).
 const MIN_POP_GAPS = 20;
+// Pseudo-observations pulling a size-tercile raise rate toward its stage rate.
+export const SIZE_SHRINK_K = 10;
 
 export type FitOptions = { priors?: StagePriors | null };
 
@@ -66,14 +70,31 @@ function cleanRound(r: CohortRound, drop?: Map<string, InvestorDropReason>): Coh
   return { ...r, participants: r.participants.filter((p) => !drop.has(p.investorId)) };
 }
 
-export function buildEpisodes(cohort: Cohort, asOfMs: number, drop?: Map<string, InvestorDropReason>): Record<string, Episode[]> {
+const labelStage = (r: CohortRound): Stage | undefined => (r.stage !== "unknown" ? r.stage : stageFromLabel(r.label));
+
+// Per-stage USD size quartiles of the rounds dated before asOf, by label (stageSize.ts).
+export function labelSizeBands(cohort: Cohort, asOfMs: number): SizeBands {
+  const rounds: { stage: Stage; amountUsd?: number }[] = [];
+  for (const r of Object.values(cohort.rounds)) {
+    const ms = toMs(r.date);
+    const stage = labelStage(r);
+    if (ms !== undefined && ms < asOfMs && stage) rounds.push({ stage, amountUsd: r.amountUsd });
+  }
+  return sizeBands(rounds);
+}
+
+// bands: when given, each round is placed at its effective stage (stageSize.ts) instead of its label.
+export function buildEpisodes(cohort: Cohort, asOfMs: number, drop?: Map<string, InvestorDropReason>, bands?: SizeBands): Record<string, Episode[]> {
   const out: Record<string, Episode[]> = {};
   for (const co of Object.values(cohort.companies)) {
     const rs = co.roundIds
       .map((id) => cohort.rounds[id])
       .filter((r) => r)
       .map((r) => cleanRound(r, drop))
-      .map((r) => ({ r, ms: toMs(r.date), stage: r.stage !== "unknown" ? r.stage : stageFromLabel(r.label) }))
+      .map((r) => {
+        const label = labelStage(r);
+        return { r, ms: toMs(r.date), stage: label && label !== "pre-idea" ? effectiveStage(label, r.amountUsd, bands) : label };
+      })
       .filter((x): x is typeof x & { ms: number; stage: Stage } => x.ms !== undefined && x.ms < asOfMs && !!x.stage && x.stage !== "pre-idea")
       .sort((a, b) => a.ms - b.ms);
     const eps: Episode[] = [];
@@ -125,7 +146,9 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
   const asOfMs = toMs(asOfStr) ?? Date.now();
   const trustStatus = asOfMs >= (toMs(cohort.asOf) ?? 0);
   const drop = droppedInvestors(cohort);
-  const episodes = buildEpisodes(cohort, asOfMs, drop);
+  const labelBands = labelSizeBands(cohort, asOfMs);
+  const episodes = buildEpisodes(cohort, asOfMs, drop, labelBands);
+  const episodeBands = sizeBands(Object.values(episodes).flat());
   const kindOf = (id: string): InvestorKind => cohort.investors[id]?.kind ?? "unknown";
   const knowableBefore = asOfMs - STALL_MONTHS * MONTH_MS;
 
@@ -138,7 +161,7 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
     const acquired = trustStatus && co.status === "acquired";
     eps.forEach((e, k) => {
       const next = eps[k + 1];
-      const base = { companyId: cid, sector: co.sector, stage: e.stage, roundId: e.roundIds[0], leadId: e.leadId, memberIds: e.memberIds };
+      const base = { companyId: cid, sector: co.sector, stage: e.stage, roundId: e.roundIds[0], leadId: e.leadId, memberIds: e.memberIds, amountUsd: e.amountUsd };
       if (next) {
         transitions.push({
           ...base,
@@ -174,7 +197,6 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
     s.pRaise = (s.raised + SECTOR_SHRINK_K * prior) / (s.n + SECTOR_SHRINK_K);
     s.months.sort((a, b) => a - b);
   }
-  const baseP = (sector: Sector, stage: Stage) => bySectorStage[`${sector}|${stage}`]?.pRaise ?? byStage[stage]?.pRaise ?? 0.5;
 
   // ---- outcome population ----
   // Only companies sampled without regard to outcome ("seed-sample") may set raise rates, stall
@@ -217,6 +239,50 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
   const priors = opts.priors === undefined ? STAGE_PRIORS : opts.priors;
   const baseRates: Partial<Record<Stage, BaseRate>> = {};
   for (const s of ROUND_STAGES) baseRates[s] = calibrateStage(s, knowableByStage[s]?.raised ?? 0, knowableByStage[s]?.n ?? 0, priors, population);
+
+  // ---- P(raise next | stage, round-size tercile), as a factor on the stage rate ----
+  // Knowable outcome-population transitions with a known amount. factor = shrunk tercile rate over
+  // the stage rate of the same sized transitions: (raised_t + K r_s) / (n_t + K) / r_s, K = 10, so a
+  // thin tercile backs off to 1 and the calibrated stage rate (with its prior) stays the anchor.
+  const sizeRates: SizeRates = {};
+  for (const s of ROUND_STAGES) {
+    const tiers = [0, 1, 2].map(() => ({ n: 0, raised: 0 }));
+    for (const t of transitions) {
+      if (t.stage !== s || !t.knowable || !inPop(t.companyId)) continue;
+      const k = sizeTercile(s, t.amountUsd, episodeBands);
+      if (k === undefined) continue;
+      tiers[k].n++;
+      if (t.outcome === "raised") tiers[k].raised++;
+    }
+    const n = tiers.reduce((a, x) => a + x.n, 0);
+    const raised = tiers.reduce((a, x) => a + x.raised, 0);
+    const band = episodeBands[s];
+    if (!n || !band) continue;
+    const rs = (raised + 1) / (n + 2);
+    const p = baseRates[s]?.p ?? rs;
+    const edges: [number, number][] = [[0, band.p33], [band.p33, band.p67], [band.p67, Infinity]];
+    sizeRates[s] = {
+      n,
+      raised,
+      tiers: tiers.map((x, k) => {
+        const factor = (x.raised + SIZE_SHRINK_K * rs) / (x.n + SIZE_SHRINK_K) / rs;
+        return { tercile: k as 0 | 1 | 2, loUsd: edges[k][0], hiUsd: edges[k][1], n: x.n, raised: x.raised, factor, p: Math.min(0.97, p * factor) };
+      }),
+    };
+  }
+  const sizeFactor = (stage: Stage, amountUsd: number | undefined) => {
+    const k = sizeTercile(stage, amountUsd, episodeBands);
+    return k === undefined ? 1 : (sizeRates[stage]?.tiers[k].factor ?? 1);
+  };
+  // Expected raise rate of a knowable outcome-population transition, before the lead: the knowable
+  // sector/stage rate (shrunk to the stage, as in simulate.ts baseRaise) x the size factor.
+  const expectedRaise = (sector: Sector, stage: Stage, amountUsd: number | undefined) => {
+    const ks = knowableByStage[stage];
+    const stageRate = ks ? (ks.raised + 1) / (ks.n + 2) : 0.5;
+    const kss = knowableBySectorStage[`${sector}|${stage}`];
+    const rate = kss ? (kss.raised + SECTOR_SHRINK_K * stageRate) / (kss.n + SECTOR_SHRINK_K) : stageRate;
+    return Math.min(0.97, rate * sizeFactor(stage, amountUsd));
+  };
 
   const reLead = reLeadRates(
     transitions
@@ -313,8 +379,12 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
         if (t.nextMemberIds?.includes(m)) f.reUp++;
       }
     }
-    if (t.outcome !== "censored" && t.leadId && inPop(t.companyId)) {
-      const exp = baseP(t.sector, t.stage);
+    // Lead quality: knowable outcome-population transitions only, against the same population's
+    // sector/stage/size expectation, so an average lead has lift 1 and the size factor is not
+    // counted twice (big rounds attract top leads). Expecting the all-company rate here deflated
+    // every lift (~0.82 for funds) because that rate includes survivors and recent raisers.
+    if (t.knowable && t.leadId && inPop(t.companyId)) {
+      const exp = expectedRaise(t.sector, t.stage, t.amountUsd);
       const got = t.outcome === "raised" ? 1 : 0;
       const l = (liftAcc[t.leadId] ??= { raised: 0, expected: 0 });
       l.raised += got;
@@ -422,6 +492,9 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
       nonInvestor: [...drop.values()].filter((r) => r === "non_investor").length,
     },
     stageAmounts,
+    labelBands,
+    episodeBands,
+    sizeRates,
     bPlusAmounts,
     stageHeadcounts,
     stageCoInvestorCounts,

@@ -6,7 +6,10 @@
 //      pre-seed) is assumed to close, at month 0 ("now") or 6 ("later_6m"). The cohort only holds
 //      companies that raised, so there is no honest rate for closing a first round; paths are
 //      conditional on closing it. Cohort companies start from their last real round instead.
-//   2. Raise vs stall: P = base(stage) x sectorRatio x the current lead's raise lift, where
+//   Stages are effective stages (stageSize.ts): a round whose size belongs to the next stage counts
+//   there, for cohort rounds and for a founder's raiseUsd alike.
+//   2. Raise vs stall: P = base(stage) x sectorRatio x sizeFactor x the current lead's raise lift,
+//      sizeFactor = the round's size tercile within its stage (fit.ts sizeRates), and
 //      base(stage) is the calibrated rate (calibration.ts: the knowable cohort rate, replaced by a
 //      published prior when the cohort is survivorship-biased) and
 //        sectorRatio = clamp(P_knowable(sector, stage) / P_knowable(stage), 0.5, 1.5)
@@ -33,6 +36,7 @@ import { STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import { wilson } from "./calibration";
 import { SECTOR_SHRINK_K } from "./fit";
 import { investorGeoWeight, parseGeo } from "./geo";
+import { effectiveStage, sizeTercile, stageNote } from "./stageSize";
 import type {
   Agent,
   Calibration,
@@ -107,9 +111,14 @@ export function prepare(start: StartState, vision: Vision, model: SimModel) {
   let members: string[] = [];
   let lastLead: string | undefined;
   let fundedUsd = 0;
+  let lastAmountUsd: number | undefined;
+  let labelStage: Stage | undefined;
   if (co) {
     if (last) {
       lastStageIdx = roundStageIndex(last.stage);
+      lastAmountUsd = last.amountUsd;
+      const r0 = model.cohort.rounds[last.roundIds[0]];
+      labelStage = r0 ? (r0.stage !== "unknown" ? r0.stage : stageFromLabel(r0.label)) : undefined;
       elapsed = Math.max(0, monthsBetween(last.lastDateMs, model.asOfMs));
       members = last.memberIds;
       lastLead = last.leadId;
@@ -123,17 +132,27 @@ export function prepare(start: StartState, vision: Vision, model: SimModel) {
   const allExisting = [...new Set([...eps.flatMap((e) => e.memberIds), ...(start.existingInvestorIds ?? [])])];
   if (!co) members = (start.existingInvestorIds ?? []).filter((id) => model.agentIndex[id] !== undefined);
 
+  // Founders: the round being raised now moves up a stage when its size says so (stageSize.ts).
+  // Cohort companies: their episodes are already at effective stages (fit.ts).
+  const founderLabel: Stage = start.stage === "pre-idea" ? "pre-seed" : start.stage;
   const firstStage: Stage = co
     ? ROUND_STAGES[Math.min(ROUND_STAGES.length - 1, lastStageIdx + 1)]
-    : start.stage === "pre-idea"
-      ? "pre-seed"
-      : start.stage;
+    : effectiveStage(founderLabel, start.raiseUsd, model.labelBands);
+  if (!co) {
+    labelStage = founderLabel;
+    lastAmountUsd = start.raiseUsd;
+  }
+  const effective = co ? (lastStageIdx >= 0 ? ROUND_STAGES[lastStageIdx] : undefined) : firstStage;
+  const note = labelStage && effective ? stageNote(labelStage, effective, lastAmountUsd, model.labelBands) : undefined;
   const alreadyThere = co ? lastStageIdx >= targetIdx && fundedUsd >= (basis.fundingThresholdUsd ?? 0) : false;
   const geoInput = start.geography?.trim() || co?.country || co?.hq;
   const geo = parseGeo(geoInput);
   const bPlusSoFar = eps.filter((e) => e.stage === "series-b-plus").length;
   const like = { tags: start.tags ?? co?.tags, text: start.description ?? co?.description };
-  return { sectors, basis, targetIdx, company: co, lastStageIdx, elapsed, members, lastLead, fundedUsd, firstStage, allExisting, alreadyThere, geo, geoInput, bPlusSoFar, like };
+  return {
+    sectors, basis, targetIdx, company: co, lastStageIdx, elapsed, members, lastLead, fundedUsd, firstStage, allExisting, alreadyThere, geo, geoInput, bPlusSoFar, like,
+    lastAmountUsd, labelStage, effectiveStage: effective, stageNote: note,
+  };
 }
 
 export class Engine {
@@ -165,8 +184,14 @@ export class Engine {
     return p;
   }
 
-  pRaise(sector: Sector | null, stage: Stage, leadId: string | undefined, elapsed = 0): number {
-    let p = this.baseRaise(sector, stage);
+  // Size factor of a round at `stage` (fit.ts sizeRates); 1 when the amount or tercile is unknown.
+  sizeFactor(stage: Stage, amountUsd: number | undefined): number {
+    const k = sizeTercile(stage, amountUsd, this.model.episodeBands);
+    return k === undefined ? 1 : (this.model.sizeRates[stage]?.tiers[k]?.factor ?? 1);
+  }
+
+  pRaise(sector: Sector | null, stage: Stage, leadId: string | undefined, elapsed = 0, amountUsd?: number): number {
+    let p = this.baseRaise(sector, stage) * this.sizeFactor(stage, amountUsd);
     const ai = leadId !== undefined ? this.model.agentIndex[leadId] : undefined;
     if (ai !== undefined) p *= this.model.agents[ai].raiseLift;
     p = Math.min(0.97, Math.max(0.02, p));
@@ -383,6 +408,7 @@ export class Engine {
     let stageIdx = p.lastStageIdx;
     let firstGap: number | undefined;
     let bPlusRounds = 0;
+    let roundUsd = p.company ? p.lastAmountUsd : undefined;
     const reached = () => stageIdx >= p.targetIdx && funded >= threshold;
     const out = (o: Partial<RunOutcome>): RunOutcome => ({
       branch: branchIdx,
@@ -404,6 +430,7 @@ export class Engine {
       const co = this.coInvestors(stage, li, members, rnd);
       const amt = this.amount(stage, rnd, p.bPlusSoFar);
       funded += amt ?? 0;
+      roundUsd = this.raiseUsd ?? amt;
       steps.push(this.step(stage, li, co, month, amt));
       stageIdx = roundStageIndex(stage);
       leadId = li !== undefined ? this.model.agents[li].id : undefined;
@@ -419,7 +446,7 @@ export class Engine {
         stageIdx = -1;
       } else if (cur === "series-b-plus" && bPlusRounds >= MAX_B_PLUS_ROUNDS) {
         return out({});
-      } else if (rnd() >= this.pRaise(sector, cur, leadId, elapsed)) {
+      } else if (rnd() >= this.pRaise(sector, cur, leadId, elapsed, roundUsd)) {
         // A Series B+ company without another round has not failed; it just raises no more.
         return out(cur === "series-b-plus" ? {} : { stalledAt: cur });
       }
@@ -436,6 +463,7 @@ export class Engine {
       const co = this.coInvestors(next, li, members, rnd);
       const amt = this.amount(next, rnd, p.bPlusSoFar + bPlusRounds);
       funded += amt ?? 0;
+      roundUsd = amt;
       steps.push(this.step(next, li, co, month, amt));
       stageIdx = nextIdx;
       if (next === "series-b-plus") bPlusRounds++;
@@ -640,7 +668,14 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   return {
     asOf: model.asOf,
     runs,
-    start: { stage: decisionStage, companyId: prep.company?.id, companyName: prep.company?.name, existingInvestors: existing },
+    start: {
+      stage: decisionStage,
+      effectiveStage: prep.effectiveStage,
+      stageNote: prep.stageNote,
+      companyId: prep.company?.id,
+      companyName: prep.company?.name,
+      existingInvestors: existing,
+    },
     visionBasis: prep.basis,
     tree,
     realities,
@@ -674,11 +709,28 @@ function buildCalibration(model: SimModel, prep: Prepared): Calibration {
     } else if (b.source === "prior") notes.push(`${STAGE_LABELS[b.stage]}: no knowable cohort outcomes, prior ${pct(b.p)} used.`);
   }
   if (!prep.company) notes.push(`Paths assume the ${STAGE_LABELS[prep.firstStage]} being raised now closes; the cohort has no record of failed first rounds.`);
+  if (prep.stageNote) notes.push(`${prep.stageNote} The simulation starts from ${STAGE_LABELS[prep.effectiveStage!]} rates.`);
   const agents = model.agents;
   const leaders = agents.filter((a) => a.led > 0);
+  let startFactors: Calibration["startFactors"];
+  if (prep.company && prep.effectiveStage) {
+    const stage = prep.effectiveStage;
+    const engine = new Engine(model, prep);
+    const ai = prep.lastLead !== undefined ? model.agentIndex[prep.lastLead] : undefined;
+    const a = ai !== undefined ? agents[ai] : undefined;
+    startFactors = {
+      stage,
+      amountUsd: prep.lastAmountUsd,
+      tercile: sizeTercile(stage, prep.lastAmountUsd, model.episodeBands),
+      sizeFactor: engine.sizeFactor(stage, prep.lastAmountUsd),
+      lead: a ? { id: a.id, name: a.name, lift: a.raiseLift, evidence: a.raiseLiftEvidence, kindLift: model.kindRaiseLift[a.kind] ?? 1 } : undefined,
+    };
+  }
   return {
     outcomePopulation: pop,
     baseRates,
+    sizeRates: model.sizeRates,
+    startFactors,
     conditionalOnFirstRound: !prep.company,
     reLead: ROUND_STAGES.flatMap((s) => {
       const r = model.reLead.byStage[s];

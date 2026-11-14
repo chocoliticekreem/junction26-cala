@@ -2,6 +2,7 @@
 // lib/cohortTypes.ts; on merge, replace it with a re-export from there.
 import type { Sector, Source, Stage } from "@/lib/types";
 import type { BaseRate, OutcomePopulation, ReLeadRate } from "./calibration";
+import type { SizeBands } from "./stageSize";
 import type { GeoCounts, Region } from "./geo";
 
 export type InvestorKind = "fund" | "angel" | "accelerator" | "cvc" | "unknown";
@@ -185,13 +186,35 @@ export type Calibration = {
   leadFilter: { candidates: number; droppedGeneric: number; droppedNonInvestor: number; droppedThin: number };
   geography: { input?: string; country?: string; region?: Region; applied: boolean };
   sampleSizeMeaning: string;
+  // P(raise next | stage, round-size tercile) from the outcome population (fit.ts).
+  sizeRates: SizeRates;
+  // The current round's size factor and lead-quality factor applied to the start state.
+  startFactors?: {
+    stage: Stage;
+    amountUsd?: number;
+    tercile?: 0 | 1 | 2;
+    sizeFactor: number;
+    lead?: { id: string; name: string; lift: number; evidence: number; kindLift: number };
+  };
   notes: string[];
 };
+
+export type SizeTier = { tercile: 0 | 1 | 2; loUsd: number; hiUsd: number; n: number; raised: number; factor: number; p: number };
+export type SizeRates = Partial<Record<Stage, { n: number; raised: number; tiers: SizeTier[] }>>;
 
 export type SimResult = {
   asOf: string;
   runs: number;
-  start: { stage: Stage; companyId?: string; companyName?: string; existingInvestors: { id: string; name: string }[] };
+  start: {
+    stage: Stage;
+    // The stage the engine starts from after the size check (stageSize.ts); differs from the label
+    // when the round's amount belongs to the next stage.
+    effectiveStage?: Stage;
+    stageNote?: string;
+    companyId?: string;
+    companyName?: string;
+    existingInvestors: { id: string; name: string }[];
+  };
   visionBasis: VisionBasis;
   tree: DecisionNode;
   realities: Reality[];
@@ -219,6 +242,8 @@ export type Transition = {
   // Outcome known at asOf without survivorship bias: stalled, or raised from a round at least
   // STALL_MONTHS old. Only knowable transitions feed the calibrated raise rates.
   knowable: boolean;
+  // USD raised in the episode (its rounds at this stage), when known; sets the size tercile.
+  amountUsd?: number;
   months?: number;
   nextStage?: Stage;
   nextLeadId?: string;
@@ -310,6 +335,11 @@ export type SimModel = {
   geoBase: GeoCounts;
   dropped: { generic: number; nonInvestor: number };
   stageAmounts: Partial<Record<Stage, number[]>>;
+  // Round sizes by label (sets the effective stage) and episode sizes by effective stage (sets the
+  // size tercile); see stageSize.ts.
+  labelBands: SizeBands;
+  episodeBands: SizeBands;
+  sizeRates: SizeRates;
   // Amounts of a company's 1st, 2nd, 3rd and 4th+ Series B+ rounds (later rounds are larger).
   bPlusAmounts: number[][];
   stageHeadcounts: Partial<Record<Stage, number[]>>;
