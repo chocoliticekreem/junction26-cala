@@ -11,11 +11,13 @@ import {
   expireStale,
   expressInterest,
   interestId,
+  isInterestStore,
   openInterestCount,
   recheckVerification,
   requestSeat,
   sendMessage,
   upsertVerification,
+  withdrawInterest,
   type InterestStore,
   type Result,
 } from "@/lib/interest";
@@ -157,6 +159,42 @@ describe("seat requests", () => {
     w = store(decideSeat(w, "room1", "f1", "waitlisted", T0));
     expect(store(decideSeat(w, "room1", "f1", "seated", T0)).seats[0].state).toBe("seated");
     expect(err(decideSeat(emptyStore(), "room1", "f1", "seated", T0))).toBe("not_found");
+  });
+});
+
+describe("withdraw", () => {
+  it("interested -> withdrawn, freeing a slot under the cap", () => {
+    let s = emptyStore();
+    for (let i = 0; i < INVESTOR_OPEN_CAP; i++) s = store(expressInterest(s, "inv1", `f${i}`, T0));
+    expect(err(expressInterest(s, "inv1", "extra", T0))).toBe("cap_reached");
+    s = store(withdrawInterest(s, interestId("inv1", "f0"), later(1)));
+    expect(s.interests.find((i) => i.founderId === "f0")?.state).toBe("withdrawn");
+    expect(openInterestCount(s, "inv1")).toBe(INVESTOR_OPEN_CAP - 1);
+    expect(err(expressInterest(s, "inv1", "extra", later(1)))).toBe("ok");
+  });
+
+  it("lets the investor ask the same founder again after withdrawing", () => {
+    let s = store(expressInterest(emptyStore(), "inv1", "f1", T0));
+    s = store(withdrawInterest(s, ID, T0));
+    expect(store(expressInterest(s, "inv1", "f1", later(1))).interests[0].state).toBe("interested");
+  });
+
+  it("only withdraws an open, unanswered request", () => {
+    const s = store(expressInterest(emptyStore(), "inv1", "f1", T0));
+    const accepted = store(acceptInterest(s, ID, T0));
+    expect(err(withdrawInterest(accepted, ID, T0))).toBe("cannot_withdraw_from_pending_verification");
+    expect(err(withdrawInterest(s, ID, later(EXPIRY_DAYS + 1)))).toBe("expired");
+    expect(err(withdrawInterest(emptyStore(), ID, T0))).toBe("not_found");
+  });
+});
+
+describe("isInterestStore", () => {
+  it("accepts a real store and rejects valid JSON of the wrong shape", () => {
+    const s = upsertVerification(store(expressInterest(emptyStore(), "inv1", "f1", T0)), pass("inv1", "investor"));
+    expect(isInterestStore(JSON.parse(JSON.stringify(s)))).toBe(true);
+    expect(isInterestStore(emptyStore())).toBe(true);
+    for (const bad of [null, [], 42, "x", {}, { interests: {} }, { ...emptyStore(), interests: [{ id: 1 }] }, { ...emptyStore(), verifications: [{ subjectId: "a", side: "investor" }] }])
+      expect(isInterestStore(bad)).toBe(false);
   });
 });
 

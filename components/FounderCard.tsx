@@ -13,6 +13,7 @@ export type FounderCardProps = {
   interestState: InterestState | null;
   capHit: boolean;
   onInterested: () => void;
+  onWithdraw: () => void;
   selected?: boolean;
   onSelect?: () => void;
 };
@@ -24,12 +25,13 @@ const STATE_LABEL: Record<InterestState, string> = {
   chat_open: "Chat open",
   declined: "Not now",
   expired: "Expired",
+  withdrawn: "Withdrawn",
 };
 
-export function FounderCard({ founder, match, interestState, capHit, onInterested, selected = false, onSelect }: FounderCardProps) {
+export function FounderCard({ founder, match, interestState, capHit, onInterested, onWithdraw, selected = false, onSelect }: FounderCardProps) {
   const sectors = (Object.entries(founder.sectors) as [Sector, number][]).sort((a, b) => b[1] - a[1]).map(([s]) => s);
   const isLive = !founder.seeded;
-  const open = interestState && interestState !== "declined" && interestState !== "expired";
+  const open = interestState && interestState !== "declined" && interestState !== "expired" && interestState !== "withdrawn";
   const disabled = !!open || capHit;
   const title = capHit && !open ? `You have ${INVESTOR_OPEN_CAP} open requests` : undefined;
 
@@ -86,6 +88,19 @@ export function FounderCard({ founder, match, interestState, capHit, onIntereste
         >
           {open ? STATE_LABEL[interestState!] : interestState === "declined" ? "Not now" : "Interested"}
         </Button>
+        {interestState === "interested" && (
+          <button
+            type="button"
+            data-testid={`withdraw-${founder.id}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onWithdraw();
+            }}
+            className="mt-1 text-[11px] text-white/40 underline-offset-2 hover:text-white/75 hover:underline"
+          >
+            Withdraw
+          </button>
+        )}
         <div className="font-mono text-[10px] text-white/30">
           s{Math.round(match.breakdown.sectorFit * 100)} · g{Math.round(match.breakdown.stageFit * 100)} · c{Math.round(match.breakdown.chequeFit * 100)}
         </div>

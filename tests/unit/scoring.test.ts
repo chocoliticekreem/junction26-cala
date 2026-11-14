@@ -105,6 +105,23 @@ describe("scoreInvestor", () => {
     const f = founder({ sectors: { other: 1 }, stage: "series-a" });
     expect(scoreInvestor(f, fintechA, undefined, NOW).reason).toMatch(/^Sector unclear, matched on stage/);
   });
+
+  it("names off-taxonomy deals as outside the main sectors, not 'other deals'", () => {
+    const otherInv = investor("oth", repeat(3, (i) => deal("other", "seed", 30 + i * 60, 1e6)), { sectors: { other: 1 } });
+    const f = founder({ sectors: { other: 1 }, stage: "seed", confidence: { sectors: 0.9, stage: 0.9 } });
+    const reason = scoreInvestor(f, otherInv, undefined, NOW).reason;
+    expect(reason).toContain("Backed 3 deals outside the main sectors in 24 months");
+    expect(reason).not.toMatch(/other deals/);
+    expect(rankFounders(otherInv, [f], [], NOW)[0].reason).toContain("you backed 3 deals outside the main sectors");
+  });
+
+  it("counts reason deals at the data build date by default, not the viewer's clock", () => {
+    const inv = investor("old", [deal("fintech", "seed", 700, 1e6)], { sectors: { fintech: 1 } });
+    const f = founder({ sectors: { fintech: 1 }, confidence: { sectors: 0.9 } });
+    const atBuild = scoreInvestor(f, inv).reason;
+    expect(atBuild).toContain("Backed 1 fintech deal in 24 months");
+    expect(scoreInvestor(f, inv, undefined, new Date("2027-06-01T00:00:00Z")).reason).not.toContain("Backed 1 fintech deal");
+  });
 });
 
 describe("stage and cheque fit", () => {

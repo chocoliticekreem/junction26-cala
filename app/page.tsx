@@ -103,7 +103,7 @@ export default function FounderPage() {
           )}
           <div className="graph-overlay">
             <span>
-              <b>{INVESTORS.length}</b> London investors
+              <b>{INVESTORS.length}</b> investors active in London
             </span>
             <span>
               distance = fit · colour = sector · <span className="k">accent</span> = about you

@@ -94,14 +94,17 @@ const SEND_EVERY_SAMPLES = TARGET_RATE / 10;
 
 type ElevenMessage = { message_type: string; text?: string; error?: string };
 
-async function fetchSttToken(): Promise<string | undefined> {
+// configured is false only when the route says no key is set; a failed request leaves it unknown
+// so the next session tries again.
+async function fetchSttToken(): Promise<{ configured?: boolean; token?: string }> {
   try {
     const res = await fetch("/api/stt-token", { cache: "no-store" });
-    if (!res.ok) return undefined;
-    const body = (await res.json()) as { token?: unknown };
-    return typeof body.token === "string" && body.token ? body.token : undefined;
+    if (!res.ok) return {};
+    const body = (await res.json()) as { configured?: unknown; token?: unknown };
+    const token = typeof body.token === "string" && body.token ? body.token : undefined;
+    return { configured: body.configured === false ? false : token ? true : undefined, token };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -276,8 +279,8 @@ function startElevenLabs(token: string, handlers: SttHandlers, lang: string): St
   };
 }
 
-// undefined until the first session asks /api/stt-token; false once it 404s, so later sessions
-// go straight to Web Speech without a round trip.
+// undefined until the first session asks /api/stt-token; false once it answers configured:false,
+// so later sessions go straight to Web Speech without a round trip.
 let elevenLabsConfigured: boolean | undefined;
 
 const canCaptureAudio = () =>
@@ -286,17 +289,17 @@ const canCaptureAudio = () =>
   typeof AudioContext !== "undefined" &&
   !!navigator.mediaDevices?.getUserMedia;
 
-// Starts with a fresh token per session (tokens are single-use). If the token route is missing
-// (404 not_configured) or fails, the session falls back to Web Speech without the caller noticing.
+// Starts with a fresh token per session (tokens are single-use). If the token route reports no key
+// (configured:false) or fails, the session falls back to Web Speech without the caller noticing.
 export const elevenLabsProvider: SttProvider = {
   name: "elevenlabs",
   supported: canCaptureAudio,
   start(handlers, lang = "en-GB") {
     let inner: SttSession | undefined;
     let stopped = false;
-    void fetchSttToken().then((token) => {
+    void fetchSttToken().then(({ configured, token }) => {
       if (stopped) return;
-      elevenLabsConfigured = !!token;
+      if (configured !== undefined) elevenLabsConfigured = configured;
       if (token && canCaptureAudio()) inner = startElevenLabs(token, handlers, lang);
       else if (webSpeechProvider.supported()) inner = webSpeechProvider.start(handlers, lang);
       else handlers.onError?.("No speech-to-text available in this browser");

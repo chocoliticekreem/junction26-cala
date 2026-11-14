@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MemoryLRU,
   dedupeByKey,
+  dedupeDeals,
   entitySources,
   investorKey,
   normaliseDate,
@@ -12,6 +13,7 @@ import {
   type CalaEntity,
   type CalaSearchResponse,
 } from "@/lib/cala";
+import type { Deal } from "@/lib/types";
 
 describe("normaliseDate", () => {
   it.each([
@@ -179,5 +181,36 @@ describe("MemoryLRU", () => {
     expect(await c.get("b")).toBeUndefined();
     expect(await c.get("a")).toBe(1);
     expect(await c.get("c")).toBe(3);
+  });
+});
+
+describe("dedupeDeals", () => {
+  const d = (p: Partial<Deal>): Deal => ({ company: "D3 Bio", round: "unknown", sector: "biotech/therapeutics", sources: [{ name: "Cala knowledge query" }], ...p });
+
+  it("keeps one copy of a round listed twice a day apart, preferring the known round", () => {
+    const out = dedupeDeals([
+      d({ round: "series-b-plus", date: "2025-12-10" }),
+      d({ date: "2025-12-09", sources: [{ name: "FierceBiotech", url: "https://x.example/d3" }], amount: "$108M" }),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ round: "series-b-plus", date: "2025-12-10", amount: "$108M" });
+    expect(out[0].sources.map((s) => s.name)).toEqual(["Cala knowledge query", "FierceBiotech"]);
+  });
+
+  it("then prefers a URL source, then an amount", () => {
+    const withUrl = d({ date: "2025-01-01", sources: [{ name: "S", url: "https://s.example" }] });
+    const withAmount = d({ date: "2025-01-20", amount: "$1M" });
+    expect(dedupeDeals([withAmount, withUrl])[0].date).toBe("2025-01-01");
+    expect(dedupeDeals([d({ date: "2025-01-01" }), withAmount])[0].date).toBe("2025-01-20");
+  });
+
+  it("matches normalised company names and leaves distinct deals alone", () => {
+    const zelt = dedupeDeals([d({ company: "Zelt", date: "2025-01-30" }), d({ company: "Zelt (Tent)", round: "series-a", date: "2025-01-15" })]);
+    expect(zelt).toHaveLength(1);
+    expect(zelt[0].round).toBe("series-a");
+    expect(dedupeDeals([d({ date: "2025-01-01" }), d({ date: "2025-03-15" })])).toHaveLength(2);
+    expect(dedupeDeals([d({ round: "seed", date: "2025-05-15" }), d({ round: "series-a", date: "2025-06-15" })])).toHaveLength(2);
+    expect(dedupeDeals([d({}), d({})])).toHaveLength(2);
+    expect(dedupeDeals([d({ date: "2025-01-01" }), d({ company: "Other Bio", date: "2025-01-01" })])).toHaveLength(2);
   });
 });

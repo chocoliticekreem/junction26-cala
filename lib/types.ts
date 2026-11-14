@@ -144,7 +144,8 @@ export type InterestState =
   | "pending_verification"
   | "chat_open"
   | "declined"
-  | "expired";
+  | "expired"
+  | "withdrawn";
 
 export type Interest = {
   id: string;

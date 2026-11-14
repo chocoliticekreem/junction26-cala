@@ -9,6 +9,9 @@ export {
   expressInterest,
   acceptInterest,
   declineInterest,
+  withdrawInterest,
+  interestId,
+  isInterestStore,
   recheckVerification,
   expireStale,
   errorMessage,
@@ -23,7 +26,7 @@ export {
 export { verifyInvestor, verifyFounder } from "@/lib/verification";
 export { rankFounders, type FounderMatch } from "@/lib/scoring";
 export { suggestRooms, buildRoom, type RoomSuggestion } from "@/lib/roomBuilder";
-export { loadInvestors, loadFounders, loadDebriefs, usingFixtures } from "@/lib/data";
+export { loadInvestors, loadFounders, loadDebriefs, usingFixtures, defaultInvestor } from "@/lib/data";
 
 let seedRoom: Room | undefined;
 

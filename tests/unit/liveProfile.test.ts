@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addFallback, addLlm, buildProfile, closeChunk, emptyLog } from "@/lib/liveProfile";
+import { addFallback, addLlm, buildProfile, closeChunk, emptyLog, profileBefore } from "@/lib/liveProfile";
 import type { Extraction } from "@/lib/types";
 
 const sector = (label: Extraction["sectors"][number]["label"], confidence = 0.8): Extraction => ({
@@ -39,5 +39,31 @@ describe("liveProfile", () => {
     const b = closeChunk(addFallback(a.log, sector("proptech")));
     const log = addLlm(b.log, [a.id, b.id], sector("insurtech"));
     expect(buildProfile(log).sectors).toEqual({ insurtech: 1 });
+  });
+
+  it("keeps the fallback's sector when the LLM answers with no sectors", () => {
+    const closed = closeChunk(addFallback(emptyLog(), sector("biotech/therapeutics")));
+    const log = addLlm(closed.log, [closed.id], { sectors: [], stage: { value: "pre-seed", confidence: 0.9 } });
+    const p = buildProfile(log);
+    expect(p.sectors).toEqual({ "biotech/therapeutics": 1 });
+    expect(p.stage).toBe("pre-seed");
+  });
+
+  it("keeps fallback fields the LLM left empty across a batched request", () => {
+    const a = closeChunk(addFallback(emptyLog(), { sectors: [], stage: { value: "seed", confidence: 0.6 } }));
+    const b = closeChunk(addFallback(a.log, sector("fintech")));
+    const log = addLlm(b.log, [a.id, b.id], { sectors: [], raise_amount: { value: 1_000_000, confidence: 0.9 } });
+    const p = buildProfile(log);
+    expect(p.sectors).toEqual({ fintech: 1 });
+    expect(p.stage).toBe("seed");
+    expect(p.raise).toBe(1_000_000);
+  });
+
+  it("sends the profile from before the chunk's own fallback as context", () => {
+    const first = closeChunk(addFallback(emptyLog(), sector("fintech")));
+    const log = addLlm(first.log, [first.id], sector("insurtech"));
+    const second = closeChunk(addFallback(log, sector("biotech/therapeutics")));
+    expect(profileBefore(second.log, second.id).sectors).toEqual({ insurtech: 1 });
+    expect(profileBefore(second.log, first.id).sectors).toEqual({});
   });
 });

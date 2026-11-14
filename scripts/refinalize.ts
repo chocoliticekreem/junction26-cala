@@ -1,10 +1,12 @@
 // Re-runs the revealed/contradiction pass over the committed data/investors.json without calling
 // Cala, so a logic change reaches the shipped data. Usage:
-//   npx tsx scripts/refinalize.ts --now 2026-11-14T05:31:21.300Z [--write]
-// --now must be the original build time: it decides which deals fall inside the 24-month window.
+//   npx tsx scripts/refinalize.ts [--now 2026-11-14T05:31:21.300Z] [--write]
+// --now must be the original build time (default DATA_AS_OF in lib/data.ts): it decides which
+// deals fall inside the 24-month window.
 // The script first proves --now reproduces the stored revealed vectors, then:
 // - clamps deal dates later than --now (month-only dates were pinned to the 15th) to the 1st of
 //   their month, or to the ingest date if that is still in the future;
+// - merges duplicate deals (lib/cala.ts dedupeDeals: same company within 60 days);
 // - recomputes revealed for investors whose deals changed (others keep their stored vectors,
 //   so the diff carries no float noise), then contradiction, line and thinHistory.
 import fs from "node:fs";
@@ -17,17 +19,21 @@ import {
   contradictionScore,
 } from "../lib/revealed";
 import type { Deal, Investor } from "../lib/types";
+import { dedupeDeals } from "../lib/cala";
+import { DATA_AS_OF } from "../lib/data";
 
 const FILE = path.join(process.cwd(), "data/investors.json");
 const TOLERANCE = 1e-6;
 
 const args = process.argv.slice(2);
-const nowArg = args[args.indexOf("--now") + 1];
-if (!args.includes("--now") || !nowArg || Number.isNaN(Date.parse(nowArg))) {
-  console.error("usage: tsx scripts/refinalize.ts --now <ISO build time> [--write]");
+const nowArg = args.includes("--now") ? args[args.indexOf("--now") + 1] : DATA_AS_OF.toISOString();
+if (!nowArg || Number.isNaN(Date.parse(nowArg))) {
+  console.error("usage: tsx scripts/refinalize.ts [--now <ISO build time>] [--write]");
   process.exit(1);
 }
 const now = new Date(nowArg);
+if (now.getTime() !== DATA_AS_OF.getTime())
+  console.warn(`--now ${nowArg} differs from DATA_AS_OF in lib/data.ts; the UI counts at DATA_AS_OF`);
 const ingestDay = now.toISOString().slice(0, 10);
 const before = JSON.parse(fs.readFileSync(FILE, "utf8")) as Investor[];
 
@@ -45,6 +51,8 @@ function clampDate(date: string | undefined): string | undefined {
 
 const problems: string[] = [];
 let datesClamped = 0;
+let dealsRemoved = 0;
+const dedupedInvestors: string[] = [];
 let revealedChanged = 0;
 const after = before.map((inv) => {
   const check = computeRevealed(inv.deals, now);
@@ -53,13 +61,19 @@ const after = before.map((inv) => {
     problems.push(`${inv.id}: revealed drift ${d.toExponential(2)}`);
 
   let touched = false;
-  const deals: Deal[] = inv.deals.map((deal) => {
+  const clamped: Deal[] = inv.deals.map((deal) => {
     const date = clampDate(deal.date);
     if (date === deal.date) return deal;
     touched = true;
     datesClamped++;
     return { ...deal, date };
   });
+  const deals = dedupeDeals(clamped);
+  if (deals.length !== clamped.length) {
+    touched = true;
+    dealsRemoved += clamped.length - deals.length;
+    dedupedInvestors.push(`${inv.id} -${clamped.length - deals.length}`);
+  }
   const revealed = touched ? computeRevealed(deals, now) : inv.revealed;
   if (touched && JSON.stringify(revealed) !== JSON.stringify(inv.revealed)) revealedChanged++;
   const thinHistory = revealed.dealCount24m < THIN_HISTORY_MIN_DEALS;
@@ -97,6 +111,7 @@ console.log(
   [
     `${before.length} investors`,
     `deal dates clamped ${datesClamped}`,
+    `duplicate deals removed ${dealsRemoved}${dedupedInvestors.length ? ` (${dedupedInvestors.join(", ")})` : ""}`,
     `revealed recomputed ${revealedChanged}`,
     `contradiction scores changed ${scoresChanged}`,
     `score > ${CONTRADICTION_THRESHOLD}: ${badgesBefore} -> ${badgesAfter}`,

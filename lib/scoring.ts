@@ -1,5 +1,6 @@
 import type { Deal, Debrief, FounderProfile, Investor, Match, ScoreBreakdown } from "./types";
 import { SECTOR_SHORT, STAGES, stageIndex, type Sector, type Stage } from "./taxonomy";
+import { DATA_AS_OF } from "./data";
 import {
   THIN_HISTORY_MIN_DEALS,
   countedDeals,
@@ -189,6 +190,12 @@ function bestSharedSector(c: Computed): Sector | undefined {
   return best ?? argmax(c.fs);
 }
 
+// "other" is the off-taxonomy bucket; "3 other deals" would read as "3 more deals".
+function dealsIn(n: number, s: Sector): string {
+  const deals = `deal${n === 1 ? "" : "s"}`;
+  return s === "other" ? `${n} ${deals} outside the main sectors` : `${n} ${sectorLabel(s)} ${deals}`;
+}
+
 function phrase(term: Term, f: FounderProfile, inv: Investor, c: Computed, now: Date): string {
   const counted = countedDeals(inv.deals, now);
   switch (term.key) {
@@ -196,7 +203,7 @@ function phrase(term: Term, f: FounderProfile, inv: Investor, c: Computed, now: 
       const s = bestSharedSector(c);
       if (!s) return "Sector overlap with your pitch";
       const n = counted.filter((x) => x.deal.sector === s).length;
-      if (n > 0) return `Backed ${n} ${sectorLabel(s)} deal${n === 1 ? "" : "s"} in 24 months`;
+      if (n > 0) return `Backed ${dealsIn(n, s)} in 24 months`;
       if (inv.thinHistory && (inv.statedThesis.sectors[s] ?? 0) > 0)
         return `Says it backs ${sectorLabel(s)} (thin history)`;
       return `Some ${sectorLabel(s)} exposure`;
@@ -290,7 +297,7 @@ export function scoreInvestor(
   f: FounderProfile,
   inv: Investor,
   stats?: DebriefStats,
-  now: Date = new Date(),
+  now: Date = DATA_AS_OF,
 ): Match {
   const c = compute(f, inv, stats);
   return {
@@ -333,7 +340,7 @@ function founderReason(f: FounderProfile, inv: Investor, c: Computed, now: Date)
     ? countedDeals(inv.deals, now).filter((x) => x.deal.sector === shared).length
     : 0;
   if (shared && n > 0)
-    return `${head}; you backed ${n} ${sectorLabel(shared)} deal${n === 1 ? "" : "s"} in 24 months`;
+    return `${head}; you backed ${dealsIn(n, shared)} in 24 months`;
   return head;
 }
 
@@ -341,7 +348,7 @@ export function rankFounders(
   inv: Investor,
   founders: FounderProfile[],
   debriefs: Debrief[] = [],
-  now: Date = new Date(),
+  now: Date = DATA_AS_OF,
 ): FounderMatch[] {
   const stats = debriefs.length ? debriefStats(debriefs, inv.id) : undefined;
   return founders

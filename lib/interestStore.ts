@@ -9,10 +9,12 @@ import {
   emptyStore,
   expireStale,
   expressInterest,
+  isInterestStore,
   recheckVerification,
   requestSeat,
   sendMessage,
   upsertVerification,
+  withdrawInterest,
   getSeedRoom,
   type InterestStore,
   type Result,
@@ -32,7 +34,7 @@ const DEFAULT_IDENTITY: Identity = { founderId: LIVE_FOUNDER_ID, investorId: nul
 const parsedCache = new Map<string, { raw: string | null; value: unknown }>();
 const listeners = new Set<() => void>();
 
-function readKey<T>(key: string, fallback: () => T): T {
+function readKey<T>(key: string, fallback: () => T, valid?: (v: unknown) => boolean): T {
   if (typeof window === "undefined") return fallback();
   let raw: string | null = null;
   try {
@@ -44,7 +46,8 @@ function readKey<T>(key: string, fallback: () => T): T {
   if (hit && hit.raw === raw) return hit.value as T;
   let value: T;
   try {
-    value = raw ? (JSON.parse(raw) as T) : fallback();
+    const parsed: unknown = raw ? JSON.parse(raw) : undefined;
+    value = parsed !== undefined && (!valid || valid(parsed)) ? (parsed as T) : fallback();
   } catch {
     value = fallback();
   }
@@ -65,7 +68,7 @@ function writeKey(key: string, value: unknown) {
 const EXPIRY_CHECK_MS = 60_000;
 
 function runExpiry() {
-  const s = readKey<InterestStore>(INTEREST_KEY, emptyStore);
+  const s = readKey<InterestStore>(INTEREST_KEY, emptyStore, isInterestStore);
   const expired = expireStale(s, new Date());
   if (expired !== s && JSON.stringify(expired) !== JSON.stringify(s)) writeKey(INTEREST_KEY, expired);
 }
@@ -108,7 +111,7 @@ const getServerRooms = () => (serverRooms ??= [getSeedRoom()]);
 let expiredOnce = false;
 
 function readStore(): InterestStore {
-  const s = readKey<InterestStore>(INTEREST_KEY, emptyStore);
+  const s = readKey<InterestStore>(INTEREST_KEY, emptyStore, isInterestStore);
   if (!expiredOnce && typeof window !== "undefined") {
     expiredOnce = true;
     queueMicrotask(runExpiry);
@@ -135,7 +138,7 @@ export function useInterestStore() {
   );
 
   const apply = useCallback((fn: (s: InterestStore, now: Date) => Result): Result => {
-    const current = readKey<InterestStore>(INTEREST_KEY, emptyStore);
+    const current = readKey<InterestStore>(INTEREST_KEY, emptyStore, isInterestStore);
     const r = fn(current, new Date());
     if (r.ok) writeKey(INTEREST_KEY, r.store);
     return r;
@@ -146,6 +149,7 @@ export function useInterestStore() {
       express: (investorId: string, founderId: string) => apply((s, now) => expressInterest(s, investorId, founderId, now)),
       accept: (interestId: string) => apply((s, now) => acceptInterest(s, interestId, now)),
       decline: (interestId: string) => apply((s, now) => declineInterest(s, interestId, now)),
+      withdraw: (interestId: string) => apply((s, now) => withdrawInterest(s, interestId, now)),
       recheck: (interestId: string) => apply((s, now) => recheckVerification(s, interestId, now)),
       send: (interestId: string, from: "investor" | "founder", text: string) =>
         apply((s, now) => sendMessage(s, interestId, from, text, now)),
@@ -153,7 +157,7 @@ export function useInterestStore() {
       decideSeat: (roomId: string, founderId: string, decision: "seated" | "waitlisted") =>
         apply((s, now) => decideSeat(s, roomId, founderId, decision, now)),
       upsertVerification: (v: Verification) => {
-        const current = readKey<InterestStore>(INTEREST_KEY, emptyStore);
+        const current = readKey<InterestStore>(INTEREST_KEY, emptyStore, isInterestStore);
         let next = upsertVerification(current, v);
         for (const i of next.interests) {
           if (i.state === "pending_verification" && (i.investorId === v.subjectId || i.founderId === v.subjectId)) {

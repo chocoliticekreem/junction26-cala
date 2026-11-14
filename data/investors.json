@@ -11323,10 +11323,10 @@
   },
   {
     "id": "plug-and-play",
-    "calaId": "1bce794a-bd86-4680-ac9f-a50e81e53b81",
+    "calaId": "c04545e6-fd20-441a-9feb-5247eb8de975",
     "name": "Plug and Play",
     "kind": "accelerator",
-    "description": "A British consulting firm headquartered in Guildford, England, founded in 2014.",
+    "description": "Venture capital and software services center founded by Saeed Amidi in Sunnyvale in 2006",
     "statedThesis": {
       "text": "Plug and Play is a generalist investor that invests primarily at pre-seed, seed, and series A stages across its global platform, with portfolio concentration in health & bio, commerce & retail, fintech, software/AI/ML, climate & energy, and other vertical sectors.",
       "sectors": {},
@@ -25893,10 +25893,10 @@
   },
   {
     "id": "elaia",
-    "calaId": "2b2a9653-0bf3-4081-9bbc-f6dfa9e35e96",
+    "calaId": "f94d2687-a72e-4bd4-8ec9-8386f57ed4a5",
     "name": "Elaia",
     "kind": "fund",
-    "description": "A United Kingdom restaurant company founded in 2026 and based in Renton, Dumbarton.",
+    "description": "A French venture capital firm specializing in software and services, headquartered in Paris and founded in 2002.",
     "statedThesis": {
       "text": "Elaia is a full-stack European venture capital firm backing ambitious entrepreneurs from inception to leadership, with a focus on tech-intensive B2B, digital, deep technology, and biotech companies across AI, cybersecurity, enterprise software, health tech, fintech, deep tech/hardware, and energy/sustainability.",
       "sectors": {
@@ -32897,10 +32897,9 @@
   },
   {
     "id": "pact-vc",
-    "calaId": "5c6ed805-3299-5720-8b40-35045226f2c9",
+    "calaId": "",
     "name": "Pact VC",
     "kind": "fund",
-    "description": "A French consulting firm headquartered in Malakoff, founded in 2003.",
     "statedThesis": {
       "text": "Pact VC invests in mission-driven startups across Europe under three thematic pillars: Access (democratising access to products and services), Betterment (personal and professional well-being), and Climate (sustainability and climate-change mitigation).",
       "sectors": {
@@ -35430,10 +35429,14 @@
         "amountUsd": 7000000
       },
       {
-        "company": "Zelt",
-        "round": "unknown",
+        "company": "Zelt (Tent)",
+        "round": "series-a",
         "sector": "B2B SaaS (other)",
         "sources": [
+          {
+            "name": "Cala knowledge query",
+            "date": "2026-11-14"
+          },
           {
             "name": "Nauta Capital Investments & Fund Profile | The Venture Codex",
             "url": "https://theventurecodex.com/funds/nauta-capital"
@@ -35448,8 +35451,8 @@
           }
         ],
         "companyCalaId": "e6dfb5dc-a627-4758-a4ac-de05a9adb1fb",
-        "date": "2025-01-30",
-        "amount": "$6M (£4.8M)",
+        "date": "2025-01-15",
+        "amount": "$6M",
         "amountUsd": 6000000
       },
       {
@@ -35466,21 +35469,6 @@
         "date": "2025-01-15",
         "amount": "~$5M (€4.2M)",
         "amountUsd": 5000000
-      },
-      {
-        "company": "Zelt (Tent)",
-        "round": "series-a",
-        "sector": "B2B SaaS (other)",
-        "sources": [
-          {
-            "name": "Cala knowledge query",
-            "date": "2026-11-14"
-          }
-        ],
-        "companyCalaId": "e6dfb5dc-a627-4758-a4ac-de05a9adb1fb",
-        "date": "2025-01-15",
-        "amount": "$6M",
-        "amountUsd": 6000000
       },
       {
         "company": "NetBird",
@@ -35601,27 +35589,27 @@
     ],
     "revealed": {
       "S": {
-        "AI infrastructure": 0.14428269753252543,
-        "deep tech/hardware": 0.13681614440229778,
-        "climate/energy": 0.1085395387767013,
-        "applied AI/vertical SaaS": 0.30008438797369075,
-        "developer tools": 0.12122552287717205,
-        "fintech": 0.06392093044497313,
-        "B2B SaaS (other)": 0.08381815311539503,
-        "insurtech": 0.04131262487724453
+        "AI infrastructure": 0.15068776038678974,
+        "deep tech/hardware": 0.1428897486484152,
+        "climate/energy": 0.11335787513945826,
+        "applied AI/vertical SaaS": 0.31340587003235304,
+        "developer tools": 0.1266070211915788,
+        "fintech": 0.06675853733897243,
+        "B2B SaaS (other)": 0.043146593631216194,
+        "insurtech": 0.043146593631216194
       },
       "G": {
         "series-a": 0.5466818802715357,
-        "seed": 0.2387468573333299,
-        "series-b-plus": 0.21457126239513438
+        "seed": 0.23874685733332987,
+        "series-b-plus": 0.21457126239513435
       },
       "chequeBand": [
-        5750000,
-        10500000
+        5500000,
+        11000000
       ],
-      "chequeMedian": 7400000,
+      "chequeMedian": 7800000,
       "activity": 0.6985554954587144,
-      "dealCount24m": 14
+      "dealCount24m": 13
     },
     "contradiction": 0,
     "thinHistory": false
@@ -40361,27 +40349,6 @@
         "amountUsd": 10000000
       },
       {
-        "company": "Limitless Labs",
-        "round": "unknown",
-        "sector": "crypto/web3",
-        "sources": [
-          {
-            "name": "Collider Ventures investment portfolio | PitchBook",
-            "url": "https://pitchbook.com/profiles/investor/234156-88"
-          },
-          {
-            "name": "Collider Portfolio Investments, Collider Funds, Collider Exits",
-            "url": "https://www.cbinsights.com/investor/collider12"
-          },
-          {
-            "name": "The Finland startup ecosystem | News feed",
-            "url": "https://finland.dealroom.co/investors/collider_ventures/news"
-          }
-        ],
-        "companyCalaId": "90dbb4f3-ec54-4a3a-ab16-d74a45dc0c80",
-        "date": "2025-10-07"
-      },
-      {
         "company": "Loud Echo",
         "round": "unknown",
         "sector": "applied AI/vertical SaaS",
@@ -40541,11 +40508,11 @@
     ],
     "revealed": {
       "S": {
-        "AI infrastructure": 0.15692574309762578,
-        "B2B SaaS (other)": 0.1989311336167183,
-        "crypto/web3": 0.47987138392288703,
-        "fintech": 0.10258383877205747,
-        "applied AI/vertical SaaS": 0.06168790059071157
+        "AI infrastructure": 0.17032138727353102,
+        "B2B SaaS (other)": 0.21591248179348746,
+        "crypto/web3": 0.4354716714911256,
+        "fintech": 0.11134069775047264,
+        "applied AI/vertical SaaS": 0.06695376169138328
       },
       "G": {
         "seed": 0.7157218551668899,
@@ -40557,7 +40524,7 @@
       ],
       "chequeMedian": 6000000,
       "activity": 0.6274735630753033,
-      "dealCount24m": 12
+      "dealCount24m": 11
     },
     "contradiction": 0.30000000000000004,
     "thinHistory": false
@@ -44327,32 +44294,6 @@
         "amountUsd": 5969000
       },
       {
-        "company": "Greenpixie",
-        "round": "unknown",
-        "sector": "applied AI/vertical SaaS",
-        "sources": [
-          {
-            "name": "Green Angel Ventures | Portfolio, Investments & AUM | Caplight",
-            "url": "https://www.caplight.com/investor/greenangelventures",
-            "date": "2026-05-27"
-          },
-          {
-            "name": "ifamagazine.com",
-            "url": "https://ifamagazine.com/?p=723001"
-          },
-          {
-            "name": "descycle.com",
-            "url": "https://www.descycle.com/news/series-a"
-          },
-          {
-            "name": "Companies House UK",
-            "url": "https://find-and-update.company-information.service.gov.uk/company/10704665/persons-with-significant-control"
-          }
-        ],
-        "companyCalaId": "9a354465-eed9-4525-a055-fde73c7ebdaa",
-        "date": "2026-04-09"
-      },
-      {
         "company": "Carbogenics",
         "round": "unknown",
         "sector": "climate/energy",
@@ -44460,24 +44401,24 @@
     ],
     "revealed": {
       "S": {
-        "climate/energy": 0.6692401989240347,
-        "deep tech/hardware": 0.124339009198052,
-        "applied AI/vertical SaaS": 0.20642079187791323
+        "climate/energy": 0.7430988396312864,
+        "deep tech/hardware": 0.13806130236128292,
+        "applied AI/vertical SaaS": 0.11883985800743059
       },
       "G": {
         "seed": 0.551797914335063,
         "pre-seed": 0.238964134457114,
-        "series-a": 0.20923795120782301
+        "series-a": 0.20923795120782307
       },
       "chequeBand": [
         3816350,
         5302250
       ],
       "chequeMedian": 4889500,
-      "activity": 0.8107144632819592,
-      "dealCount24m": 11
+      "activity": 0.7586544129592989,
+      "dealCount24m": 10
     },
-    "contradiction": 0.3887294525685055,
+    "contradiction": 0.38186830598689,
     "thinHistory": false
   },
   {
@@ -46813,10 +46754,9 @@
   },
   {
     "id": "bd-partners",
-    "calaId": "438da727-9fae-4c11-aed7-00412b1188bc",
+    "calaId": "",
     "name": "BD Partners",
     "kind": "fund",
-    "description": "British real estate company founded in 2025 and based in London.",
     "statedThesis": {
       "text": "BD Partners invests in European companies at the revenue stage with unique intellectual property and rapid growth potential, with primary focus on Seed stage across Enterprise Software, AI & Machine Learning, Health & Life Sciences, Fintech, and Media & Entertainment sectors.",
       "sectors": {
@@ -50615,10 +50555,10 @@
   },
   {
     "id": "anamcara-capital",
-    "calaId": "d69027fc-cd50-4d07-a229-a2702c064d56",
+    "calaId": "b7361d5d-a3b9-4376-b198-adb3e66c9b1a",
     "name": "Anamcara Capital",
     "kind": "fund",
-    "description": "A UK real estate company founded in 2022 and based in Aberdeenshire, Scotland.",
+    "description": "Abu Dhabi-based venture capital firm focused on early-stage investments.",
     "statedThesis": {
       "text": "Anamcara Capital invests in B2B software and technologies enabling small and medium-sized businesses (SMBs), with key focus areas including enterprise applications, AI/industry applications, enterprise infrastructure, fintech, supply chain, cloud, and healthcare. The firm targets pre-seed and seed stage European founders building for global markets.",
       "sectors": {
@@ -55501,20 +55441,6 @@
         "date": "2025-12-10"
       },
       {
-        "company": "D3 Bio",
-        "round": "unknown",
-        "sector": "biotech/therapeutics",
-        "sources": [
-          {
-            "name": "Techloy",
-            "url": "https://www.techloy.com/infographic-top-asian-startup-funding-week-49-2025-2",
-            "date": "2026-06-20"
-          }
-        ],
-        "companyCalaId": "596f3b53-5864-47d5-a5af-aa4eddb5cf9e",
-        "date": "2025-12-09"
-      },
-      {
         "company": "Curevo Vaccine",
         "round": "unknown",
         "sector": "biotech/therapeutics",
@@ -55616,8 +55542,8 @@
         94250000
       ],
       "chequeMedian": 75000000,
-      "activity": 0.7586544129592989,
-      "dealCount24m": 8
+      "activity": 0.6985554954587144,
+      "dealCount24m": 7
     },
     "contradiction": 0,
     "thinHistory": false
@@ -65047,10 +64973,10 @@
   },
   {
     "id": "kembara",
-    "calaId": "2605684f-128e-4976-b546-83eb398b8102",
+    "calaId": "5ccbd880-8995-4f38-962c-72d777e323dc",
     "name": "Kembara",
     "kind": "fund",
-    "description": "British consulting company headquartered in Stanmore, England, founded in 2026.",
+    "description": "A Barcelona-based DeepTech venture capital fund.",
     "statedThesis": {
       "text": "Kembara is a European deep-tech growth fund investing in artificial intelligence, quantum computing, robotics & automation, clean energy/climate tech, space tech, advanced materials & semiconductors, and defence/dual-use technologies, with a significant allocation to climate-related deals.",
       "sectors": {
@@ -66326,10 +66252,9 @@
   },
   {
     "id": "bt-ventures",
-    "calaId": "4051662b-17b7-4b30-ae9a-077587cea329",
+    "calaId": "",
     "name": "BT Ventures",
     "kind": "cvc",
-    "description": "British restaurant company founded in 2024 and headquartered in London.",
     "statedThesis": {
       "text": "Unable to verify publicly stated investment thesis for BT Ventures. No reliable public information found about this investor's focus, stages, or sectors.",
       "sectors": {},
@@ -66573,10 +66498,10 @@
   },
   {
     "id": "eos-ventures",
-    "calaId": "f27c3341-c8f7-43c7-8d6a-35f783a4c5a3",
+    "calaId": "9e9a11a1-b65c-4999-beed-e012b2de99de",
     "name": "Eos Ventures",
     "kind": "fund",
-    "description": "A retail company incorporated on April 21, 2016, registered in Pocklington, York, England.",
+    "description": "UK-based venture capital firm investing in early-stage technology companies.",
     "statedThesis": {
       "text": "Eos Ventures is a specialist venture capital firm backing technology and AI-enabled financial services businesses, with particular focus on insurance, cybersecurity, longevity/health, wealth, and payments.",
       "sectors": {
@@ -66858,10 +66783,9 @@
   },
   {
     "id": "galore-investments",
-    "calaId": "a6b6c425-0ed1-47d2-b88a-648d00ee0b1b",
+    "calaId": "",
     "name": "Galore Investments",
     "kind": "angel_network",
-    "description": "A United Kingdom‑based retail company founded in 2010.",
     "statedThesis": {
       "text": "No publicly available investment thesis found. Galore Investments Limited is registered as a retail company, not a venture capital or angel investment firm.",
       "sectors": {},
@@ -67007,10 +66931,9 @@
   },
   {
     "id": "kinetic-investments",
-    "calaId": "99d125fc-3a05-4574-bff4-45c7f23425cb",
+    "calaId": "",
     "name": "Kinetic Investments",
     "kind": "fund",
-    "description": "British real estate and consulting company founded in 2014 and based in Tamworth, England.",
     "statedThesis": {
       "text": "Kinetic Investments is dedicated to early-stage companies transforming the digital landscape, with a sharpening focus on AI-driven B2C startups that address meaningful, real-world challenges.",
       "sectors": {

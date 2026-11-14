@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fallbackExtract } from "@/lib/fallbackExtract";
-import { addFallback, addLlm, buildProfile, closeChunk, emptyLog, type LiveLog } from "@/lib/liveProfile";
+import { addFallback, addLlm, buildProfile, closeChunk, emptyLog, profileBefore, type LiveLog } from "@/lib/liveProfile";
 import { emptyProfile, mergeProfile } from "@/lib/mergeProfile";
 import { createReplay, type ReplayPlayer } from "@/lib/replay";
 import { pickProvider, type SttSession } from "@/lib/stt";
@@ -78,7 +78,6 @@ export function usePitch(replayEvents: ReplayEvent[]) {
 
   const player = useRef<ReplayPlayer | null>(null);
   const session = useRef<SttSession | null>(null);
-  const profileRef = useRef(profile);
   const log = useRef<LiveLog>(emptyLog());
   const pending = useRef("");
   const inFlightEpoch = useRef<number | null>(null);
@@ -89,7 +88,6 @@ export function usePitch(replayEvents: ReplayEvent[]) {
   const commit = useCallback((nextLog: LiveLog, e: Extraction) => {
     log.current = nextLog;
     const next = buildProfile(nextLog);
-    profileRef.current = next;
     setProfile(next);
     const tr = chipTriggers(e);
     if (Object.keys(tr).length) setTriggers((prev) => ({ ...prev, ...tr }));
@@ -112,7 +110,6 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     queued.current = null;
     log.current = emptyLog();
     const p = emptyProfile();
-    profileRef.current = p;
     setProfile(p);
     setTranscript([]);
     setInterim("");
@@ -141,7 +138,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
           const res = await fetch("/api/extract", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ chunk: job.text, profile: profileRef.current }),
+            body: JSON.stringify({ chunk: job.text, profile: profileBefore(log.current, Math.min(...job.ids)) }),
           });
           if (res.ok && myEpoch === epoch.current) {
             const body = (await res.json()) as { extraction?: Extraction; source?: "llm" | "fallback" };

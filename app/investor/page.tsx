@@ -6,6 +6,8 @@ import type { FounderProfile, InterestState, Investor, Room } from "@/lib/types"
 import { SECTOR_COLOR, SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import {
   INVESTOR_OPEN_CAP,
+  defaultInvestor,
+  interestId,
   loadDebriefs,
   loadFounders,
   loadInvestors,
@@ -111,12 +113,13 @@ export default function InvestorPage() {
   const seeded = useMemo(() => loadFounders(), []);
   const debriefs = useMemo(() => loadDebriefs(), []);
   const live = useLiveProfile();
-  const { store, identity, express, setInvestorId, upsertVerification, send } = useInterestStore();
+  const { store, identity, express, withdraw, setInvestorId, upsertVerification, send } = useInterestStore();
   const { addRoom } = useRooms();
 
   // Hydration serves the server default (investorId null) before localStorage is read,
   // so the fallback is derived at render rather than written back to the store.
-  const effectiveId = identity.investorId ?? investors[0]?.id ?? null;
+  const fallbackId = useMemo(() => defaultInvestor(investors)?.id ?? null, [investors]);
+  const effectiveId = identity.investorId ?? fallbackId;
   const inv = investors.find((i) => i.id === effectiveId) ?? null;
 
   const founders: FounderProfile[] = useMemo(() => (live && Object.keys(live.sectors).length ? [live, ...seeded] : seeded), [live, seeded]);
@@ -328,6 +331,10 @@ export default function InvestorPage() {
               onSelect={setSelectedFounderId}
               onInterested={(fid) => {
                 const r = express(inv.id, fid);
+                setError(r.ok ? null : errorMessage(r.error));
+              }}
+              onWithdraw={(fid) => {
+                const r = withdraw(interestId(inv.id, fid));
                 setError(r.ok ? null : errorMessage(r.error));
               }}
             />
