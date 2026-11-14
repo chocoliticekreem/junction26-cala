@@ -172,7 +172,7 @@ export async function analyzeFounder(
       tool: FOUNDER_TOOL,
       maxTokens: 450,
       strict: true,
-      timeoutMs: opts.timeoutMs ?? 8000,
+      timeoutMs: opts.timeoutMs ?? 15000,
       maxRetries: opts.maxRetries ?? 1,
     });
     const parsed = parseFounder(input);

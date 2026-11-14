@@ -161,10 +161,12 @@ export function pickCandidate(
   // with the same name have no rounds, so this separates the startup from them.
   if (opts.name && opts.fundedIds?.size) {
     const key = companyKey(opts.name);
-    const funded = cands.filter(
-      (c) => companyKey(c.name) === key && [c.calaId, ...(c.siblingIds ?? [])].some((id) => opts.fundedIds!.has(id)),
-    );
-    if (funded.length === 1) return funded[0].calaId;
+    const exact = cands.filter((c) => companyKey(c.name) === key);
+    // Brand and legal entities of one company list each other as siblings; prefer the one we hold directly.
+    const direct = exact.filter((c) => opts.fundedIds!.has(c.calaId));
+    if (direct.length === 1) return direct[0].calaId;
+    const viaSibling = exact.filter((c) => (c.siblingIds ?? []).some((id) => opts.fundedIds!.has(id)));
+    if (!direct.length && viaSibling.length === 1) return viaSibling[0].calaId;
   }
   return undefined;
 }

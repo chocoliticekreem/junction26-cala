@@ -121,7 +121,7 @@ export async function analyzeVision(text: string, opts: { call?: ToolCaller; tim
       tool: VISION_TOOL,
       maxTokens: 300,
       strict: true,
-      timeoutMs: opts.timeoutMs ?? 6000,
+      timeoutMs: opts.timeoutMs ?? 15000,
       maxRetries: 1,
     });
     const v = parseVisionTool(out, t);
