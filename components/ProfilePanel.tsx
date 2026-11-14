@@ -99,23 +99,6 @@ function Bars({ title, stated, revealed, labelOf, colorOf }: { title: string; st
   );
 }
 
-// The intro the founder would send: one subject, three lines, the evidence that makes it land.
-function introMailto(investor: Investor, match?: Match): string {
-  const evidence = (match?.evidence ?? []).slice(0, 2).map((d) => `${d.company}${d.round !== "unknown" ? ` (${STAGE_LABELS[d.round]})` : ""}`);
-  const subject = `Intro: ${investor.name}`;
-  const body = [
-    `Hi ${investor.partners[0]?.name?.split(" ")[0] ?? "there"},`,
-    "",
-    match?.reason ? `${match.reason}.` : `We are raising and ${investor.name} keeps coming up.`,
-    evidence.length ? `Your rounds in ${evidence.join(" and ")} are close to what we are building.` : "",
-    "",
-    "Could we take 20 minutes this week?",
-  ]
-    .filter((l, i, a) => !(l === "" && a[i - 1] === ""))
-    .join("\n");
-  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-
 function SourceList({ sources }: { sources: Source[] }) {
   if (!sources.length) return <p className="muted">No sources on record.</p>;
   return (
@@ -196,9 +179,6 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
       )}
 
       <div className="profile-actions">
-        <a className="hero-btn hero-btn-primary profile-primary" href={introMailto(investor, match)} title="Opens a drafted intro in your mail app; nothing is sent" data-testid="intro-email">
-          Draft intro email
-        </a>
         <button type="button" className="btn" onClick={() => setSourcesOpen((v) => !v)} aria-expanded={sourcesOpen} data-testid="profile-sources">
           Sources
         </button>

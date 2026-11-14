@@ -1,11 +1,9 @@
 // Live smoke test of the AI analysis path: 5 founder pitches + 4 visions = 9 Haiku calls.
-// --grounded instead runs one narrative call and one email-draft call (2 calls) to check that
-// those strict schemas are accepted live.
+// --grounded instead runs one narrative call to check that its strict schema is accepted live.
 // Usage: npx tsx scripts/ai-smoke.ts [--grounded]
 import path from "node:path";
 import { analyzeFounder } from "../lib/ai/analyzeFounder";
 import { analyzeVision } from "../lib/ai/analyzeVision";
-import { draftEmail, type EmailFacts } from "../lib/context/actions";
 import { fitModel } from "../lib/sim/fit";
 import { narrate } from "../lib/sim/llm";
 import { simulate } from "../lib/sim/simulate";
@@ -34,8 +32,6 @@ async function main() {
     const model = fitModel(fixture as unknown as Cohort);
     const r = simulate({ sectors: { fintech: 1 }, stage: "pre-seed" }, { text: "Series B", targetStage: "series-b-plus", horizonYears: 5 }, model, { runs: 500, seed: 1 });
     console.log("narrative:", await narrate(r.tree.children, model));
-    const facts: EmailFacts = { company: "Lumen", product: "EEG headband that coaches focus and sleep", stage: "pre-seed", founderClaims: ["2,000 people on the waitlist"], investor: "Kestrel Ventures" };
-    console.log("email:", await draftEmail(facts));
     return;
   }
   for (const [name, text] of PITCHES) {

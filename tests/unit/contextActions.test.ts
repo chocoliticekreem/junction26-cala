@@ -1,34 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
-import {
-  MAX_EMAIL_WORDS,
-  choosePrecedent,
-  draftEmail,
-  emailFacts,
-  mailtoFor,
-  templateDraft,
-  ungroundedTokens,
-  wordCount,
-  type EmailFacts,
-} from "@/lib/context/actions";
+import { describe, expect, it } from "vitest";
+import { choosePrecedent, warmPath } from "@/lib/context/actions";
 import type { CohortLite } from "@/lib/context/cohortRead";
-import { assembleDoc } from "@/lib/context/doc";
 import { buildFeed, cleanSectors, upsertWatch } from "@/lib/context/watch";
 import { deal, investor } from "./helpers";
 
 const NOW = new Date("2026-11-14T00:00:00Z");
-
-const doc = assembleDoc({
-  name: "Raise",
-  pitchProfile: {
-    company: "Raise",
-    oneLiner: "Maps London investors by what they funded",
-    stage: "pre-seed",
-    sectors: { fintech: 1 },
-    traction: { users: "40 founders onboarded" },
-  },
-  visionText: "the default fundraising layer for European founders",
-  now: NOW,
-});
 
 const inv = investor("acme", [deal("fintech", "seed", 30), deal("consumer", "series-a", 10), deal("fintech", "series-a", 400)]);
 
@@ -58,59 +34,61 @@ describe("precedent", () => {
   });
 });
 
-describe("email draft guard", () => {
-  const precedent = choosePrecedent(inv, null, "fintech", "pre-seed");
-  const facts: EmailFacts = emailFacts(doc, inv, precedent);
+describe("warm path", () => {
+  const LED_ID = "00000000-0000-4000-8000-000000000001";
+  const round = (id: string, companyId: string, stage: "seed" | "series-a", date: string, isLead?: boolean) => ({
+    id,
+    companyId,
+    stage,
+    label: stage,
+    date,
+    participants: [{ investorId: inv.calaId, name: inv.name, ...(isLead ? { isLead } : {}) }],
+    sources: [],
+  });
+  const cohort: CohortLite = {
+    companies: {
+      own: { id: "own", name: "Raise", sector: "fintech" },
+      fin: { id: "fin", name: "FinJoined", sector: "fintech" },
+      [LED_ID]: { id: LED_ID, name: "FinLed", sector: "fintech" },
+      con: { id: "con", name: "ConsumerLed", sector: "consumer" },
+      slush: { id: "slush", name: "FinSlush", sector: "fintech" },
+      other: { id: "other", name: "NotBacked", sector: "fintech" },
+    },
+    rounds: {
+      r0: round("r0", "own", "seed", "2026-06-01", true),
+      r1: round("r1", "fin", "seed", "2026-09-01"),
+      r2: round("r2", LED_ID, "seed", "2024-01-01", true),
+      r3: round("r3", "con", "seed", "2026-10-01", true),
+      r4: round("r4", "slush", "seed", "2023-01-01"),
+      r5: { ...round("r5", "other", "seed", "2026-10-01"), participants: [{ investorId: "someone-else", name: "Else" }] },
+      r6: round("r6", "fin", "series-a", "2026-10-01"),
+    },
+    investors: {},
+  };
+  const atSlush = (c: { id: string }) => (c.id === "slush" ? { id: "ev", name: "Slush 2026", date: "2026-11-18", place: "Helsinki" } : undefined);
 
-  it("accepts a draft that only uses input facts and placeholders", async () => {
-    const llm = vi.fn(async () => ({
-      subject: "Raise: pre-seed intro",
-      body: `Hi Zoë,\n\nI saw Investor acme backed fintech-seed-30. I'm building Raise: it maps London investors by what they funded. We have 40 founders onboarded.\n\n[Your name]`,
-    }));
-    const d = await draftEmail(facts, llm);
-    expect(llm).toHaveBeenCalledOnce();
-    expect(d.grounded).toBe("llm");
+  it("ranks same sector first, led before joined, then Slush attendees, max three, never the founder's company", () => {
+    const w = warmPath(inv, cohort, { sector: "fintech", stage: "seed", excludeCompanyIds: ["own"] }, atSlush);
+    expect(w.map((f) => f.company)).toEqual(["FinLed", "FinSlush", "FinJoined"]);
+    expect(w[0]).toMatchObject({ led: true, round: "Seed", year: "2024", companyCalaId: LED_ID });
+    expect(w[0].event).toBeUndefined();
+    expect(w[1].event).toMatchObject({ name: "Slush 2026", date: "2026-11-18" });
   });
 
-  it("rejects an invented customer, number or name and falls back to the template", async () => {
-    for (const body of [
-      "Hi Zoë, Raise already works with Goldman Sachs. [Your name]",
-      "Hi Zoë, Raise has 3,000 users. [Your name]",
-      "Hi Zoë, our advisor Paul Graham likes Raise. [Your name]",
-    ]) {
-      const d = await draftEmail(facts, async () => ({ subject: "Raise", body }));
-      expect(d.grounded).toBe("template");
-    }
+  it("keeps one entry per company, its round nearest the founder's stage", () => {
+    const w = warmPath(inv, cohort, { sector: "fintech", stage: "seed", excludeCompanyIds: ["own"] }, () => undefined);
+    // "fin" is not a Cala entity id, so it gets no link.
+    expect(w.filter((f) => f.company === "FinJoined")).toEqual([{ company: "FinJoined", round: "Seed", year: "2026", led: false }]);
   });
 
-  it("flags exactly the ungrounded tokens, ignoring [placeholders]", () => {
-    expect(ungroundedTokens("We grew 300% with Stripe. [Revenue 2M]", facts).sort()).toEqual(["300", "Stripe"]);
-    expect(ungroundedTokens("I'm building Raise in London. [traction]", facts)).toEqual([]);
+  it("without the founder's sector, a led round in another sector ranks first", () => {
+    const w = warmPath(inv, cohort, { excludeCompanyIds: ["own"] }, () => undefined);
+    expect(w[0].led).toBe(true);
+    expect(w.map((f) => f.company)).not.toContain("NotBacked");
   });
 
-  it("falls back when the LLM fails, returns nothing, or runs long", async () => {
-    expect((await draftEmail(facts, async () => null)).grounded).toBe("template");
-    expect((await draftEmail(facts, async () => { throw new Error("429"); })).grounded).toBe("template");
-    const long = Array.from({ length: MAX_EMAIL_WORDS + 5 }, () => "word").join(" ");
-    expect((await draftEmail(facts, async () => ({ subject: "Raise", body: long }))).grounded).toBe("template");
-  });
-
-  it("template is grounded, short, and uses placeholders for gaps", () => {
-    const t = templateDraft(facts);
-    expect(ungroundedTokens(`${t.subject}\n${t.body}`, facts)).toEqual([]);
-    expect(wordCount(t.body)).toBeLessThanOrEqual(MAX_EMAIL_WORDS);
-    expect(t.body).toContain("backed fintech-seed-30");
-    expect(t.body).toContain("[Your name]");
-    const oneLiner = "AR layer; 8 signups at a club demo";
-    const same = templateDraft({ company: "Tenkai", product: oneLiner, founderClaims: [oneLiner], investor: "Fund" });
-    expect(same.body.split(oneLiner)).toHaveLength(2);
-    const bare = templateDraft({ company: "Tenkai", founderClaims: [], investor: "Fund" });
-    expect(bare.body).toContain("Hi [name]");
-    expect(bare.body).toContain("[One line of traction]");
-  });
-
-  it("mailto has no recipient", () => {
-    expect(mailtoFor({ subject: "a b", body: "c&d" })).toBe("mailto:?subject=a%20b&body=c%26d");
+  it("is empty without a cohort", () => {
+    expect(warmPath(inv, null, { sector: "fintech" }, () => undefined)).toEqual([]);
   });
 });
 

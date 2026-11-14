@@ -106,6 +106,17 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await page.waitForTimeout(800);
   expect(await mapHasContent(page)).toBe(true);
   await expect(page.getByTestId("action-card").first()).toBeVisible();
+  // Each lead comes with a warm path (founders it backed, linked to Cala), never a cold email.
+  const warm = page.getByTestId("warm-path").first();
+  await expect(warm).toBeVisible();
+  await expect(warm).toContainText("then ask for the intro");
+  const founders = warm.getByTestId("warm-founder");
+  expect(await founders.count()).toBeGreaterThan(0);
+  expect(await founders.count()).toBeLessThanOrEqual(3);
+  for (const href of await warm.locator("a").evaluateAll((as) => as.map((a) => a.getAttribute("href")))) {
+    expect(href).toMatch(/^\/api\/cala\/entity\/[0-9a-f-]{36}$/);
+  }
+  await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
 
   await page.getByTestId("new-simulation").click();
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "company");

@@ -17,7 +17,7 @@ test("founder view renders the graph and ten matches", async ({ page }) => {
 
   await page.getByTestId("match-row").first().locator("button").click();
   await expect(page.getByTestId("profile-panel")).toBeVisible();
-  await expect(page.getByTestId("intro-email")).toBeVisible();
+  await expect(page.getByTestId("profile-sources")).toBeVisible();
   await page.waitForTimeout(1500);
 
   await page.screenshot({ path: "tests/screenshots/founder-selected.png" });

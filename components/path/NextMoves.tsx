@@ -131,36 +131,59 @@ function Evidence({ card }: { card: InvestorAction }) {
   return null;
 }
 
+// Founders the investor backed, to ask how it works with founders and for the intro.
+function WarmPath({ card }: { card: InvestorAction }) {
+  return (
+    <div className="path-warm" data-testid="warm-path">
+      <ul className="path-warm-list">
+        {card.warmPath.map((f) => (
+          <li key={f.company} data-testid="warm-founder">
+            {f.companyCalaId ? (
+              <a href={calaEntityHref(f.companyCalaId)} target="_blank" rel="noreferrer">
+                {f.company}
+              </a>
+            ) : (
+              <span>{f.company}</span>
+            )}
+            <span className="font-mono muted">
+              {f.round}
+              {f.year ? ` ${f.year}` : ""}
+              {f.led ? " · led" : ""}
+            </span>
+            {f.event && (
+              <span className="path-warm-tag" title={`At ${f.event.name} · ${shortDate(f.event.date)}, ${f.event.place}`}>
+                {f.event.name.replace(/\s*\d{4}$/, "")} · {shortDate(f.event.date)}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="path-warm-hint muted">Ask how {card.name} works with founders, then ask for the intro.</p>
+    </div>
+  );
+}
+
+function shortDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
+
 function Action({ card }: { card: InvestorAction }) {
-  const [copied, setCopied] = useState(false);
   const [showSources, setShowSources] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(`${card.emailDraft.subject}\n\n${card.emailDraft.body}`);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setShowSources(true);
-    }
-  };
+  const warm = card.warmPath.length > 0;
   return (
     <li className="path-action" data-testid="action-card">
       <div className="path-action-head">
         <b>{card.name}</b>
         {card.leadPartner && <span className="muted">{card.leadPartner.name}</span>}
-        <Evidence card={card} />
+        {!warm && <Evidence card={card} />}
       </div>
       <div className="path-action-btns">
-        <a className="btn is-primary" href={card.mailto} title={`${card.emailDraft.subject} · opens a draft in your mail app; nothing is sent`} data-testid="draft-intro">
-          Draft intro
-        </a>
-        <button type="button" className="btn" onClick={copy} title="Copy the draft">
-          {copied ? "Copied" : "Copy"}
-        </button>
         <button type="button" className="btn" onClick={() => setShowSources((v) => !v)} aria-expanded={showSources}>
           Sources
         </button>
       </div>
+      {warm && <WarmPath card={card} />}
       {showSources && (
         <ul className="path-sources">
           {card.calaSources.map((s, i) => (
