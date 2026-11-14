@@ -20,6 +20,8 @@
 - 07:55 PR #15 Lint/typecheck exclude agent worktrees. PR #16 docs/submission.md + docs/DEMO.md (every number computed from repo).
 - 08:10 PR #17 DoD proofs: offline replay e2e; live-loop e2e via test hook on the exact STT handlers (3 pitches: 9/11/4 ms to biotech top-3 + chip, keyword path); real contradiction visible in replay top 10 (London Business Angels: 'Says seed and Series A; 9 of last 10 deals were pre-seed', recounted in test); contradiction lines = strongest counted contrast, flat stated = no preference (65 -> 22 badges, 53 -> 12 lines); 57 future-dated deals clamped; copy audit; Cala search loading state; per-signal team triggers. E2E 18/18, unit 188.
 - 08:20 PR #19 Submission docs refreshed after re-finalization (LBA contradiction example; 58/60 top-10 rows across 6 pitches have >= 2 chips, the other 2 tagged thin history).
+- 08:55 PR #22 MIT LICENSE + CHALLENGE.md (judging brief). PR #23 live pitch captures company / one-liner / founder name (never scored; tested). PR #24 submission pack in CHALLENGE.md's form format.
+- 09:04 PR #25 First screen states user + problem; calm idle top-10 rail; company on the graph centre; integer scores everywhere; investor group-by sweep (12.7 #4); orbit label obstacles. Unit 213, e2e 22/22.
 - 08:36 PR #20 Second adversarial review fixes (reviewer saw a stale snapshot; each finding re-confirmed first): default investor can verify (Speedinvest), 5 mis-resolved Cala entities re-pointed + 5 cleared, 'investors active in London' copy, LLM overrides only the fields it reports, extract maxRetries 0, 4 duplicate deals removed, DATA_AS_OF for all counting, withdraw interest, P3 hardening. Unit 201, e2e 22/22.
 
 ## Definition of done (spec 12.6), status 08:38: all met except the real-mic run (needs a human, see BLOCKED.md)
@@ -32,6 +34,18 @@
 - [x] Two-window interest flow: interested, accept, both verified, chat unlocks; caps enforced (tests/e2e/interest*.spec.ts).
 - [x] No keys in the repo; example env file present; README explains run, ingest, replay, demo.
 - [x] No invented statistics in UI copy; no quotes shown (data/quotes.json empty until Anson collects them).
+
+## CHALLENGE.md self-check (09:06, evidence per line)
+- [x] **Real need.** User: a founder raising pre-seed or seed in London (and the investor on the other side). Problem: cold outreach to investors who were never a fit, because fund websites describe a thesis their deals don't follow. The first screen says it: idle overlay "Raising pre-seed or seed in London? Pitch out loud. Investors rank themselves by the deals they actually did, sourced from Cala." (PR #25; screenshot scratchpad/shots/final/founder-idle.png).
+- [x] **Focus.** One core flow: speak a pitch -> investors re-rank by revealed deals -> evidence, contradiction, easiest door. Investor view, rooms and interest reuse the same engine. tests/e2e/replay.spec.ts, live-loop.spec.ts.
+- [x] **Execution.** Runs start to finish on real data: e2e 22/22 on a production build; offline replay (offline.spec.ts); no console errors (screenshots.spec.ts); the slow Cala search has a bounded loading state (cala-panel.spec.ts); no fixture banner (founder-smoke asserts it is gone). Seeded founders are labelled "seeded" because they are seeded.
+- [x] **Originality.** Matching on what investors did (dated Cala rounds, 24-month window, 12-month half-life), not their stated thesis; contradiction badges from counted deals (London Business Angels: "Says seed and Series A; 9 of last 10 deals were pre-seed", contradiction.spec.ts recounts it); live voice pitch as the query; investor-initiated, verified double opt-in. Dealroom/Crunchbase/LinkedIn search filter on stated profiles.
+- [x] **Use of Cala is core.** 193 investors and 2,632 deals come from Cala (knowledge/query, knowledge/search, entities); 188/193 investors carry a Cala entity ID; investor verification checks Cala partner (Person/WORKS_AT) records; profile panels call Cala live. Remove Cala and there is no investor universe, ranking, evidence or verification.
+- [x] **Slush-ready.** Runs locally in Chrome with `npm run dev`; replay works offline; usable by a founder next week for London investors. Not deployed (needs Anson's go and auth on the API routes, see BLOCKED.md).
+- [~] **Sourced.** Every deal carries Cala sources: 1,792/2,632 (68%) with a URL; 2,260/2,632 (86%) with a URL or the portfolio company's Cala entity ID (live lookup in the panel); the other 372 show the source "Cala knowledge query" without a link, because Cala's query rows carry no citation.
+- [x] **Junction rules.** MIT LICENSE (PR #22); README with run, ingest, replay, demo; no keys in git (.env* ignored; grepped); all code written this session from SPEC.md, nothing from Raise or 8x; nothing scraped from LinkedIn (the few LinkedIn URLs are citation links Cala returned, shown as links).
+- [x] **Submission pack.** docs/submission.md (PR #24): name "Room" 4/30, punchline 185/200, description 4,261/5,000 (measured), 2-minute demo script totalling 1:55, tech challenges: none claimed (ElevenLabs only after a verified live run with a key).
+- [x] **Peer review.** 3-minute flow in docs/DEMO.md and talking points for Innovation / Impact / Implementation in docs/submission.md.
 
 ## In progress
 - Polish backlog 12.7.
@@ -58,4 +72,4 @@
 - Live-extract queue appends pending text instead of dropping it (deviation from 5.6 'newest replaces queued'; no words lost, still one request in flight).
 
 ## Elapsed
-- 08:40 — 3 h 08 min. Minimum run time reached and DoD met (bar the human mic check); continuing with polish.
+- 09:07 — 3 h 35 min. DoD met (bar the human mic check), CHALLENGE.md self-check answered; continuing polish.
