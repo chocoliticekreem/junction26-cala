@@ -46,9 +46,10 @@ export default function HowItWorks({ data }: { data: SpotterResponse }) {
               <b>Futures.</b> The best {considered.simulated} are simulated forward from their last real round: unicorn-like odds, and how often you show up as the next lead or a participant.
             </li>
           </ol>
-          <p className="font-mono">
+          <p className="font-mono" data-testid="spotter-basis">
             {considered.roundsInCohort} real rounds in Cala · as of {asOf} · evidence, not a forecast
           </p>
+          <p className="font-mono">&ldquo;Host&rdquo; = your lane grouped by sector, weighted by your share of rounds there; groups under 3 are dropped</p>
           <p className="font-mono">&ldquo;At Slush&rdquo; = on Cala&rsquo;s Slush 2026 event: 2,989 companies, source slush.org via Cala</p>
         </div>
       )}

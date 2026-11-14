@@ -4,6 +4,7 @@ import { ROUTE_PREFIX, routeCacheGet, routeCacheSet } from "@/lib/routeCache";
 import { loadCohort, usingCohortFixture } from "@/lib/cohort";
 import { eventFor, type EventTag } from "@/lib/events";
 import { runSpotter, SpotterError, type SpotterResult } from "@/lib/sim/spotter";
+import { hostEvents } from "@/lib/sim/spotter/host";
 import type { Cohort } from "@/lib/sim/types";
 import type { Investor, Revealed } from "@/lib/types";
 
@@ -66,6 +67,22 @@ function mock(name: string, asOf: string, at: string | undefined): SpotterResult
       lowConfidence: true,
       actions: { sharedCoInvestors: [] },
     })),
+    host: [
+      {
+        sector: "fintech",
+        name: "Fintech founders breakfast · Slush week",
+        count: 4,
+        atSlush: 2,
+        companies: [1, 2, 3, 4].map((i) => ({ id: i === 4 ? "name:mock-co4" : `mock:co${i}`, name: `Mock Company ${i}`, stage: "seed" as const, year: "2025", atSlush: i % 2 === 0 })),
+      },
+      {
+        sector: "applied AI/vertical SaaS",
+        name: "Applied AI founders breakfast · Slush week",
+        count: 3,
+        atSlush: 0,
+        companies: [5, 6, 7].map((i) => ({ id: `mock:co${i}`, name: `Mock Company ${i}`, stage: "pre-seed" as const, year: "2026", atSlush: false })),
+      },
+    ],
     asOf,
     basis: "Mock data, not Cala evidence",
     considered: { candidates: 3, simulated: 3, roundsInCohort: 0 },
@@ -103,7 +120,7 @@ export async function POST(req: Request) {
   const fixture = usingCohortFixture();
 
   const t0 = performance.now();
-  const key = `${ROUTE_PREFIX}spotter:v3:${cohort.asOf}:${asOf ?? "-"}:${at ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
+  const key = `${ROUTE_PREFIX}spotter:v4:${cohort.asOf}:${asOf ?? "-"}:${at ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
   const shared = await routeCacheGet(key);
   if (shared) return Response.json({ ...shared, cached: true, source: "valkey", latencyMs: Math.round(performance.now() - t0) });
 
@@ -116,7 +133,8 @@ export async function POST(req: Request) {
       only: at ? (c) => !!eventFor(c) : undefined,
     });
     const picks = result.picks.map((p) => ({ ...p, event: tag(eventFor(p.company)) }));
-    const body = { ...result, picks, ...(fixture ? { basis: "Synthetic fixture data, not Cala evidence" } : {}), fixture, cached: false };
+    const host = hostEvents(cohort, { investorId: result.investor.id, asOf, revealedFor: (id) => revealedFor(cohort, id), attending: (c) => !!eventFor(c) });
+    const body = { ...result, picks, host, ...(fixture ? { basis: "Synthetic fixture data, not Cala evidence" } : {}), fixture, cached: false };
     routeCacheSet(key, body);
     return Response.json({ ...body, source: "computed", latencyMs: Math.round(performance.now() - t0) });
   } catch (err) {

@@ -47,7 +47,7 @@ test("all early companies: five one-sentence picks, taste and the map, with no s
 
   await expect(page.getByTestId("spotter-taste")).toContainText("Your taste");
   await expect(page.getByTestId("spotter-taste")).toContainText(/from \d+ real rounds/);
-  await expect(page.getByTestId("spotter-basis")).toContainText(/as of \d{4}-\d{2}-\d{2}/);
+  await expect(page.getByTestId("spotter-host")).toHaveText(/Host.*Fintech founders breakfast.*4 fit · 2 at Slush/);
 
   const svg = page.locator('[data-testid="spotter-constellation"] svg');
   await expect(svg).toBeVisible();
@@ -85,7 +85,8 @@ test("the single (i) holds the method, evidence counts and the as-of date", asyn
   await expect(pop).toBeVisible();
   await expect(pop).toContainText("Your taste");
   await expect(pop).toContainText(/\d+ considered/);
-  await expect(pop).toContainText(/as of \d{4}-\d{2}-\d{2}/);
+  await expect(pop.getByTestId("spotter-basis")).toContainText(/\d+ real rounds in Cala · as of \d{4}-\d{2}-\d{2}/);
+  await expect(page.getByTestId("spotter-basis")).toHaveCount(1);
   await expect(pop).toContainText(/Slush 2026 event: 2,989 companies/);
   await page.keyboard.press("Escape");
   await expect(pop).toHaveCount(0);
@@ -124,6 +125,35 @@ test("selecting a pick opens its card with why-it-fits, rounds, precedents and a
 
   await page.locator('[data-testid^="spotter-node-"]').first().click();
   await expect(page.getByTestId("spotter-card")).toBeVisible();
+});
+
+test("the host row opens the invite list in the card container, with Cala links only for real ids", async ({ page }) => {
+  await openSpotter(page);
+  await expect(page.getByTestId("spotter-host-card")).toHaveCount(0);
+  await page.getByTestId("spotter-host").click();
+  const card = page.getByTestId("spotter-host-card");
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("Fintech founders breakfast");
+  await expect(card).toContainText("4 fit");
+  const invites = card.getByTestId("spotter-invites").locator("li");
+  await expect(invites).toHaveCount(4);
+  await expect(invites.first()).toContainText(/Seed · 2025/);
+  await expect(card.getByTestId("spotter-invite-slush")).toHaveCount(2);
+  await expect(invites.locator("a")).toHaveCount(0);
+  await expect(invites.last().locator("b")).toHaveText("Mock Company 4");
+
+  await card.getByTestId("spotter-host-alt").click();
+  await expect(card).toContainText("Applied AI founders breakfast");
+  await expect(card.getByTestId("spotter-invites").locator("li")).toHaveCount(3);
+
+  await rows(page).first().click();
+  await expect(page.getByTestId("spotter-host-card")).toHaveCount(0);
+  await expect(page.getByTestId("spotter-card")).toBeVisible();
+  await page.getByTestId("spotter-host").click();
+  await expect(page.getByTestId("spotter-card")).toHaveCount(0);
+  await expect(page.getByTestId("spotter-host-card")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("spotter-host-card")).toHaveCount(0);
 });
 
 test("works at 1280x800", async ({ page }) => {

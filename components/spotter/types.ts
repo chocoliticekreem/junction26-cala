@@ -39,9 +39,15 @@ export type SpotterPick = {
   actions: { sharedCoInvestors: string[] };
 };
 
+export type SpotterInvite = { id: string; name: string; stage: string; year?: string; atSlush: boolean };
+
+// One event the fund could host: a sector lane from its taste, with the founders to invite.
+export type SpotterHost = { sector: string; name: string; count: number; atSlush: number; companies: SpotterInvite[] };
+
 export type SpotterResponse = {
   investor: SpotterInvestor;
   picks: SpotterPick[];
+  host: SpotterHost[];
   asOf: string;
   basis: string;
   considered: { candidates: number; simulated: number; roundsInCohort: number };

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import { usingFixtures } from "@/lib/data";
 import Constellation from "@/components/spotter/Constellation";
+import { HostCard, HostRow } from "@/components/spotter/HostEvent";
 import HowItWorks from "@/components/spotter/HowItWorks";
 import InvestorPicker, { type PickerOption } from "@/components/spotter/InvestorPicker";
 import PickCard from "@/components/spotter/PickCard";
@@ -58,22 +59,30 @@ export default function Showcase() {
   // The page never waits for a choice: the default fund is ranked the moment the list arrives.
   const investor = chosen ?? options.find((o) => o.name === DEFAULT_FUND) ?? options[0] ?? null;
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+  const [hostOpen, setHostOpen] = useState(false);
   // The demo story is "who should this fund meet at Slush next week", so the event scope is the default.
   const [scope, setScope] = useState<Scope>("slush");
   const reducedMotion = useReducedMotion();
   const { state, retry } = useSpotter(investor ? { investorId: investor.id, ...(scope === "slush" ? { at: SLUSH } : {}) } : null);
+  const selectPick = (id: string | undefined) => {
+    setHostOpen(false);
+    setSelectedId(id);
+  };
   const pickInvestor = (o: PickerOption) => {
-    setSelectedId(undefined);
+    selectPick(undefined);
     setChosen(o);
   };
   const pickScope = (next: Scope) => {
-    setSelectedId(undefined);
+    selectPick(undefined);
     setScope(next);
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedId(undefined);
+      if (e.key === "Escape") {
+        setSelectedId(undefined);
+        setHostOpen(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -83,6 +92,7 @@ export default function Showcase() {
   const picks = (data?.picks ?? []).slice(0, SHOW);
   const selectedIndex = picks.findIndex((p) => p.company.id === selectedId);
   const selected = selectedIndex >= 0 ? picks[selectedIndex] : null;
+  const hosts = data?.host ?? [];
   const quick = quickPicks(options);
   const noCohort = state.status === "no_cohort" || investorsState.status === "no_cohort";
   const picker = <InvestorPicker options={options} value={investor} onChange={pickInvestor} loading={investorsState.status === "loading"} placeholder="Search funds…" id="spotter-fund" />;
@@ -91,11 +101,12 @@ export default function Showcase() {
     <div className="shell">
       <TopBar subtitle="Early spotter · for funds" inbox={null} tools={picker} showFixtureBanner={FIXTURES} />
       <main className="sp-stage">
-        <section className="sp-pane-wrap relative min-h-0" aria-label="Your picks, mapped" data-selected={selected ? "" : undefined}>
+        <section className="sp-pane-wrap relative min-h-0" aria-label="Your picks, mapped" data-selected={selected || hostOpen ? "" : undefined}>
           {picks.length > 0 && (
-            <Constellation investorName={data?.investor.name ?? ""} picks={picks} selectedId={selectedId} onSelect={setSelectedId} reducedMotion={reducedMotion} />
+            <Constellation investorName={data?.investor.name ?? ""} picks={picks} selectedId={selectedId} onSelect={selectPick} reducedMotion={reducedMotion} />
           )}
           {selected && data && <PickCard key={selected.company.id} pick={selected} investor={data.investor} rank={selectedIndex + 1} asOf={data.asOf} onClose={() => setSelectedId(undefined)} />}
+          {hostOpen && hosts.length > 0 && <HostCard key={data?.investor.id} hosts={hosts} onClose={() => setHostOpen(false)} />}
 
           {(state.status === "loading" || (state.status === "idle" && !noCohort && investorsState.status !== "error")) && (
             <div className="sp-loading" data-testid="spotter-loading" aria-live="polite">
@@ -171,12 +182,17 @@ export default function Showcase() {
           </div>
 
           {data && <TasteStrip investor={data.investor} sectorColor={tasteColor} />}
-          {data && (
-            <p className="sp-honesty font-mono" data-testid="spotter-basis">
-              {data.considered.roundsInCohort} real rounds in Cala · as of {data.asOf}
-            </p>
+          {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => selectPick(selectedId === id ? undefined : id)} tagEvents={scope === "all"} />}
+          {hosts.length > 0 && (
+            <HostRow
+              host={hosts[0]}
+              open={hostOpen}
+              onToggle={() => {
+                setSelectedId(undefined);
+                setHostOpen((o) => !o);
+              }}
+            />
           )}
-          {picks.length > 0 && <PickList picks={picks} selectedId={selectedId} onSelect={(id) => setSelectedId((cur) => (cur === id ? undefined : id))} tagEvents={scope === "all"} />}
           {picks.length === 0 && (
             <div className="matches-idle" style={{ position: "static", inset: "auto" }} aria-hidden>
               <ul>
