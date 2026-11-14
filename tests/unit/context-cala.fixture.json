@@ -1,0 +1,570 @@
+{
+ "sibling": {
+  "id": "81cfdabc-53f7-426a-b358-a942e159ca0f",
+  "name": "Cala AI",
+  "entity_type": "Company",
+  "description": "Verified knowledge graph of public information for AI agents, queryable as typed, sourced facts via REST API, CLI, MCP server and Python/TypeScript SDKs.",
+  "properties": {
+   "name": {
+    "value": "Cala AI",
+    "sources": [
+     {
+      "name": "Cala AI",
+      "document": "",
+      "date": "2026-07-17"
+     }
+    ]
+   },
+   "website": {
+    "value": "cala.ai",
+    "sources": [
+     {
+      "name": "Thank you to all our attendees and sponsors",
+      "document": "https://4yfn.com/agenda/speakers/17622-elisenda-bou-balust",
+      "date": "2026-07-22"
+     }
+    ]
+   },
+   "description": {
+    "value": "Verified knowledge graph of public information for AI agents, queryable as typed, sourced facts via REST API, CLI, MCP server and Python/TypeScript SDKs.",
+    "sources": [
+     {
+      "name": "cala.ai",
+      "document": "https://www.cala.ai/",
+      "date": "2026-09-26",
+      "date_precision": "day",
+      "source_rank": "PRIMARY"
+     }
+    ]
+   },
+   "founding_date": {
+    "value": "2025-01-01",
+    "sources": [
+     {
+      "name": "Technology & Data for Venture Capital, Corp Dev, Investment Banks",
+      "document": "https://tracxn.com/d/companies/cala/__UZA48E8GN76O3rpNznYaGc5sPb21_14bHe60BRAT-7M",
+      "date": "2026-07-31"
+     }
+    ]
+   },
+   "headquarters_address": {
+    "value": "Barcelona, ES",
+    "sources": [
+     {
+      "name": "dealroom.co",
+      "document": "https://dealroom.co/news/130391-barcelonas-cala-raises-7m-pre-seed-to-build-a-knowledge-layer-for-ai-age/",
+      "date": "2026-05-29",
+      "date_precision": "day",
+      "source_rank": "AGGREGATOR"
+     }
+    ]
+   },
+   "funding_stage": {
+    "value": "PRE_SEED",
+    "sources": [
+     {
+      "name": "cala.ai",
+      "document": "https://cala.ai/jobs",
+      "date": "2026-10-26",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "employee_count_range": {
+    "value": [
+     10,
+     50
+    ],
+    "sources": [
+     {
+      "name": "jobfluent.com",
+      "document": "https://jobfluent.com/company/cala",
+      "date": "2026-11-12",
+      "date_precision": "day",
+      "source_rank": "AGGREGATOR"
+     }
+    ]
+   }
+  },
+  "relationships": {
+   "outgoing": {
+    "PARTICIPATES_IN_FUNDING_ROUND": [
+     {
+      "id": "f13cba6a-aca3-5346-86f9-72adb6340709",
+      "name": "Pre-Seed",
+      "entity_type": "FundingRound",
+      "properties": {
+       "role": "ISSUER",
+       "sources": [
+        {
+         "name": "cala.ai",
+         "document": "https://cala.ai/jobs",
+         "date": "2026-10-26",
+         "date_precision": "day"
+        }
+       ],
+       "id": "c36ce6be-7683-5564-bd48-4275e136122c"
+      }
+     }
+    ]
+   },
+   "incoming": {
+    "FOUNDED": [
+     {
+      "id": "0d81a94e-4b23-4290-a389-913f287a5a0c",
+      "name": "Elisenda Bou-Balust",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "MWC - The Largest And Most Influential Connectivity Event",
+         "document": "https://www.mwcbarcelona.com/agenda/speakers/17622-elisenda-bou-balust",
+         "date": "2026-07-31"
+        }
+       ],
+       "id": "7868b22a-1026-5dfc-99fb-814c801b34e8",
+       "valid_since": "2025-01-01"
+      }
+     },
+     {
+      "id": "50bb9390-6ecb-43ec-8f18-9de20d8be9bb",
+      "name": "Issey Masuda Mora",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "Dem\u00f3crata | Medio pol\u00edtico de referencia para los que deciden",
+         "document": "https://www.democrata.es/",
+         "date": "2026-08-04"
+        }
+       ],
+       "id": "afa67572-00d2-5e54-aa06-2ad3d460b915",
+       "valid_since": "2025-01-01"
+      }
+     }
+    ],
+    "IS_CEO_OF": [
+     {
+      "id": "0d81a94e-4b23-4290-a389-913f287a5a0c",
+      "name": "Elisenda Bou-Balust",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "MWC - The Largest And Most Influential Connectivity Event",
+         "document": "https://www.mwcbarcelona.com/agenda/speakers/17622-elisenda-bou-balust",
+         "date": "2026-07-31"
+        }
+       ],
+       "id": "a2a1edee-cf5f-5b41-8408-e4756f55c632",
+       "valid_since": "2025-01-01"
+      }
+     }
+    ],
+    "INVESTED_IN": [
+     {
+      "id": "2c557cbb-4e37-44db-9f47-5bc327a86320",
+      "name": "Kfund",
+      "entity_type": "Organization",
+      "properties": {
+       "sources": [
+        {
+         "name": "startup.eu",
+         "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+         "date": "2026-05-11",
+         "date_precision": "day"
+        }
+       ],
+       "id": "5b2e39db-207a-4af7-8902-85cc1d392525"
+      }
+     },
+     {
+      "id": "5a9d0c1c-1e04-4816-b38a-28c4f560569b",
+      "name": "Lightspeed Venture Partners",
+      "entity_type": "Company",
+      "properties": {
+       "sources": [
+        {
+         "name": "cala.ai",
+         "document": "https://cala.ai/jobs",
+         "date": "2026-10-26",
+         "date_precision": "day"
+        }
+       ],
+       "id": "053fe958-829d-4c8a-8cf1-dda9ee70127b"
+      }
+     },
+     {
+      "id": "d13f79c8-6698-4f4f-b98c-1a28d60d80b8",
+      "name": "Kibo Ventures",
+      "entity_type": "Company",
+      "properties": {
+       "sources": [
+        {
+         "name": "startup.eu",
+         "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+         "date": "2026-05-11",
+         "date_precision": "day"
+        }
+       ],
+       "id": "da8c1a64-ef06-4c30-b2a5-2e39b3b87b42"
+      }
+     },
+     {
+      "id": "f2b20ea8-c011-4ee4-b038-4bee061c8145",
+      "name": "Masia VC",
+      "entity_type": "Company",
+      "properties": {
+       "sources": [
+        {
+         "name": "startup.eu",
+         "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+         "date": "2026-05-11",
+         "date_precision": "day"
+        }
+       ],
+       "id": "19ae758f-dd4f-49c4-b0d4-9278476f69cc"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "round": {
+  "id": "f13cba6a-aca3-5346-86f9-72adb6340709",
+  "name": "Pre-Seed",
+  "entity_type": "FundingRound",
+  "description": null,
+  "properties": {
+   "name": {
+    "value": "Pre-Seed",
+    "sources": [
+     {
+      "name": "cala.ai",
+      "document": "https://cala.ai/jobs",
+      "date": "2026-10-26",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "round_label": {
+    "value": "PRE_SEED",
+    "sources": [
+     {
+      "name": "cala.ai",
+      "document": "https://cala.ai/jobs",
+      "date": "2026-10-26",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "instrument": {
+    "value": "EQUITY",
+    "sources": [
+     {
+      "name": "startup.eu",
+      "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+      "date": "2026-05-11",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "transaction_value": {
+    "value": 7000000,
+    "sources": [
+     {
+      "name": "cala.ai",
+      "document": "https://cala.ai/jobs",
+      "date": "2026-10-26",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "transaction_value_units": {
+    "value": "EUR",
+    "sources": [
+     {
+      "name": "cala.ai",
+      "document": "https://cala.ai/jobs",
+      "date": "2026-10-26",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "announcement_date": {
+    "value": "2026-05-11",
+    "sources": [
+     {
+      "name": "startup.eu",
+      "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+      "date": "2026-05-11",
+      "date_precision": "day"
+     }
+    ]
+   },
+   "event_date": {
+    "value": "2025-01-01",
+    "sources": [
+     {
+      "name": "infiniteloop.media",
+      "document": "https://infiniteloop.media/p/building-the-verified-knowledge-graph-your-ai-agents-need-better-data",
+      "date": "2026-06-03",
+      "date_precision": "day",
+      "source_rank": "PRESS"
+     }
+    ]
+   }
+  },
+  "relationships": {
+   "outgoing": {},
+   "incoming": {
+    "PARTICIPATES_IN_FUNDING_ROUND": [
+     {
+      "id": "2c557cbb-4e37-44db-9f47-5bc327a86320",
+      "name": "Kfund",
+      "entity_type": "Organization",
+      "properties": {
+       "role": "INVESTOR",
+       "sources": [
+        {
+         "name": "startup.eu",
+         "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+         "date": "2026-05-11",
+         "date_precision": "day"
+        }
+       ],
+       "id": "f10b8f31-147d-5f16-8a3b-fd4c550dba01"
+      }
+     },
+     {
+      "id": "5a9d0c1c-1e04-4816-b38a-28c4f560569b",
+      "name": "Lightspeed Venture Partners",
+      "entity_type": "Company",
+      "properties": {
+       "role": "INVESTOR",
+       "sources": [
+        {
+         "name": "cala.ai",
+         "document": "https://cala.ai/jobs",
+         "date": "2026-10-26",
+         "date_precision": "day"
+        }
+       ],
+       "is_lead": true,
+       "id": "f20e34ee-43cd-5345-9056-48f7d42af236"
+      }
+     },
+     {
+      "id": "81cfdabc-53f7-426a-b358-a942e159ca0f",
+      "name": "Cala AI",
+      "entity_type": "Company",
+      "properties": {
+       "role": "ISSUER",
+       "sources": [
+        {
+         "name": "cala.ai",
+         "document": "https://cala.ai/jobs",
+         "date": "2026-10-26",
+         "date_precision": "day"
+        }
+       ],
+       "id": "c36ce6be-7683-5564-bd48-4275e136122c"
+      }
+     },
+     {
+      "id": "d13f79c8-6698-4f4f-b98c-1a28d60d80b8",
+      "name": "Kibo Ventures",
+      "entity_type": "Company",
+      "properties": {
+       "role": "INVESTOR",
+       "sources": [
+        {
+         "name": "startup.eu",
+         "document": "https://www.startup.eu/investments/cala-7-m-pre-seed-05-2026",
+         "date": "2026-05-11",
+         "date_precision": "day"
+        }
+       ],
+       "id": "6bd29293-6a02-5efe-a99e-3c44fbf4a06e"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "primary": {
+  "id": "2bdea5e8-a630-4098-9fb1-3f84bbaa77a2",
+  "name": "Cala",
+  "entity_type": "Company",
+  "description": "Barcelona-based artificial intelligence startup founded in 2025 that develops knowledge graph technologies.",
+  "properties": {
+   "name": {
+    "value": "Cala",
+    "sources": [
+     {
+      "name": "Cala AI",
+      "document": "",
+      "date": "2026-03-02"
+     }
+    ]
+   },
+   "website": {
+    "value": "cala.ai",
+    "sources": [
+     {
+      "name": "Discover what happens on the European investment scene",
+      "document": "https://nordic9.com/companies/cala-ai",
+      "date": "2026-05-22"
+     }
+    ]
+   },
+   "description": {
+    "value": "Barcelona-based artificial intelligence startup founded in 2025 that develops knowledge graph technologies.",
+    "sources": [
+     {
+      "name": "Cala AI",
+      "document": "",
+      "date": "2026-08-20"
+     }
+    ]
+   },
+   "founding_date": {
+    "value": "2025-01-01",
+    "sources": [
+     {
+      "name": "https://startup-seeker.com/company/cala~ai",
+      "document": "https://startup-seeker.com/company/cala~ai",
+      "date": "2026-03-03"
+     }
+    ]
+   },
+   "headquarters_address": {
+    "value": "Barcelona, Spain",
+    "sources": [
+     {
+      "name": "Discover what happens on the European investment scene",
+      "document": "https://nordic9.com/",
+      "date": "2026-06-11"
+     }
+    ]
+   }
+  },
+  "relationships": {
+   "outgoing": {},
+   "incoming": {
+    "FOUNDED": [
+     {
+      "id": "0d81a94e-4b23-4290-a389-913f287a5a0c",
+      "name": "Elisenda Bou-Balust",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "https://www.zonebourse.com/insider/BALUST-ELISENDA-BOU-A2617K",
+         "document": "https://www.zonebourse.com/insider/BALUST-ELISENDA-BOU-A2617K",
+         "date": "2026-03-16"
+        }
+       ],
+       "id": "e908480f-1d68-4536-95ab-79543df849d7"
+      }
+     },
+     {
+      "id": "50bb9390-6ecb-43ec-8f18-9de20d8be9bb",
+      "name": "Issey Masuda Mora",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "Euro Seed 50 | Creandum",
+         "document": "https://euroseed50.com/company/11",
+         "date": "2026-03-23"
+        }
+       ],
+       "id": "19ddd408-333b-4d40-9ee0-f392a81220b7",
+       "valid_since": "2025-01-01"
+      }
+     }
+    ],
+    "IS_CEO_OF": [
+     {
+      "id": "0d81a94e-4b23-4290-a389-913f287a5a0c",
+      "name": "Elisenda Bou-Balust",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "Masia",
+         "document": "https://www.masia.vc/collective-members/elisenda",
+         "date": "2020-01-01"
+        }
+       ],
+       "id": "23a626fd-5f10-5c45-ac08-6c0e4179e9a9"
+      }
+     }
+    ],
+    "INVESTED_IN": [
+     {
+      "id": "2c557cbb-4e37-44db-9f47-5bc327a86320",
+      "name": "Kfund",
+      "entity_type": "Organization",
+      "properties": {
+       "sources": [
+        {
+         "name": "Dealroom.co | Barcelona's Cala raises \u20ac7M pre-seed to build a knowledge layer for AI agents",
+         "document": "https://app.dealroom.co/news/note/barcelona-s-cala-raises-7m-pre-seed-to-build-a-knowledge-layer-for-ai-agents",
+         "date": "2026-05-29"
+        }
+       ],
+       "id": "cb9ef7bb-34e8-4dec-831e-2e88dcc5117f"
+      }
+     },
+     {
+      "id": "5a9d0c1c-1e04-4816-b38a-28c4f560569b",
+      "name": "Lightspeed Venture Partners",
+      "entity_type": "Company",
+      "properties": {
+       "sources": [
+        {
+         "name": "Dealroom",
+         "document": "https://app.dealroom.co/news/note/barcelona-s-cala-raises-7m-pre-seed-to-build-a-knowledge-layer-for-ai-agents",
+         "date": "2026-07-28"
+        }
+       ],
+       "id": "fcc24abd-75a4-42ec-8ed9-9a3dd58d4f31"
+      }
+     },
+     {
+      "id": "8daff491-270c-489b-a9ab-a3949f282c49",
+      "name": "Creandum Kommanditbolag",
+      "entity_type": "Company",
+      "properties": {
+       "sources": [
+        {
+         "name": "Bilbostack",
+         "document": "https://bilbostack.com/",
+         "date": "2026-09-07"
+        }
+       ],
+       "id": "a5c78ab8-1878-5dad-a156-0bf8a709d30c"
+      }
+     },
+     {
+      "id": "bb6a36ca-c18d-4884-b5e4-f5201a3fd473",
+      "name": "Pepe Borrell",
+      "entity_type": "Person",
+      "properties": {
+       "sources": [
+        {
+         "name": "Angel fund Masia launches today with the goal of deploying \u20ac20 million across startups in Barcelona | EU-Startups | Audacious Investor\u2122\ufe0f",
+         "document": "https://www.linkedin.com/posts/audaciousinvestor_angel-fund-masia-launches-today-with-the-activity-7407075880323350528-uA9H",
+         "date": "2025-12-17"
+        }
+       ],
+       "id": "6cd509e5-566d-5c69-a85c-6158c5e310d9"
+      }
+     }
+    ]
+   }
+  }
+ }
+}

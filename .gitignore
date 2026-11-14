@@ -23,3 +23,5 @@ data/.cala-live-usage.json
 tests/screenshots/
 next-env.d.ts
 .claude/worktrees/
+data/context-cache/
+data/.context-store/
