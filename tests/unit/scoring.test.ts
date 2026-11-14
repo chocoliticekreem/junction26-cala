@@ -227,3 +227,16 @@ describe("rankFounders", () => {
     expect(ranked[0].reason).toContain("Biotech");
   });
 });
+
+describe("stage reason honesty", () => {
+  it("never calls a non-adjacent stage 'next to your stage'", () => {
+    const lateBio = investor("late", [
+      deal("biotech/therapeutics", "series-b-plus", 60, 40_000_000),
+      deal("biotech/therapeutics", "series-b-plus", 120, 50_000_000),
+      deal("biotech/therapeutics", "series-b-plus", 200, 60_000_000),
+      deal("biotech/therapeutics", "series-b-plus", 300, 45_000_000),
+    ]);
+    const f = founder({ sectors: { "biotech/therapeutics": 1 }, stage: "pre-seed", confidence: { sectors: 0.9, stage: 0.9 } });
+    expect(scoreInvestor(f, lateBio, undefined, NOW).reason).not.toContain("next to your stage");
+  });
+});

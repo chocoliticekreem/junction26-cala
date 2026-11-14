@@ -1,10 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function actAsHeronMill(page: Page) {
+async function actAs4Bio(page: Page) {
   await page.goto("/investor");
   await page.getByTestId("investor-picker").click();
-  await page.getByPlaceholder("Act as investor…").fill("Heron Mill");
-  await page.getByTestId("pick-fx-009").click();
+  await page.getByPlaceholder("Act as investor…").fill("4BIO");
+  await page.getByTestId("pick-4bio-capital").click();
   await expect(page.locator("[data-testid^=founder-card-]").first()).toBeVisible();
 }
 
@@ -16,7 +16,7 @@ async function visibleCount(page: Page): Promise<number> {
 }
 
 test("founder feed ranks cards by descending fit score", async ({ page }) => {
-  await actAsHeronMill(page);
+  await actAs4Bio(page);
   const scores = await cards(page).evaluateAll((els) =>
     els.slice(0, 5).map((el) => parseInt(el.querySelector("span.tabular-nums")?.firstChild?.textContent ?? "", 10)),
   );
@@ -26,7 +26,7 @@ test("founder feed ranks cards by descending fit score", async ({ page }) => {
 });
 
 test("room suggestion appears for biotech with at least 12 founders", async ({ page }) => {
-  await actAsHeronMill(page);
+  await actAs4Bio(page);
   const suggestion = page.getByTestId("room-suggestion").first();
   await expect(suggestion).toBeVisible();
   const text = (await suggestion.textContent()) ?? "";
@@ -36,13 +36,13 @@ test("room suggestion appears for biotech with at least 12 founders", async ({ p
 });
 
 test("group by sector shows a Biotech group", async ({ page }) => {
-  await actAsHeronMill(page);
+  await actAs4Bio(page);
   await page.getByRole("button", { name: "By sector" }).click();
   await expect(page.getByText("Biotech", { exact: true }).first()).toBeVisible();
 });
 
 test("Has revenue filter keeps only founders with revenue", async ({ page }) => {
-  await actAsHeronMill(page);
+  await actAs4Bio(page);
   const before = await visibleCount(page);
   await page.getByRole("button", { name: "Has revenue" }).click();
   await expect.poll(() => visibleCount(page)).toBeLessThanOrEqual(before);

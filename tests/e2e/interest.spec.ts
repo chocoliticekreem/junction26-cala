@@ -9,8 +9,8 @@ async function setup(context: BrowserContext): Promise<{ founder: Page; investor
   const investor = await context.newPage();
   await investor.goto("/investor");
   await investor.getByTestId("investor-picker").click();
-  await investor.getByPlaceholder("Act as investor…").fill("Heron Mill");
-  await investor.getByTestId("pick-fx-009").click();
+  await investor.getByPlaceholder("Act as investor…").fill("Medicxi");
+  await investor.getByTestId("pick-medicxi").click();
   await expect(investor.getByTestId("founder-card-live")).toBeVisible();
   return { founder, investor };
 }
@@ -36,16 +36,16 @@ test("full flow: interested, accept, both verify, chat both ways", async ({ cont
   await founder.getByTestId("founder-verify-submit").click();
   await expect(request).toHaveAttribute("data-state", "pending_verification");
 
-  await investor.getByTestId("verify-name").fill("Juno Marchetti");
-  await investor.getByTestId("verify-email").fill("juno@heron-mill-bio-capital.example");
+  await investor.getByTestId("verify-name").fill("Francesco De Rubertis");
+  await investor.getByTestId("verify-email").fill("francesco@medicxi.com");
   await investor.getByTestId("verify-submit").click();
 
   await expect(request).toHaveAttribute("data-state", "chat_open", { timeout: 2000 });
   await expect(founder.getByTestId("chat-lock")).toHaveAttribute("data-state", "open");
 
   await founder.getByTestId("chat-send").click();
-  await expect(founder.getByTestId("chat-thread")).toContainText("Hi Juno");
-  await expect(investor.getByTestId("chat-thread")).toContainText("Hi Juno", { timeout: 2000 });
+  await expect(founder.getByTestId("chat-thread")).toContainText("Hi Francesco");
+  await expect(investor.getByTestId("chat-thread")).toContainText("Hi Francesco", { timeout: 2000 });
 
   await investor.getByTestId("chat-draft").fill("Thanks, Thursday works.");
   await investor.getByTestId("chat-send").click();
@@ -70,18 +70,18 @@ test("decline shows Not now on the investor side", async ({ context }) => {
 test("investor cap: ten open requests disable every Interested button", async ({ page }) => {
   await page.goto("/investor");
   await page.getByTestId("investor-picker").click();
-  await page.getByPlaceholder("Act as investor…").fill("Heron Mill");
-  await page.getByTestId("pick-fx-009").click();
+  await page.getByPlaceholder("Act as investor…").fill("Medicxi");
+  await page.getByTestId("pick-medicxi").click();
   await expect(page.locator("[data-testid^=founder-card-]").first()).toBeVisible();
-  await expect(page.getByTestId("investor-picker")).toHaveValue(/Heron Mill/);
+  await expect(page.getByTestId("investor-picker")).toHaveValue(/Medicxi/);
 
   await page.evaluate(() => {
     const now = new Date().toISOString();
     const interests = Array.from({ length: 10 }, (_, n) => {
       const founderId = `seed-f-${String(n + 1).padStart(2, "0")}`;
       return {
-        id: `int_fx-009_${founderId}`,
-        investorId: "fx-009",
+        id: `int_medicxi_${founderId}`,
+        investorId: "medicxi",
         founderId,
         state: "interested",
         createdAt: now,
@@ -91,10 +91,9 @@ test("investor cap: ten open requests disable every Interested button", async ({
     localStorage.setItem("room.interest.v1", JSON.stringify({ interests, messages: [], seats: [], verifications: [] }));
   });
   await page.reload();
-  // App bug (see persona-reload test below): reload resets the persona to fx-001, so re-pick.
   await page.getByTestId("investor-picker").click();
-  await page.getByPlaceholder("Act as investor…").fill("Heron Mill");
-  await page.getByTestId("pick-fx-009").click();
+  await page.getByPlaceholder("Act as investor…").fill("Medicxi");
+  await page.getByTestId("pick-medicxi").click();
 
   const buttons = page.locator("[data-testid^=interested-]");
   await expect(buttons.first()).toBeVisible();
@@ -106,13 +105,11 @@ test("investor cap: ten open requests disable every Interested button", async ({
   }
 });
 
-// App bug: app/investor/page.tsx runs `if (!identity.investorId) setInvestorId(investors[0].id)` on mount.
-// During hydration identity is the server default (null), so it overwrites the stored persona with fx-001.
 test("investor persona survives a reload", async ({ page }) => {
   await page.goto("/investor");
   await page.getByTestId("investor-picker").click();
-  await page.getByPlaceholder("Act as investor…").fill("Heron Mill");
-  await page.getByTestId("pick-fx-009").click();
+  await page.getByPlaceholder("Act as investor…").fill("Medicxi");
+  await page.getByTestId("pick-medicxi").click();
   await page.reload();
-  await expect(page.getByTestId("investor-picker")).toHaveValue(/Heron Mill/);
+  await expect(page.getByTestId("investor-picker")).toHaveValue(/Medicxi/);
 });

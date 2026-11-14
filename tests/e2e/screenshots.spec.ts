@@ -68,11 +68,11 @@ test("investor view and unlocked chat screenshots", async ({ context }) => {
   errors.push(...trackConsoleErrors(investor));
   await investor.goto("/investor");
   await investor.getByTestId("investor-picker").click();
-  await investor.getByPlaceholder("Act as investor…").fill("Heron Mill");
-  await investor.getByTestId("pick-fx-009").click();
+  await investor.getByPlaceholder("Act as investor…").fill("Medicxi");
+  await investor.getByTestId("pick-medicxi").click();
   await expect(investor.getByTestId("founder-card-live")).toBeVisible();
   await investor.waitForTimeout(1500);
-  await investor.screenshot({ path: `${SHOTS}/investor-heron-mill.png` });
+  await investor.screenshot({ path: `${SHOTS}/investor-medicxi.png` });
 
   await investor.getByTestId("interested-live").click();
   await founder.getByTestId("inbox-badge").click();
@@ -82,8 +82,8 @@ test("investor view and unlocked chat screenshots", async ({ context }) => {
   await founder.getByTestId("founder-url").fill("https://cellwright.bio");
   await founder.getByTestId("founder-email").fill("anson@cellwright.bio");
   await founder.getByTestId("founder-verify-submit").click();
-  await investor.getByTestId("verify-name").fill("Juno Marchetti");
-  await investor.getByTestId("verify-email").fill("juno@heron-mill-bio-capital.example");
+  await investor.getByTestId("verify-name").fill("Francesco De Rubertis");
+  await investor.getByTestId("verify-email").fill("francesco@medicxi.com");
   await investor.getByTestId("verify-submit").click();
   await expect(founder.getByTestId("chat-lock")).toHaveAttribute("data-state", "open", { timeout: 2000 });
   await founder.waitForTimeout(800);
