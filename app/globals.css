@@ -100,18 +100,50 @@ body {
   color: var(--accent);
 }
 
-.graph-hint {
+.graph-idle {
   position: absolute;
-  left: 20px;
-  top: 16px;
+  left: 16px;
+  top: 14px;
+  z-index: 1;
+  max-width: 420px;
+  padding: 12px 16px 14px;
+  border-radius: 12px;
+  background: rgb(11 14 23 / 0.72);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  animation: panel-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.graph-idle p {
+  margin: 0;
+}
+
+.graph-idle-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--fg);
+}
+
+.graph-idle-sub {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--fg-2);
+}
+
+.graph-idle .graph-hint {
+  margin-top: 16px;
+}
+
+.graph-hint {
   display: flex;
   gap: 6px;
   align-items: center;
   color: var(--fg-2);
   font-size: 13px;
   letter-spacing: 0.01em;
-  pointer-events: none;
-  z-index: 1;
   animation: graph-hint 3.2s ease-in-out infinite;
 }
 
@@ -414,12 +446,102 @@ body {
 
 /* Match list -------------------------------------------------------------- */
 
+.rail-card[data-idle] {
+  position: relative;
+}
+
+.rail-card[data-idle] .matches {
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.matches-idle {
+  position: absolute;
+  inset: 40px 14px 14px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.matches-idle p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--fg-2);
+  letter-spacing: 0.01em;
+}
+
+.matches-idle ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.matches-idle li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 36px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 2px;
+  opacity: 0.7;
+  animation: sk-breathe 2.6s ease-in-out infinite;
+}
+
+.matches-idle li > span {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sk {
+  display: block;
+  height: 9px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 0.11);
+}
+
+.sk-rank {
+  width: 16px;
+  height: 8px;
+}
+
+.sk-name {
+  height: 10px;
+  background: rgb(255 255 255 / 0.16);
+}
+
+.sk-line {
+  height: 7px;
+}
+
+.sk-score {
+  width: 30px;
+  height: 12px;
+  justify-self: end;
+}
+
+@keyframes sk-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
 .matches {
   list-style: none;
   margin: 0;
   padding: 0 6px 8px;
   overflow-y: auto;
   min-height: 0;
+  transition: opacity 600ms ease-out;
   scrollbar-width: thin;
   scrollbar-color: var(--line-2) transparent;
 }
@@ -1002,6 +1124,8 @@ a.deal-src:hover,
   .chip-flash,
   .tok-trigger,
   .graph-hint,
+  .graph-idle,
+  .matches-idle li,
   .profile-panel,
   .listening.is-live i,
   .btn-mic.is-live i,

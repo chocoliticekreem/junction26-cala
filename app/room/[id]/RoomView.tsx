@@ -35,7 +35,7 @@ export function RoomView({ id }: { id: string }) {
 
   const fit = useMemo(() => {
     const m = new Map<string, number>();
-    for (const inv of lineupInvestors) for (const r of rankFounders(inv, lineupFounders, debriefs)) m.set(`${inv.id}:${r.founderId}`, r.score);
+    for (const inv of lineupInvestors) for (const r of rankFounders(inv, lineupFounders, debriefs)) m.set(`${inv.id}:${r.founderId}`, Math.round(r.score));
     return m;
   }, [lineupInvestors, lineupFounders, debriefs]);
 
@@ -163,14 +163,15 @@ export function RoomView({ id }: { id: string }) {
             <ul className="divide-y divide-white/6">
               {lineupFounders.map((f) => (
                 <li key={f.id} className="flex items-center gap-3 py-2.5">
-                  <Avatar name={f.name ?? f.company ?? f.id} size={32} />
+                  <Avatar name={f.name ?? f.company ?? (f.seeded ? f.id : "Live pitch")} size={32} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[14px] text-white/90">
-                      {f.company} <span className="text-white/45">· {f.name}</span>
+                      {f.company ?? (f.seeded ? f.name ?? f.id : "Live pitch")}
+                      {f.name && <span className="text-white/45"> · {f.name}</span>}
                       {!f.seeded && <Chip tone="accent">live</Chip>}
                     </div>
                     <div className="truncate text-[12px] text-white/50">
-                      {f.stage ? STAGE_LABELS[f.stage] : "Stage unknown"} · {f.oneLiner}
+                      {f.stage ? STAGE_LABELS[f.stage] : "Stage unknown"} · {f.oneLiner ?? (f.seeded ? "" : "Pitching now")}
                     </div>
                   </div>
                   <div className="flex gap-1">

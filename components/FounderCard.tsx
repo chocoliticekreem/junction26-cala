@@ -31,9 +31,11 @@ const STATE_LABEL: Record<InterestState, string> = {
 export function FounderCard({ founder, match, interestState, capHit, onInterested, onWithdraw, selected = false, onSelect }: FounderCardProps) {
   const sectors = (Object.entries(founder.sectors) as [Sector, number][]).sort((a, b) => b[1] - a[1]).map(([s]) => s);
   const isLive = !founder.seeded;
+  const title = founder.company ?? (isLive ? "Live pitch" : founder.name ?? founder.id);
+  const oneLiner = founder.oneLiner ?? (isLive ? "Pitching now" : undefined);
   const open = interestState && interestState !== "declined" && interestState !== "expired" && interestState !== "withdrawn";
   const disabled = !!open || capHit;
-  const title = capHit && !open ? `You have ${INVESTOR_OPEN_CAP} open requests` : undefined;
+  const capTitle = capHit && !open ? `You have ${INVESTOR_OPEN_CAP} open requests` : undefined;
 
   return (
     <article
@@ -44,18 +46,20 @@ export function FounderCard({ founder, match, interestState, capHit, onIntereste
         selected ? "border-[#FF6A3D]/70 shadow-[0_0_0_1px_rgba(255,106,61,.35),0_0_28px_rgba(255,106,61,.18)]" : isLive ? "border-[#FF6A3D]/30" : "border-white/8"
       } ${onSelect ? "cursor-pointer" : ""}`}
     >
-      <Avatar name={founder.name ?? founder.company ?? founder.id} size={40} />
+      <Avatar name={founder.name ?? title} size={40} />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="truncate text-[15px] font-medium text-white/90">{founder.company ?? founder.name ?? founder.id}</h3>
+              <h3 className="truncate text-[15px] font-medium text-white/90">{title}</h3>
               {isLive ? <Chip tone="accent">live pitch</Chip> : <Chip tone="muted">seeded</Chip>}
             </div>
-            <p className="mt-0.5 truncate text-[13px] text-white/60">
-              {founder.name && <span className="text-white/45">{founder.name} · </span>}
-              {founder.oneLiner ?? "No one-liner yet"}
-            </p>
+            {(founder.name || oneLiner) && (
+              <p className="mt-0.5 truncate text-[13px] text-white/60">
+                {founder.name && <span className="text-white/45">{founder.name}{oneLiner ? " · " : ""}</span>}
+                {oneLiner}
+              </p>
+            )}
           </div>
           <Score value={Math.round(match.score)} className="shrink-0 text-xl text-white/90" />
         </div>
@@ -80,7 +84,7 @@ export function FounderCard({ founder, match, interestState, capHit, onIntereste
         <Button
           variant={open ? "accent" : "ghost"}
           disabled={disabled}
-          title={title}
+          title={capTitle}
           onClick={onInterested}
           stopPropagation
           dataTestId={`interested-${founder.id}`}

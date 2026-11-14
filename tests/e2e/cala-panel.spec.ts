@@ -11,6 +11,9 @@ test("slow Cala search shows a loading state, never blocks the panel, and is cac
   });
   await page.goto("/");
   await expect(page.getByTestId("match-row")).toHaveCount(10);
+  // The top-10 rail is a placeholder until the profile has a signal; start the replay first.
+  await page.locator("body").press("r");
+  await expect(page.getByTestId("chip").first()).toBeVisible({ timeout: 15_000 });
   const first = page.getByTestId("match-row").first().locator("button").first();
   await first.click();
 
