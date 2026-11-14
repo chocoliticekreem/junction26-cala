@@ -9,7 +9,7 @@ test("founder view renders the graph and ten matches", async ({ page }) => {
   expect(box?.height ?? 0).toBeGreaterThan(400);
 
   await expect(page.getByTestId("match-row")).toHaveCount(10);
-  await expect(page.getByTestId("fixture-banner")).toBeVisible();
+  await expect(page.getByTestId("fixture-banner")).toHaveCount(0);
 
   await page.locator("body").press("r");
   await page.waitForTimeout(9000);

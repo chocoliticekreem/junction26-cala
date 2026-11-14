@@ -207,12 +207,16 @@ function phrase(term: Term, f: FounderProfile, inv: Investor, c: Computed, now: 
       const share = c.G[st] ?? 0;
       if (top === st) return `mostly ${stageLabel(st)}`;
       if (share >= 0.15) return `${Math.round(share * 100)}% of deals at ${stageLabel(st)}`;
-      if (top) return `mostly ${stageLabel(top)}, next to your stage`;
+      if (top && Math.abs(stageIndex(top) - stageIndex(st)) === 1)
+        return `mostly ${stageLabel(top)}, next to your stage`;
+      if (top) return `mostly ${stageLabel(top)}`;
       return "stage overlap";
     }
     case "chequeFit": {
       const [lo, hi] = inv.revealed.chequeBand;
-      const band = `rounds of ${formatGbp(lo)}-${formatGbp(hi)}`;
+      const a = formatGbp(lo);
+      const b = formatGbp(hi);
+      const band = a === b ? `rounds around ${a}` : `rounds of ${a}-${b}`;
       return c.breakdown.chequeFit >= 0.99 ? `${band} fit your raise` : band;
     }
     case "activity": {
