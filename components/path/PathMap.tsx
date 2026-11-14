@@ -690,7 +690,9 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
           const end = map.get(chain[chain.length - 1]);
           if (!end || i > 2) return;
           const tag = `${i + 1}`;
-          const names = chain.slice(1).map((id) => map.get(id)?.name ?? id);
+          // Investors not in the map print nothing rather than a raw id ("name:…", a Cala UUID).
+          const names = chain.slice(1).map((id) => map.get(id)?.name).filter((x): x is string => !!x);
+          if (!names.length) return;
           const text = names.join("  →  ");
           ctx.font = `500 10.5px ${MONO}`;
           const tw = ctx.measureText(text).width;
