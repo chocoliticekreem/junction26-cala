@@ -6,23 +6,36 @@
 //      pre-seed) is assumed to close, at month 0 ("now") or 6 ("later_6m"). The cohort only holds
 //      companies that raised, so there is no honest rate for closing a first round; paths are
 //      conditional on closing it. Cohort companies start from their last real round instead.
-//   2. Raise vs stall: P(raise | sector, stage) x the current lead's raise lift. For a cohort
-//      company already E months past its last round, P is conditioned on not having raised yet:
+//   2. Raise vs stall: P = base(stage) x sectorRatio x the current lead's raise lift, where
+//      base(stage) is the calibrated rate (calibration.ts: the knowable cohort rate, replaced by a
+//      published prior when the cohort is survivorship-biased) and
+//        sectorRatio = clamp(P_knowable(sector, stage) / P_knowable(stage), 0.5, 1.5)
+//      with the sector rate shrunk toward the stage (K = 5). For a cohort company already E months
+//      past its last round, P is conditioned on not having raised yet:
 //      P' = P*S(E) / (1 - P + P*S(E)), S(E) = share of historical gaps longer than E.
 //   3. Timing: a gap drawn from the real gaps for (sector, stage), backing off to the stage when
 //      the sector has fewer than 5, and to 18 months only when the stage has none at all.
 //   4. Lead: P(j | current cap table) with backoff investor -> investor kind -> global, where
 //        P(j | m)    = (ties[m][j] + A * P(j | kind m)) / (ties[m] + A),  A = 3
 //        P(j | kind) = (kindTies[k][j] + A * Pg(j)) / (kindTies[k] + A)
-//        Pg(j)      ~ (leads at stage + 0.25 * participations at stage + 0.1) x sectorFit x chequeFit
-//      mixed over cap-table members (lead weight 1, others 0.5), then x sectorFit again so a tie
-//      does not pull a fund far outside its sectors.
+//        Pg(j)      ~ (leads at stage + 0.25 * participations at stage + 0.1) x sectorFit x geoFit x chequeFit
+//      mixed over cap-table members (lead weight 1, others 0.5), then x sectorFit x geoFit again so a
+//      tie does not pull a fund far outside its sectors or region. Candidates are lead-eligible
+//      investors only (quality.ts). geoFit (geo.ts) is 1 when the founder's geography is unknown.
+//      Re-lead: the current lead's share is then set to the cohort's measured re-lead rate for
+//      that stage transition (about 11-13%), so one fund does not lead seed, A and B by default.
 //   5. Co-investors: each current member re-ups with its real re-up rate, then the lead's real
 //      co-investors fill up to a count drawn from the stage's real participant counts (max 3).
-//   6. Stop at the vision (see vision.ts), a stall, or the horizon.
+//   6. Amounts: drawn from the stage's real round sizes (5th-95th percentile); Series B+ rounds by
+//      ordinal (a company's 1st, 2nd, 3rd, 4th+ B+ round), since later rounds are much larger.
+//   7. Stop at the vision (see vision.ts), a stall, or the horizon.
 import { STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
+import { wilson } from "./calibration";
+import { SECTOR_SHRINK_K } from "./fit";
+import { investorGeoWeight, parseGeo } from "./geo";
 import type {
   Agent,
+  Calibration,
   Decision,
   DecisionNode,
   FirstChequeOption,
@@ -34,7 +47,6 @@ import type {
   SimResult,
   StartState,
   TimingOption,
-  TransitionStats,
   Vision,
   VisionBasis,
 } from "./types";
@@ -48,6 +60,8 @@ const DEFAULT_GAP_MONTHS = 18;
 const MAX_COINVESTORS = 3;
 const MAX_B_PLUS_ROUNDS = 4;
 const LEAD_BRANCHES = 4;
+const MIN_ORDINAL_AMOUNTS = 5;
+const SECTOR_RATIO_RANGE: [number, number] = [0.5, 1.5];
 
 export type RunOutcome = {
   branch: number;
@@ -115,28 +129,44 @@ export function prepare(start: StartState, vision: Vision, model: SimModel) {
       ? "pre-seed"
       : start.stage;
   const alreadyThere = co ? lastStageIdx >= targetIdx && fundedUsd >= (basis.fundingThresholdUsd ?? 0) : false;
+  const geoInput = start.geography?.trim() || co?.country || co?.hq;
+  const geo = parseGeo(geoInput);
+  const bPlusSoFar = eps.filter((e) => e.stage === "series-b-plus").length;
   const like = { tags: start.tags ?? co?.tags, text: start.description ?? co?.description };
-  return { sectors, basis, targetIdx, company: co, lastStageIdx, elapsed, members, lastLead, fundedUsd, firstStage, allExisting, alreadyThere, like };
+  return { sectors, basis, targetIdx, company: co, lastStageIdx, elapsed, members, lastLead, fundedUsd, firstStage, allExisting, alreadyThere, geo, geoInput, bPlusSoFar, like };
 }
 
 export class Engine {
   private cdfCache = new Map<string, Cdf>();
-  private pg = new Map<string, { cand: Int32Array; pg: Float64Array }>();
+  private pg = new Map<string, { cand: Int32Array; pg: Float64Array; fit: Float64Array }>();
   private memberCache = new Map<string, Float64Array>();
+  private baseCache = new Map<string, number>();
   constructor(
     readonly model: SimModel,
     readonly prep: Prepared,
     readonly raiseUsd?: number,
   ) {}
 
-  stats(sector: Sector | null, stage: Stage): TransitionStats | undefined {
-    const ss = sector ? this.model.bySectorStage[`${sector}|${stage}`] : undefined;
-    return ss ?? this.model.byStage[stage];
+  // Calibrated base rate x the knowable sector/stage ratio (see header, step 2), before lift.
+  baseRaise(sector: Sector | null, stage: Stage): number {
+    const key = `${sector}|${stage}`;
+    const hit = this.baseCache.get(key);
+    if (hit !== undefined) return hit;
+    const m = this.model;
+    let p = m.baseRates[stage]?.p ?? 0.5;
+    const ks = m.knowableByStage[stage];
+    const kss = sector ? m.knowableBySectorStage[`${sector}|${stage}`] : undefined;
+    if (ks && kss) {
+      const stageRate = (ks.raised + 1) / (ks.n + 2);
+      const sectorRate = (kss.raised + SECTOR_SHRINK_K * stageRate) / (kss.n + SECTOR_SHRINK_K);
+      p *= Math.min(SECTOR_RATIO_RANGE[1], Math.max(SECTOR_RATIO_RANGE[0], sectorRate / stageRate));
+    }
+    this.baseCache.set(key, p);
+    return p;
   }
 
   pRaise(sector: Sector | null, stage: Stage, leadId: string | undefined, elapsed = 0): number {
-    const st = this.stats(sector, stage);
-    let p = st?.pRaise ?? this.model.byStage[stage]?.pRaise ?? 0.5;
+    let p = this.baseRaise(sector, stage);
     const ai = leadId !== undefined ? this.model.agentIndex[leadId] : undefined;
     if (ai !== undefined) p *= this.model.agents[ai].raiseLift;
     p = Math.min(0.97, Math.max(0.02, p));
@@ -150,9 +180,9 @@ export class Engine {
   }
 
   gaps(sector: Sector | null, stage: Stage): number[] {
-    const ss = sector ? this.model.bySectorStage[`${sector}|${stage}`] : undefined;
-    if (ss && ss.months.length >= MIN_SECTOR_GAPS) return ss.months;
-    return this.model.byStage[stage]?.months ?? [];
+    const ss = sector ? this.model.gapsBySectorStage[`${sector}|${stage}`] : undefined;
+    if (ss && ss.length >= MIN_SECTOR_GAPS) return ss;
+    return this.model.gapsByStage[stage] ?? [];
   }
 
   sampleGap(sector: Sector | null, stage: Stage, rnd: () => number, elapsed = 0): number {
@@ -174,28 +204,39 @@ export class Engine {
     return Math.max(0.2, 1 - (ratio - 1) / 2);
   }
 
-  // Lead candidates at a stage: investors that led at least one real round there (falling back
-  // to any participant when nobody led), with their global prior Pg normalised over that set.
+  geoFit(a: Agent): number {
+    return investorGeoWeight(a.geo, this.model.geoBase, this.prep.geo);
+  }
+
+  // Lead candidates at a stage: lead-eligible investors that led at least one real round there
+  // (falling back to any eligible participant when nobody led), with their global prior Pg
+  // normalised over that set. fit = sectorFit x geoFit per candidate, reused by leadWeights.
   // Restricting to leaders keeps every lead pick O(leaders), not O(all investors).
-  globalPrior(stage: Stage, sector: Sector | null): { cand: Int32Array; pg: Float64Array } {
+  globalPrior(stage: Stage, sector: Sector | null): { cand: Int32Array; pg: Float64Array; fit: Float64Array } {
     const key = `${stage}|${sector}`;
     const hit = this.pg.get(key);
     if (hit) return hit;
     const ags = this.model.agents;
     let cand: number[] = [];
-    for (let j = 0; j < ags.length; j++) if ((ags[j].leadStageCounts[stage] ?? 0) > 0) cand.push(j);
-    if (!cand.length) cand = ags.map((_, j) => j).filter((j) => (ags[j].stageDist[stage] ?? 0) > 0);
+    for (let j = 0; j < ags.length; j++) if (ags[j].leadEligible && (ags[j].leadStageCounts[stage] ?? 0) > 0) cand.push(j);
+    if (!cand.length) cand = ags.map((_, j) => j).filter((j) => ags[j].leadEligible && (ags[j].stageDist[stage] ?? 0) > 0);
     const pg = new Float64Array(cand.length);
+    const fit = new Float64Array(cand.length);
     let tot = 0;
     cand.forEach((j, k) => {
       const { led, part } = stageCounts(ags[j], stage);
-      pg[k] = (led + 0.25 * part + 0.1) * this.sectorFit(ags[j], sector) * (roundStageIndex(stage) <= 1 ? this.chequeFit(ags[j]) : 1);
+      fit[k] = this.sectorFit(ags[j], sector) * this.geoFit(ags[j]);
+      pg[k] = (led + 0.25 * part + 0.1) * fit[k] * (roundStageIndex(stage) <= 1 ? this.chequeFit(ags[j]) : 1);
       tot += pg[k];
     });
     if (tot > 0) for (let k = 0; k < pg.length; k++) pg[k] /= tot;
-    const out = { cand: Int32Array.from(cand), pg };
+    const out = { cand: Int32Array.from(cand), pg, fit };
     this.pg.set(key, out);
     return out;
+  }
+
+  reLeadRate(fromStage: Stage): number {
+    return this.model.reLead.byStage[fromStage]?.rate ?? this.model.reLead.overall.rate;
   }
 
   // P(j | member m) over the stage's candidates, with the investor -> kind -> global backoff.
@@ -220,12 +261,13 @@ export class Engine {
     return v;
   }
 
-  leadWeights(stage: Stage, sector: Sector | null, members: string[], leadId: string | undefined, kinds?: InvestorKind[]): Cdf {
-    const key = `${stage}|${sector}|${leadId ?? ""}|${members.join(",")}|${kinds?.join(",") ?? ""}`;
+  // fromStage: the stage of the round the current lead led; sets the re-lead rate (header, step 4).
+  leadWeights(stage: Stage, sector: Sector | null, members: string[], leadId: string | undefined, kinds?: InvestorKind[], fromStage?: Stage): Cdf {
+    const key = `${stage}|${sector}|${leadId ?? ""}|${members.join(",")}|${kinds?.join(",") ?? ""}|${fromStage ?? ""}`;
     const hit = this.cdfCache.get(key);
     if (hit) return hit;
     const m = this.model;
-    const { cand, pg } = this.globalPrior(stage, sector);
+    const { cand, pg, fit } = this.globalPrior(stage, sector);
     const n = cand.length;
     const w = new Float64Array(n);
     const known = members.filter((x) => m.agentIndex[x] !== undefined || m.tieTotals[x] !== undefined);
@@ -239,7 +281,14 @@ export class Engine {
         const v = this.memberVector(stage, sector, mem);
         for (let k = 0; k < n; k++) w[k] += mw * v[k];
       }
-      for (let k = 0; k < n; k++) w[k] = (w[k] / wsum) * this.sectorFit(m.agents[cand[k]], sector);
+      for (let k = 0; k < n; k++) w[k] = (w[k] / wsum) * fit[k];
+    }
+    const self = leadId !== undefined && fromStage ? cand.indexOf(m.agentIndex[leadId] ?? -1) : -1;
+    if (self >= 0) {
+      let others = 0;
+      for (let k = 0; k < n; k++) if (k !== self) others += w[k];
+      const r = this.reLeadRate(fromStage!);
+      if (others > 0) w[self] = (r / (1 - r)) * others;
     }
     const idx: number[] = [];
     const cum: number[] = [];
@@ -298,10 +347,12 @@ export class Engine {
     return [...out].slice(0, MAX_COINVESTORS);
   }
 
-  amount(stage: Stage, rnd: () => number): number | undefined {
-    const xs = this.model.stageAmounts[stage];
+  // bPlusOrdinal: how many Series B+ rounds the company has already closed (0 = this is its first).
+  amount(stage: Stage, rnd: () => number, bPlusOrdinal = 0): number | undefined {
+    const byOrdinal = stage === "series-b-plus" ? this.model.bPlusAmounts[Math.min(this.model.bPlusAmounts.length - 1, bPlusOrdinal)] : undefined;
+    const xs = byOrdinal && byOrdinal.length >= MIN_ORDINAL_AMOUNTS ? byOrdinal : this.model.stageAmounts[stage];
     if (!xs?.length) return undefined;
-    return Math.round(quantile(xs, 0.25 + 0.5 * rnd())! / 1e4) * 1e4;
+    return Math.round(quantile(xs, 0.05 + 0.9 * rnd())! / 1e4) * 1e4;
   }
 
   sampleSector(rnd: () => number): Sector | null {
@@ -351,7 +402,7 @@ export class Engine {
       const c = this.leadWeights(stage, sector, members, leadId, branch.kindFilter);
       const li = branch.forcedLeadIdx ?? this.sampleFrom(c, rnd);
       const co = this.coInvestors(stage, li, members, rnd);
-      const amt = this.amount(stage, rnd);
+      const amt = this.amount(stage, rnd, p.bPlusSoFar);
       funded += amt ?? 0;
       steps.push(this.step(stage, li, co, month, amt));
       stageIdx = roundStageIndex(stage);
@@ -381,9 +432,9 @@ export class Engine {
       const next = ROUND_STAGES[nextIdx];
       const kinds = firstRound ? branch.kindFilter : undefined;
       const forced = firstRound ? branch.forcedLeadIdx : undefined;
-      const li = forced ?? this.sampleFrom(this.leadWeights(next, sector, members, leadId, kinds), rnd);
+      const li = forced ?? this.sampleFrom(this.leadWeights(next, sector, members, leadId, kinds, stageIdx >= 0 ? cur : undefined), rnd);
       const co = this.coInvestors(next, li, members, rnd);
-      const amt = this.amount(next, rnd);
+      const amt = this.amount(next, rnd, p.bPlusSoFar + bPlusRounds);
       funded += amt ?? 0;
       steps.push(this.step(next, li, co, month, amt));
       stageIdx = nextIdx;
@@ -455,17 +506,20 @@ function buildNode(
   const at = (q: number) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
   const gaps = outs.map((o) => o.firstGap).filter((g): g is number => g !== undefined).sort((a, b) => a - b);
   const med = quantile(gaps, 0.5);
+  const share = outs.length ? outs.filter((o) => o.reached).length / outs.length : 0;
+  const band = wilson(share * sampleSize, sampleSize);
   return {
     decision,
     label,
     runs: outs.length,
-    reachVisionShare: outs.length ? Math.round((outs.filter((o) => o.reached).length / outs.length) * 1000) / 1000 : 0,
+    reachVisionShare: Math.round(share * 1000) / 1000,
     medianMonthsToNextRound: med !== undefined ? Math.round(med * 10) / 10 : undefined,
     outcomeBands: sorted.length
       ? { best: describeOutcome(at(0.1), basis, startLabel), median: describeOutcome(at(0.5), basis, startLabel), worst: describeOutcome(at(0.9), basis, startLabel) }
       : { best: "n/a", median: "n/a", worst: "n/a" },
     sampleSize,
     lowConfidence: sampleSize < LOW_CONFIDENCE_N,
+    confidenceBand: { lo: Math.round(band.lo * 1000) / 1000, hi: Math.round(band.hi * 1000) / 1000 },
     children,
     topPaths: topPaths(outs),
   };
@@ -485,6 +539,17 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   const inSectors = (s: Sector) => !sectorSet.size || sectorSet.has(s);
   const decisionStage = prep.company ? ROUND_STAGES[Math.max(0, prep.lastStageIdx)] : prep.firstStage;
   const stageTransitions = model.transitions.filter((t) => t.outcome !== "censored" && t.stage === decisionStage && inSectors(t.sector));
+  const companies = (ts: { companyId: string }[]) => new Set(ts.map((t) => t.companyId)).size;
+  const kindOf = (id: string) => model.agents[model.agentIndex[id]]?.kind ?? model.cohort.investors[id]?.kind ?? "unknown";
+  // Distinct real companies with a round at `stage` led by `id`, plus those where a current cap-table
+  // member's next round was led by `id` (the evidence behind a "next lead" branch).
+  const leadEvidence = (id: string, stage: Stage, members: string[]) => {
+    const ids = new Set<string>();
+    for (const [cid, eps] of Object.entries(model.episodes)) if (eps.some((e) => e.stage === stage && e.leadId === id)) ids.add(cid);
+    for (const t of model.transitions) if (t.nextLeadId === id && t.memberIds.some((mm) => members.includes(mm))) ids.add(t.companyId);
+    ids.delete(prep.company?.id ?? "");
+    return ids.size;
+  };
 
   // Level 1: next-lead options for a cohort company (forced lead), cheque type for a founder.
   type L1 = { decision: Decision | null; label: string; forcedLeadIdx?: number; kindFilter?: InvestorKind[]; sampleSize: number };
@@ -492,7 +557,8 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   if (prep.company) {
     const next = prep.firstStage;
     const seedSector = prep.sectors[0]?.[0] ?? model.cohort.companies[prep.company.id]?.sector ?? null;
-    const c = engine.leadWeights(next, seedSector, prep.members, prep.lastLead);
+    const from = prep.lastStageIdx >= 0 ? ROUND_STAGES[prep.lastStageIdx] : undefined;
+    const c = engine.leadWeights(next, seedSector, prep.members, prep.lastLead, undefined, from);
     const w = Array.from(c.idx).map((j, i) => ({ j, p: c.cdf[i] - (i ? c.cdf[i - 1] : 0) }));
     w.sort((a, b) => b.p - a.p);
     l1 = w.slice(0, LEAD_BRANCHES).map(({ j }) => {
@@ -501,19 +567,19 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
         decision: { kind: "lead", investorId: a.id } as Decision,
         label: `Next lead: ${a.name}`,
         forcedLeadIdx: j,
-        sampleSize: (a.leadStageCounts[next] ?? 0) + Math.round(prep.members.reduce((s, mm) => s + (model.ties[mm]?.[a.id] ?? 0), 0)),
+        sampleSize: leadEvidence(a.id, next, prep.members),
       };
     });
     if (decision?.kind === "lead") {
       const j = model.agentIndex[decision.investorId];
-      l1 = j === undefined ? l1 : [{ decision, label: `Next lead: ${model.agents[j].name}`, forcedLeadIdx: j, sampleSize: model.agents[j].leadStageCounts[next] ?? 0 }];
+      l1 = j === undefined ? l1 : [{ decision, label: `Next lead: ${model.agents[j].name}`, forcedLeadIdx: j, sampleSize: leadEvidence(decision.investorId, next, prep.members) }];
     }
   } else {
     const opt = (o: FirstChequeOption): L1 => ({
       decision: { kind: "first_cheque", option: o },
       label: OPTION_LABEL[o],
       kindFilter: KIND_FOR_OPTION[o],
-      sampleSize: stageTransitions.filter((t) => t.leadId && KIND_FOR_OPTION[o].includes(model.cohort.investors[t.leadId]?.kind ?? "unknown")).length,
+      sampleSize: companies(stageTransitions.filter((t) => t.leadId && KIND_FOR_OPTION[o].includes(kindOf(t.leadId)))),
     });
     l1 = (["angel", "accelerator", "fund"] as FirstChequeOption[])
       .filter((o) => engine.leadWeights(prep.firstStage, null, [], undefined, KIND_FOR_OPTION[o]).idx.length > 0)
@@ -521,10 +587,10 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
     if (decision?.kind === "first_cheque") l1 = l1.filter((x) => (x.decision as { option: string }).option === decision.option);
     if (decision?.kind === "lead") {
       const j = model.agentIndex[decision.investorId];
-      if (j !== undefined) l1 = [{ decision, label: `First lead: ${model.agents[j].name}`, forcedLeadIdx: j, sampleSize: model.agents[j].leadStageCounts[prep.firstStage] ?? 0 }];
+      if (j !== undefined) l1 = [{ decision, label: `First lead: ${model.agents[j].name}`, forcedLeadIdx: j, sampleSize: leadEvidence(decision.investorId, prep.firstStage, []) }];
     }
   }
-  if (!l1.length) l1 = [{ decision: null, label: "Any first cheque", sampleSize: stageTransitions.length }];
+  if (!l1.length) l1 = [{ decision: null, label: "Any first cheque", sampleSize: companies(stageTransitions) }];
   const timings: TimingOption[] = decision?.kind === "timing" ? [decision.option] : ["now", "later_6m"];
 
   const branches: Branch[] = [];
@@ -547,7 +613,7 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
   });
   l1Nodes.sort((x, y) => y.reachVisionShare - x.reachVisionShare || (x.medianMonthsToNextRound ?? 1e9) - (y.medianMonthsToNextRound ?? 1e9));
   const rootLabel = prep.company ? `${prep.company.name} today` : "You today";
-  const tree = node(null, rootLabel, outs, stageTransitions.length, l1Nodes);
+  const tree = node(null, rootLabel, outs, companies(stageTransitions.filter((t) => t.knowable)), l1Nodes);
 
   const flows = new Map<string, number>();
   for (const o of outs) {
@@ -580,7 +646,53 @@ export function simulate(start: StartState, vision: Vision, model: SimModel, opt
     realities,
     highways,
     precedents,
+    calibration: buildCalibration(model, prep),
     fixture: false,
+  };
+}
+
+export const SAMPLE_SIZE_MEANING =
+  "sampleSize = distinct real cohort companies behind a branch: for the root, companies with a knowable outcome at this stage in these sectors; " +
+  "for a cheque type, companies whose round at this stage that kind of investor led; for a next lead, companies where that investor led a round " +
+  "at that stage or followed one of your current investors. Bands are 95% Wilson intervals on that n.";
+
+function buildCalibration(model: SimModel, prep: Prepared): Calibration {
+  const baseRates = ROUND_STAGES.map((s) => model.baseRates[s]).filter((b): b is NonNullable<typeof b> => !!b);
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const pop = model.outcomePopulation;
+  const notes: string[] = [
+    pop.kind === "seed-sample"
+      ? `Raise rates, stall rates and timing come from the ${pop.companies} seed-sample companies, drawn without regard to outcome; the rest of the cohort informs investor behaviour and precedents only.`
+      : `No outcome-blind seed sample in this cohort: rates are read off all ${pop.companies} companies and capped by published priors where they look survivorship-biased.`,
+  ];
+  for (const b of baseRates) {
+    if (b.biased) {
+      notes.push(
+        `${STAGE_LABELS[b.stage]}: ${b.cohort.raised} of ${b.cohort.n} knowable cohort companies raised again (${pct(b.cohort.rate ?? 0)}), ` +
+          `above what published funnels allow, so the prior ${pct(b.p)} is used (cohort is survivorship-biased).`,
+      );
+    } else if (b.source === "prior") notes.push(`${STAGE_LABELS[b.stage]}: no knowable cohort outcomes, prior ${pct(b.p)} used.`);
+  }
+  if (!prep.company) notes.push(`Paths assume the ${STAGE_LABELS[prep.firstStage]} being raised now closes; the cohort has no record of failed first rounds.`);
+  const agents = model.agents;
+  const leaders = agents.filter((a) => a.led > 0);
+  return {
+    outcomePopulation: pop,
+    baseRates,
+    conditionalOnFirstRound: !prep.company,
+    reLead: ROUND_STAGES.flatMap((s) => {
+      const r = model.reLead.byStage[s];
+      return r ? [{ from: s, ...r }] : [];
+    }),
+    leadFilter: {
+      candidates: leaders.filter((a) => a.leadEligible).length,
+      droppedGeneric: model.dropped.generic,
+      droppedNonInvestor: model.dropped.nonInvestor,
+      droppedThin: leaders.filter((a) => !a.leadEligible).length,
+    },
+    geography: { input: prep.geoInput, country: prep.geo.country, region: prep.geo.region, applied: !!prep.geo.region },
+    sampleSizeMeaning: SAMPLE_SIZE_MEANING,
+    notes,
   };
 }
 

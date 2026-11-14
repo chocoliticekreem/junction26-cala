@@ -13,6 +13,7 @@ import {
   type CalaProjection,
   type CalaRawSource,
 } from "@/lib/cala";
+import { pickRoundDate } from "@/lib/rounds";
 import type {
   CalaFacts,
   CompanyCandidate,
@@ -220,7 +221,7 @@ export function roundFromEntity(r: CalaEntity): ContextRound {
   const labelCode = prop(r, "round_label")?.replace(/_/g, " ");
   const stage = normaliseRound(label) ?? "unknown";
   const stageFromCode = labelCode ? normaliseRound(labelCode) : undefined;
-  const date = normaliseDate(prop(r, "event_date") ?? prop(r, "announcement_date")).date;
+  const date = pickRoundDate(prop(r, "event_date"), prop(r, "announcement_date"), prop(r, "event_date__precision")).date;
   const parts = edges(r, "incoming", "PARTICIPATES_IN_FUNDING_ROUND").filter((p) => p.properties?.role !== "ISSUER");
   const sources: RankedSource[] = [];
   for (const p of parts) {
