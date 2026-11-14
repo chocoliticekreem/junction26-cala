@@ -199,7 +199,10 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
   const bw = results ? Math.max(200, w - inset.left - inset.right) : w;
   const bh = results ? Math.max(200, h - inset.top - inset.bottom) : h;
   const x0 = results ? bx + bw * 0.1 : w * 0.5;
-  const colW = bw * 0.21;
+  // The paths stretch across the free space: the deepest step lands near the right edge.
+  let deepest = 1;
+  for (const n of nodes.values()) if (results && n.onHighway && n.id !== YOU_ID) deepest = Math.max(deepest, n.depth);
+  const colW = Math.min(bw * 0.4, (bw * 0.7) / deepest);
   const byDepth = new Map<number, Node[]>();
   for (const n of nodes.values()) {
     if (n.id === YOU_ID) {
@@ -213,7 +216,7 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
   }
   for (const [d, list] of byDepth) {
     list.sort((a, b) => b.led - a.led);
-    const span = Math.min(bh * 0.7, list.length * 58);
+    const span = Math.min(bh * 0.8, list.length * 72);
     list.forEach((n, i) => {
       n.tx = x0 + d * colW;
       n.ty = Math.min(by + bh * 0.9, Math.max(by + bh * 0.1, by + bh * 0.5 + (list.length === 1 ? 0 : -span / 2 + (span * i) / (list.length - 1))));
@@ -225,8 +228,8 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
     const a = rnd() * Math.PI * 2;
     const rr = 0.3 + rnd() * 0.7;
     if (results) {
-      n.tx = bx + bw * (0.2 + rnd() * 0.8);
-      n.ty = by + bh * (0.04 + rnd() * 0.92);
+      n.tx = bx + bw * (0.04 + rnd() * 0.86);
+      n.ty = by + bh * (0.03 + rnd() * 0.94);
     } else {
       n.tx = w * 0.5 + Math.cos(a) * rr * w * 0.42;
       n.ty = h * 0.5 + Math.sin(a) * rr * h * 0.44;
@@ -240,8 +243,8 @@ function retarget(sim: Simulation<Node, undefined>, phase: PathMapPhase, h: numb
   const results = phase === "results";
   sim.force("charge", forceManyBody<Node>().strength((n) => (n.onHighway && results ? -70 : -14)).distanceMax(170));
   sim.force("collide", forceCollide<Node>().radius((n) => n.r + (n.onHighway && results ? Math.min(34, h / 18) : 5)).strength(0.8));
-  sim.force("x", forceX<Node>((n) => n.tx).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
-  sim.force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
+  sim.force("x", forceX<Node>((n) => n.tx).strength((n) => (n.onHighway && results ? 0.34 : results ? 0.16 : 0.06)));
+  sim.force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway && results ? 0.34 : results ? 0.16 : 0.06)));
 }
 
 export default function PathMap({ network, inset = NO_INSET, highways, brightPaths, emphasisEdges, emphasisNodes, onNodeClick, backerIds, youLabel, phase, reducedMotion }: PathMapProps) {
