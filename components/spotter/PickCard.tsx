@@ -65,10 +65,6 @@ export default function PickCard({ pick, investor, rank, asOf, onClose }: Props)
       </div>
 
       <div className="sp-numbers" data-testid="spotter-numbers">
-        <div>
-          <b className="font-mono">{pct(pick.scores.unicornOdds)}</b>
-          <span>Unicorn-like odds</span>
-        </div>
         <div className="k">
           <b className="font-mono">{pct(pick.scores.youOnPath)}</b>
           <span>You&rsquo;re on its path</span>
