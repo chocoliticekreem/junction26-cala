@@ -242,3 +242,16 @@ describe("vision horizon guard", () => {
     expect(w?.horizonYears).toBe(3);
   });
 });
+
+describe("vision line after a horizon override", () => {
+  it("does not show the model's invented horizon in the interpretation", async () => {
+    const { parseVisionTool } = await import("@/lib/ai/analyzeVision");
+    const v = parseVisionTool(
+      { targetStage: "series-b-plus", horizonYears: 2, targetValuationUsd: 1e9, interpretation: "Unicorn = valuation of $1B or more, within 2 years." },
+      "Cala becomes a unicorn",
+    );
+    expect(v?.horizonYears).toBe(5);
+    expect(v?.interpretation).not.toMatch(/2 years/);
+    expect(v?.interpretation).toMatch(/5 years/);
+  });
+});
