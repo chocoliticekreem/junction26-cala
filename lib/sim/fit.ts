@@ -23,7 +23,7 @@
 // graph before anything is counted; thin unresolved investors stay as co-investors but cannot lead.
 import type { Sector, Stage } from "@/lib/taxonomy";
 import { STAGE_PRIORS, calibrateStage, reLeadRates, type BaseRate, type OutcomePopulation, type StagePriors } from "./calibration";
-import { addGeo, emptyGeoCounts, parseGeo, type GeoCounts } from "./geo";
+import { addGeo, emptyGeoCounts, parseGeo, regionOf, type Geo, type GeoCounts } from "./geo";
 import { investorDropReason, isLeadEligible, type InvestorDropReason } from "./quality";
 import { effectiveStage, sizeBands, sizeTercile, type SizeBands } from "./stageSize";
 import type {
@@ -33,6 +33,7 @@ import type {
   Episode,
   FollowOnStats,
   InvestorKind,
+  LeadGeoShares,
   SimModel,
   SizeRates,
   Transition,
@@ -50,7 +51,40 @@ const MIN_POP_GAPS = 20;
 // Pseudo-observations pulling a size-tercile raise rate toward its stage rate.
 export const SIZE_SHRINK_K = 10;
 
+// Located deals (excluding the one being measured) a lead needs before its home country counts.
+const MIN_HOME_DEALS = 2;
+
 export type FitOptions = { priors?: StagePriors | null };
+
+// Lead geography by stage, measured on every led round: the lead's home is the country holding
+// most of its other located deals (this round left out), compared with the company's country.
+// Shares are of rounds whose company and lead are both located.
+export function leadGeoShares(
+  rounds: { stage: Stage; leadId?: string; geo: Geo }[],
+  geoAcc: Record<string, GeoCounts>,
+  leadWeight = LEAD_WEIGHT,
+): { byStage: Partial<Record<Stage, LeadGeoShares>>; overall: LeadGeoShares } {
+  const empty = (): LeadGeoShares => ({ n: 0, country: 0, region: 0, elsewhere: 0 });
+  const byStage: Partial<Record<Stage, LeadGeoShares>> = {};
+  const overall = empty();
+  for (const r of rounds) {
+    const g = r.leadId ? geoAcc[r.leadId] : undefined;
+    if (!g || !r.geo.region || !r.geo.country) continue;
+    const country = { ...g.country };
+    country[r.geo.country] = (country[r.geo.country] ?? 0) - leadWeight;
+    const total = Object.values(country).reduce((a, x) => a + Math.max(0, x), 0);
+    if (total < MIN_HOME_DEALS) continue;
+    const home = Object.entries(country).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+    const homeRegion = regionOf(home);
+    const k: keyof Omit<LeadGeoShares, "n"> = home === r.geo.country ? "country" : homeRegion === r.geo.region ? "region" : "elsewhere";
+    for (const x of [(byStage[r.stage] ??= empty()), overall]) {
+      x.n++;
+      x[k]++;
+    }
+  }
+  for (const x of [...Object.values(byStage), overall]) if (x.n) for (const k of ["country", "region", "elsewhere"] as const) x[k] /= x.n;
+  return { byStage, overall };
+}
 
 // Investors removed from the round graph by the quality filter, with the reason.
 export function droppedInvestors(cohort: Cohort): Map<string, InvestorDropReason> {
@@ -298,6 +332,7 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
     leadStage: Partial<Record<Stage, number>>;
     sector: Partial<Record<Sector, number>>;
     amounts: number[];
+    ledAmounts: Partial<Record<Stage, number[]>>;
     dates: number[];
     co: Record<string, number>;
   };
@@ -307,6 +342,8 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
   const stageAmounts: Partial<Record<Stage, number[]>> = {};
   const bPlusAmounts: number[][] = Array.from({ length: B_PLUS_ORDINALS }, () => []);
   const stageCoInvestorCounts: Partial<Record<Stage, number[]>> = {};
+  const kindLedAmounts: Partial<Record<InvestorKind, Partial<Record<Stage, number[]>>>> = {};
+  const ledRounds: { stage: Stage; leadId?: string; geo: Geo }[] = [];
   for (const [cid, eps] of Object.entries(episodes)) {
     const sector = cohort.companies[cid].sector;
     const geo = parseGeo(cohort.companies[cid].country ?? cohort.companies[cid].hq);
@@ -318,19 +355,24 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
         const r = cleanRound(cohort.rounds[rid], drop);
         const ms = toMs(r.date)!;
         const lead = leadOf(r)?.investorId;
+        if (lead) ledRounds.push({ stage: e.stage, leadId: lead, geo });
         if (r.amountUsd) (stageAmounts[e.stage] ??= []).push(r.amountUsd);
         (stageCoInvestorCounts[e.stage] ??= []).push(Math.max(0, r.participants.length - 1));
         addGeo(geoBase, geo);
         const ids = [...new Set(r.participants.map((p) => p.investorId))];
         for (const id of ids) {
           addGeo((geoAcc[id] ??= emptyGeoCounts()), geo, id === lead ? LEAD_WEIGHT : 1);
-          const a = (acc[id] ??= { rounds: 0, led: 0, stage: {}, leadStage: {}, sector: {}, amounts: [], dates: [], co: {} });
+          const a = (acc[id] ??= { rounds: 0, led: 0, stage: {}, leadStage: {}, sector: {}, amounts: [], ledAmounts: {}, dates: [], co: {} });
           const isLead = id === lead;
           const w = isLead ? LEAD_WEIGHT : 1;
           a.rounds++;
           if (isLead) {
             a.led++;
             a.leadStage[e.stage] = (a.leadStage[e.stage] ?? 0) + 1;
+            if (r.amountUsd) {
+              (a.ledAmounts[e.stage] ??= []).push(r.amountUsd);
+              ((kindLedAmounts[kindOf(id)] ??= {})[e.stage] ??= []).push(r.amountUsd);
+            }
           }
           a.stage[e.stage] = (a.stage[e.stage] ?? 0) + w;
           a.sector[sector] = (a.sector[sector] ?? 0) + w;
@@ -450,6 +492,7 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
       raiseLiftEvidence: l ? Math.round(l.expected * 10) / 10 : 0,
       leadEligible: isLeadEligible(id, a.rounds),
       geo: geoAcc[id] ?? emptyGeoCounts(),
+      ledAmounts: a.ledAmounts,
     });
   }
   agents.sort((x, y) => y.rounds - x.rounds || x.id.localeCompare(y.id));
@@ -464,6 +507,13 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
       }
     }
   }
+
+  const stepUps: Partial<Record<Stage, number[]>> = {};
+  for (const t of transitions) {
+    const up = ROUND_STAGES[Math.min(ROUND_STAGES.length - 1, roundStageIndex(t.stage) + 1)];
+    if (t.stepUp && t.nextStage === up) (stepUps[t.stage] ??= []).push(t.stepUp);
+  }
+  for (const xs of Object.values(stepUps)) xs.sort((a, b) => a - b);
 
   return {
     asOf: asOfStr,
@@ -498,6 +548,9 @@ export function fitModel(cohort: Cohort, asOf?: string, opts: FitOptions = {}): 
     bPlusAmounts,
     stageHeadcounts,
     stageCoInvestorCounts,
+    kindLedAmounts,
+    stepUps,
+    leadGeoShares: leadGeoShares(ledRounds, geoAcc),
     cohort,
   };
 }

@@ -12,9 +12,19 @@
 // so an investor with no located deals backs off to the cohort's mix, and one whose deals are all
 // in another region keeps only the floor.
 //
+// Stage-dependent lead weight (stageGeoWeight): fit.ts measures, over every led round, where the
+// lead is based relative to the company (same country / same region / elsewhere) by stage, since a
+// seed is mostly local and a Series B+ often is not. The candidate's weight is that mix applied to
+// its own deal shares relative to the cohort's:
+//   geoFit_s(i) = GEO_FLOOR + p_country(s) * c_i / c_0 + p_region(s) * (r_i - c_i) / (r_0 - c_0)
+//                           + p_elsewhere(s) * (1 - r_i) / (1 - r_0)
+// c_i, r_i the investor's smoothed shares (geoShares), c_0, r_0 the cohort's. An investor whose deals
+// mirror the cohort gets 1 + floor at every stage; a stage with fewer than MIN_STAGE_GEO measured
+// rounds uses all stages pooled.
+//
 // precedentGeoWeight is exported for lib/sim/precedents.ts (owned by the path-ai branch): same
 // country 1, same region 0.6, elsewhere 0.25, unknown 0.5.
-import type { Cohort } from "./types";
+import type { Cohort, LeadGeoShares } from "./types";
 
 export type Region = "europe" | "north-america" | "middle-east" | "asia-pacific" | "latam" | "africa";
 export type Geo = { country?: string; region?: Region; text?: string };
@@ -143,6 +153,27 @@ export function investorGeoWeight(inv: GeoCounts | undefined, base: GeoCounts, t
   if (!target.region) return 1;
   const s = geoShares(inv, base, target);
   return GEO_FLOOR + (s.country + s.region) / 2;
+}
+
+export const MIN_STAGE_GEO = 30;
+
+export function stageGeoWeight(
+  inv: GeoCounts | undefined,
+  base: GeoCounts,
+  target: Geo,
+  measured: { stage?: LeadGeoShares; overall: LeadGeoShares },
+): number {
+  if (!target.region) return 1;
+  const p = measured.stage && measured.stage.n >= MIN_STAGE_GEO ? measured.stage : measured.overall;
+  if (!p.n || !base.n) return investorGeoWeight(inv, base, target);
+  const s = geoShares(inv, base, target);
+  const r0 = (base.region[target.region] ?? 0) / base.n;
+  const c0 = target.country ? (base.country[target.country] ?? 0) / base.n : 0;
+  const ratio = (x: number, y: number) => (y > 1e-9 ? Math.max(0, x) / y : 0);
+  const lift = target.country && c0 > 0
+    ? p.country * ratio(s.country, c0) + p.region * ratio(s.region - s.country, r0 - c0) + p.elsewhere * ratio(1 - s.region, 1 - r0)
+    : (p.country + p.region) * ratio(s.region, r0) + p.elsewhere * ratio(1 - s.region, 1 - r0);
+  return GEO_FLOOR + lift;
 }
 
 export const PRECEDENT_GEO_WEIGHT = { sameCountry: 1, sameRegion: 0.6, elsewhere: 0.25, unknown: 0.5 } as const;
