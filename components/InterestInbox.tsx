@@ -230,7 +230,7 @@ function RequestCard({
               ))}
             </ul>
           )}
-          {match && <p className="mt-2 text-[12px] text-white/45">Fit {match.score}/100 · {match.reason}</p>}
+          {match && <p className="mt-2 text-[12px] text-white/45">Fit {Math.round(match.score)}/100 · {match.reason}</p>}
         </div>
         {req.state === "interested" && (
           <div className="flex shrink-0 gap-2">

@@ -39,6 +39,7 @@ export default function FounderPage() {
   const micState: "idle" | "listening" | "unsupported" = !sttSupported ? "unsupported" : micOn ? "listening" : "idle";
 
   const matches = useMemo(() => rankInvestors(profile, INVESTORS, DEBRIEFS), [profile]);
+  const noSignals = Object.keys(profile.sectors).length === 0 && !profile.stage;
 
   useEffect(() => {
     if (Object.keys(profile.sectors).length || profile.stage) writeLiveProfile(profile);
@@ -118,6 +119,7 @@ export default function FounderPage() {
             investors={INVESTORS}
             selectedId={selectedInvestorId}
             onSelect={setSelectedInvestorId}
+            idle={noSignals}
           />
         </aside>
       </main>

@@ -222,6 +222,11 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
   const founder = nodes[0];
 
   useEffect(() => {
+    const f = byId.get(FOUNDER_ID);
+    if (f) f.name = center?.label ?? "You";
+  }, [center?.label, byId]);
+
+  useEffect(() => {
     const g = fg.current;
     if (!g || forcesReady.current) return;
     forcesReady.current = true;

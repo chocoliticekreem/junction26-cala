@@ -57,9 +57,13 @@ export default function Graph(props: GraphProps) {
         />
       )}
       {props.idle && (
-        <p className="graph-hint" data-testid="graph-hint">
-          Press <kbd>R</kbd> to replay a pitch, or the mic to pitch live
-        </p>
+        <div className="graph-idle" data-testid="graph-idle">
+          <p className="graph-idle-title">Raising pre-seed or seed in London?</p>
+          <p className="graph-idle-sub">Pitch out loud. Investors rank themselves by the deals they actually did, sourced from Cala.</p>
+          <p className="graph-hint" data-testid="graph-hint">
+            Press <kbd>R</kbd> to replay a pitch, or the mic to pitch live
+          </p>
+        </div>
       )}
     </div>
   );

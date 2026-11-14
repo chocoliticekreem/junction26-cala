@@ -33,7 +33,7 @@ export function RoomBuilder({ sector, founders, investors, debriefs, hostInvesto
   const fitFor = useMemo(() => {
     const m = new Map<string, number>();
     for (const inv of lineupInvestors) {
-      for (const r of rankFounders(inv, lineupFounders, debriefs)) m.set(`${inv.id}:${r.founderId}`, r.score);
+      for (const r of rankFounders(inv, lineupFounders, debriefs)) m.set(`${inv.id}:${r.founderId}`, Math.round(r.score));
     }
     return m;
   }, [lineupInvestors, lineupFounders, debriefs]);

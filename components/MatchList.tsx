@@ -10,6 +10,7 @@ export type MatchListProps = {
   selectedId?: string;
   onSelect: (id?: string) => void;
   limit?: number;
+  idle?: boolean;
 };
 
 function sourceTitle(deal: Deal): string | undefined {
@@ -70,15 +71,32 @@ function MiniBars({ inv }: { inv: Investor }) {
   );
 }
 
-export default function MatchList({ matches, investors, selectedId, onSelect, limit = 10 }: MatchListProps) {
+export default function MatchList({ matches, investors, selectedId, onSelect, limit = 10, idle = false }: MatchListProps) {
   const byId = new Map(investors.map((i) => [i.id, i]));
   const rows = matches.slice(0, limit);
   return (
-    <section className="rail-card rail-grow" aria-label="Top matches" data-testid="match-list">
+    <section className="rail-card rail-grow" aria-label="Top matches" data-testid="match-list" data-idle={idle || undefined}>
       <header className="rail-head">
         <span>Top {rows.length}</span>
-        <span className="muted">ranked on revealed deals</span>
+        <span className="muted">{idle ? "waiting for your pitch" : "ranked on revealed deals"}</span>
       </header>
+      {idle && (
+        <div className="matches-idle" data-testid="match-idle" aria-hidden>
+          <p>Your top 10 forms as you speak</p>
+          <ul>
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i} style={{ animationDelay: `${i * 140}ms` }}>
+                <i className="sk sk-rank" />
+                <span>
+                  <i className="sk sk-name" style={{ width: `${46 + ((i * 17) % 30)}%` }} />
+                  <i className="sk sk-line" style={{ width: `${58 + ((i * 23) % 34)}%` }} />
+                </span>
+                <i className="sk sk-score" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <ol className="matches">
         {rows.map((m, i) => {
           const inv = byId.get(m.investorId);
