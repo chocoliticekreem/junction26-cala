@@ -16,7 +16,7 @@ import { loadReplay } from "@/lib/data";
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { mergeProfile } from "@/lib/mergeProfile";
 import { correctCompanyName } from "@/lib/nameFix";
-import { getMyCompanies, getMyCompaniesServer, saveMyCompany, subscribeMyCompanies, type SavedCompany } from "@/lib/myCompanies";
+import { saveMyCompany, type SavedCompany } from "@/lib/myCompanies";
 import { fmtUsd } from "@/lib/sim/util";
 import { UNICORN_USD, parseVision } from "@/lib/sim/vision";
 import { isSttSupported } from "@/lib/stt";
@@ -98,7 +98,6 @@ export default function PathPage() {
   const [candidate, setCandidate] = useState<CompanyCandidate | null>(null);
   // The founder answered "Is this you?"; the candidate list collapses to one line until the name changes.
   const [picked, setPicked] = useState(false);
-  const saved = useSyncExternalStore(subscribeMyCompanies, getMyCompanies, getMyCompaniesServer);
   const [pitchText, setPitchText] = useState("");
   const [visionText, setVisionText] = useState("");
   const [network, setNetwork] = useState<NetworkData>(EMPTY_NET);
@@ -421,7 +420,7 @@ export default function PathPage() {
                     picked={picked}
                     onPick={pick}
                     onChangeCompany={() => setPicked(false)}
-                    saved={saved}
+                    saved={[]}
                     onLoadSaved={loadSaved}
                     pitchTokens={pitchTokens}
                     pitchText={pitchText}

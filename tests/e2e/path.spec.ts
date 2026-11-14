@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 // The Scalaxy founder flow against the typed mock (E2E_MOCK=1, no engine routes): one CTA with
 // company -> pitch -> vision -> simulate -> the CTA collapses into the brief bar, realities + tree
-// slide in beside the galaxy map -> flip a branch -> the company is remembered (recent list on
+// slide in beside the galaxy map -> flip a branch -> no recent-companies list (
 // focus) -> reset clears everything.
 
 async function mapHasContent(page: Page): Promise<boolean> {
@@ -93,16 +93,9 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("realities")).toHaveCount(0);
   await expect(page.getByTestId("tree")).toHaveCount(0);
 
-  // The simulated company is remembered; focusing the field lists it, picking it pre-fills the CTA.
+  // No recent-companies list is ever shown (demo privacy).
   await page.getByTestId("company-name").click();
-  await expect(page.getByTestId("my-company")).toHaveCount(1);
-  await page.getByTestId("my-company").first().click();
-  await expect(page.getByTestId("company-name")).toHaveValue("Cala");
-  await expect(page.getByTestId("company-website")).toHaveValue("cala.ai");
-  await expect(page.getByTestId("pitch-text")).toHaveValue(/developer tools/);
-  await expect(page.getByTestId("vision-text")).not.toHaveValue("");
-  await expect(page.getByTestId("company-found")).toContainText("Cala");
-  await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "ready");
+  await expect(page.getByTestId("my-companies-menu")).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });
