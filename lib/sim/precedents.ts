@@ -197,6 +197,14 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
             : rest === "none"
               ? `Still at ${startLabel} when the horizon ends`
               : `At ${STAGE_LABELS[lastStage]} when the horizon ends, short of ${visionName}`;
+      const outcomeShort =
+        kind === "R"
+          ? `${visionName.replace(/^an? /, "")} · ~${fmtMonths(months)}`
+          : kind === "S"
+            ? "Stalls · no round in 24 mo"
+            : rest === "none"
+              ? `Still ${startLabel} · horizon`
+              : `${STAGE_LABELS[lastStage]} · climbing`;
 
       const match = (f: Facts) =>
         kind === "R" ? f.reached : kind === "S" ? f.stalledAt === lastStage : !f.reached && !f.stalledAt && f.lastStage === lastStage;
@@ -213,6 +221,7 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
         runs: list.length,
         steps,
         outcomeLine,
+        outcomeShort,
         precedents: ranked.slice(0, 3).map((f) => ({ companyId: f.id, name: model.cohort.companies[f.id].name, roundIds: model.episodes[f.id].flatMap((e) => e.roundIds) })),
         sampleSize: pool.length,
         lowConfidence: pool.length < LOW_CONFIDENCE_N,

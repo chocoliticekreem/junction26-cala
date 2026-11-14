@@ -2398,7 +2398,7 @@ a.deal-src:hover,
 
 .path-lane-track {
   position: relative;
-  height: 38px;
+  height: 44px;
   margin: 0 70px 0 8px;
 }
 
@@ -2425,7 +2425,6 @@ a.deal-src:hover,
   transform: translate(0, -50%);
   display: flex;
   align-items: center;
-  gap: 6px;
 }
 
 .path-step i {
@@ -2443,10 +2442,21 @@ a.deal-src:hover,
 }
 
 .path-step-text {
+  position: absolute;
+  left: 0;
   display: flex;
-  flex-direction: column;
+  gap: 4px;
+  align-items: baseline;
   line-height: 1.15;
   white-space: nowrap;
+}
+
+.path-step.is-above .path-step-text {
+  bottom: calc(50% + 7px);
+}
+
+.path-step.is-below .path-step-text {
+  top: calc(50% + 7px);
 }
 
 .path-step-text b {
@@ -2468,16 +2478,31 @@ a.deal-src:hover,
   min-width: 0;
 }
 
-.path-lane-outcome b {
-  font-size: 12.5px;
+.path-outcome-chip {
+  display: inline-flex;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 246 234 / 0.3);
+  background: rgb(255 246 234 / 0.06);
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: help;
 }
 
-.path-lane.is-stalled .path-lane-outcome b {
+.path-lane.is-selected .path-outcome-chip {
+  border-color: rgb(255 106 61 / 0.6);
+  color: var(--accent);
+}
+
+.path-lane.is-stalled .path-outcome-chip {
   color: #ffb79d;
+  border-color: rgb(255 183 157 / 0.35);
 }
 
 .path-lane-precedents {
@@ -2643,6 +2668,42 @@ a.deal-src:hover,
 
 .path-basis-founder {
   background: var(--accent);
+}
+
+.path-unconfirmed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.path-unconfirmed .path-file-key {
+  align-self: flex-start;
+  font-size: 10px;
+  text-decoration: none;
+  color: var(--fg-3);
+}
+
+.path-unconfirmed .path-file-key:hover {
+  color: var(--fg);
+}
+
+.path-unconfirmed-hint {
+  font-size: 11px;
+}
+
+.path-claim.is-unconfirmed {
+  opacity: 0.55;
+  border-style: dashed;
+  cursor: help;
+}
+
+.path-basis-unconfirmed {
+  background: var(--fg-3);
+}
+
+.path-claim.is-conflict .path-basis-unconfirmed {
+  background: #ffb79d;
 }
 
 .path-drop {

@@ -10,10 +10,11 @@ import NextMoves from "@/components/path/NextMoves";
 import PathMap, { KIND_COLOR, KIND_LABEL, edgeKey } from "@/components/path/PathMap";
 import Precedents from "@/components/path/Precedents";
 import Realities from "@/components/path/Realities";
-import { YOU_ID, type CompanyCandidate, type ContextDoc, type Decision, type Highway, type InvestorKind, type NetworkData, type SimulateResponse, type Upload } from "@/components/path/types";
+import { YOU_ID, type CompanyCandidate, type ContextResult, type Decision, type Highway, type InvestorKind, type NetworkData, type SimulateResponse, type Upload } from "@/components/path/types";
 import { loadReplay } from "@/lib/data";
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { mergeProfile } from "@/lib/mergeProfile";
+import { correctCompanyName } from "@/lib/nameFix";
 import { getMyCompanies, getMyCompaniesServer, saveMyCompany, subscribeMyCompanies, type SavedCompany } from "@/lib/myCompanies";
 import { fmtUsd } from "@/lib/sim/util";
 import { parseVision } from "@/lib/sim/vision";
@@ -85,7 +86,7 @@ export default function PathPage() {
   const [network, setNetwork] = useState<NetworkData>(EMPTY_NET);
   const [networkError, setNetworkError] = useState<string | undefined>();
   const [result, setResult] = useState<SimulateResponse | undefined>();
-  const [context, setContext] = useState<{ doc: ContextDoc; markdown: string } | undefined>();
+  const [context, setContext] = useState<ContextResult | undefined>();
   const [contextError, setContextError] = useState<string | undefined>();
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [error, setError] = useState<string | undefined>();
@@ -149,10 +150,15 @@ export default function PathPage() {
     const typed = pitchText.trim();
     return typed ? mergeProfile(q1.profile, fallbackExtract(typed)) : q1.profile;
   }, [q1.profile, pitchText]);
-  const visionSpoken = q2.tokens.map((t) => t.text).join(" ").trim();
-  const vision = visionText.trim() || visionSpoken;
-  const pitchSpoken = q1.tokens.map((t) => t.text).join(" ").trim();
-  const pitch = [pitchText.trim(), pitchSpoken].filter(Boolean).join(" ");
+  // Speech hears the company name by sound ("Kala"); once the name is typed, the transcript and
+  // the text the engine reads both carry the founder's spelling.
+  const fixName = useCallback((t: string) => correctCompanyName(t, companyName.trim()), [companyName]);
+  const pitchTokens = useMemo(() => q1.tokens.map((t) => ({ ...t, text: fixName(t.text) })), [q1.tokens, fixName]);
+  const visionTokens = useMemo(() => q2.tokens.map((t) => ({ ...t, text: fixName(t.text) })), [q2.tokens, fixName]);
+  const visionSpoken = visionTokens.map((t) => t.text).join(" ").trim();
+  const vision = fixName(visionText.trim()) || visionSpoken;
+  const pitchSpoken = pitchTokens.map((t) => t.text).join(" ").trim();
+  const pitch = [fixName(pitchText.trim()), pitchSpoken].filter(Boolean).join(" ");
   const companyLabel = result?.start.companyName || candidate?.name || companyName.trim() || result?.founder?.company || profile.company || "You";
   const step: InterviewStep = !pitch ? (companyName.trim() ? "pitch" : "company") : !vision ? "vision" : "ready";
 
@@ -344,7 +350,7 @@ export default function PathPage() {
           saved={saved}
           onLoadSaved={loadSaved}
           onNewCompany={reset}
-          pitchTokens={q1.tokens}
+          pitchTokens={pitchTokens}
           pitchText={pitchText}
           onPitchText={setPitchText}
           pitchRead={pitch ? pitchRead(profile) : undefined}
@@ -352,7 +358,7 @@ export default function PathPage() {
           onMic={q1.toggleMic}
           onReplay={q1.replay}
           replaying={q1.replaying}
-          visionTokens={q2.tokens}
+          visionTokens={visionTokens}
           visionText={visionText}
           onVisionText={setVisionText}
           visionMicState={mic(q2.micOn)}
@@ -408,7 +414,7 @@ export default function PathPage() {
             {phase === "results" && result && (
               <aside className="path-rail">
                 {context ? (
-                  <CompanyFile doc={context.doc} markdown={context.markdown} onAddContext={(u) => void addContext(u)} />
+                  <CompanyFile doc={context.doc} markdown={context.markdown} verification={context.verification} onAddContext={(u) => void addContext(u)} />
                 ) : (
                   <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
                     <header className="path-section-head">
