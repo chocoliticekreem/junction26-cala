@@ -590,9 +590,12 @@ export function topPaths(outs: RunOutcome[], k = 5): SimPath[] {
     if (g) g.count++;
     else groups.set(sig, { first: o, count: 1 });
   }
-  return [...groups.values()]
-    .sort((a, b) => b.count - a.count)
-    .slice(0, k)
+  const ranked = [...groups.values()].sort((a, b) => b.count - a.count);
+  // The most common paths are usually stalls; the commonest ones that reach the vision are kept too,
+  // so a branch can always show the full route to the vision on the map.
+  const top = ranked.slice(0, k);
+  const reached = ranked.filter((g) => g.first.reached && !top.includes(g)).slice(0, 2);
+  return [...top, ...reached]
     .map(({ first, count }) => ({
       steps: first.steps,
       reachedVision: first.reached,
