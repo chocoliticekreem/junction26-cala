@@ -153,3 +153,20 @@ describe("watch feed", () => {
     ]);
   });
 });
+
+describe("precedent never cites the founder's own company", () => {
+  it("skips rounds of excluded companies", async () => {
+    const { choosePrecedent } = await import("@/lib/context/actions");
+    const inv = { id: "lsvp", calaId: "lsvp", name: "Lightspeed", kind: "fund", statedThesis: { text: "", sectors: {}, stages: {}, sources: [] }, deals: [], revealed: { S: {}, G: {}, chequeBand: [0, 0], activity: 0, dealCount24m: 0 }, contradiction: 0, thinHistory: true, partners: [], doors: [] } as never;
+    const cohort = {
+      companies: { own: { id: "own", name: "Cala", sector: "AI infrastructure" }, other: { id: "other", name: "Zenzap", sector: "AI infrastructure" } },
+      rounds: {
+        r1: { id: "r1", companyId: "own", stage: "seed", label: "Seed", date: "2026-05-11", participants: [{ investorId: "lsvp", name: "Lightspeed", isLead: true }], sources: [] },
+        r2: { id: "r2", companyId: "other", stage: "seed", label: "Seed", date: "2025-03-01", participants: [{ investorId: "lsvp", name: "Lightspeed", isLead: false }], sources: [] },
+      },
+      investors: {},
+    } as never;
+    expect(choosePrecedent(inv, cohort, "AI infrastructure" as never, "seed", ["own"])?.company).toBe("Zenzap");
+    expect(choosePrecedent(inv, cohort, "AI infrastructure" as never, "seed")?.company).toBe("Cala");
+  });
+});

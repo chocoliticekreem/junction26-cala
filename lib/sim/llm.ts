@@ -56,7 +56,7 @@ export async function narrate(nodes: DecisionNode[], model: SimModel): Promise<s
       tool: NARRATE_TOOL,
       maxTokens: 300,
       strict: true,
-      timeoutMs: 4000,
+      timeoutMs: 10000,
       maxRetries: 0,
     })) as { lines?: unknown } | null;
     const lines = Array.isArray(out?.lines) ? out.lines.filter((l): l is string => typeof l === "string").slice(0, 3) : [];

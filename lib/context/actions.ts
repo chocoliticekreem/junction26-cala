@@ -45,10 +45,14 @@ export function choosePrecedent(
   cohort: CohortLite | null,
   sector: Sector | undefined,
   stage: Stage | undefined,
+  excludeCompanyIds: string[] = [],
 ): Precedent | undefined {
   const cands: Candidate[] = [];
+  const exclude = new Set(excludeCompanyIds);
   if (cohort) {
     for (const r of Object.values(cohort.rounds)) {
+      // The founder's own company is never a precedent for pitching to its own investors.
+      if (exclude.has(r.companyId)) continue;
       const p = r.participants.find(
         (x) => x.investorId === inv.calaId || cohort.investors[x.investorId]?.investorsJsonId === inv.id,
       );
@@ -298,7 +302,8 @@ export async function buildAction(
   inv: Investor,
   deps: { cohort: CohortLite | null; cala: CalaClient | null; drafter?: Drafter },
 ): Promise<InvestorAction> {
-  const precedent = choosePrecedent(inv, deps.cohort, doc.company.sector, doc.company.stage);
+  const own = [doc.id, ...(doc.calaIds ?? [])];
+  const precedent = choosePrecedent(inv, deps.cohort, doc.company.sector, doc.company.stage, own);
   const events = deps.cala ? await investorEvents(deps.cala, inv.calaId) : undefined;
   const emailDraft = await draftEmail(emailFacts(doc, inv, precedent), deps.drafter);
   const p = inv.partners[0];
