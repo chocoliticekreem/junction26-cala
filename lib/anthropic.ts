@@ -22,6 +22,7 @@ export async function haikuTool(opts: {
   maxTokens: number;
   strict?: boolean;
   timeoutMs?: number;
+  maxRetries?: number;
 }): Promise<unknown | null> {
   const c = getAnthropic();
   if (!c) return null;
@@ -41,7 +42,7 @@ export async function haikuTool(opts: {
       ],
       tool_choice: { type: "tool", name: opts.tool.name },
     },
-    { timeout: opts.timeoutMs ?? 30_000 },
+    { timeout: opts.timeoutMs ?? 30_000, ...(opts.maxRetries !== undefined ? { maxRetries: opts.maxRetries } : {}) },
   );
   const block = res.content.find((b) => b.type === "tool_use");
   return block && block.type === "tool_use" ? block.input : null;

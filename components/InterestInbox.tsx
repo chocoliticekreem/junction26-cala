@@ -5,6 +5,7 @@ import type { Deal, FounderProfile, Interest, Investor } from "@/lib/types";
 import { SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import { errorMessage, loadInvestors, rankFounders } from "@/lib/engine";
 import { countedDeals } from "@/lib/revealed";
+import { DATA_AS_OF } from "@/lib/data";
 import { useInterestStore, useLiveProfile } from "@/lib/interestStore";
 import { VerificationChecklist } from "@/components/VerificationChecklist";
 import { ChatThread } from "@/components/ChatThread";
@@ -21,7 +22,7 @@ export function InboxBadge({ founderId, onClick, className = "" }: InboxBadgePro
   const { store, identity } = useInterestStore();
   const fid = founderId ?? identity.founderId;
   const count = store.interests.filter((i) => i.founderId === fid && i.state === "interested").length;
-  const total = store.interests.filter((i) => i.founderId === fid && i.state !== "declined" && i.state !== "expired").length;
+  const total = store.interests.filter((i) => i.founderId === fid && i.state !== "declined" && i.state !== "expired" && i.state !== "withdrawn").length;
   const prev = useRef(count);
   const [pulseKey, setPulseKey] = useState(0);
   useEffect(() => {
@@ -75,7 +76,7 @@ function topSector(f: FounderProfile): Sector | undefined {
 export function evidenceLine(
   inv: Investor,
   f: FounderProfile,
-  now: Date = new Date(),
+  now: Date = DATA_AS_OF,
 ): { line: string; deals: Deal[] } {
   const sector = topSector(f);
   const recent = countedDeals(inv.deals, now).map((c) => c.deal);
@@ -104,7 +105,7 @@ export function InterestInbox({ founderId, founder, open, onClose }: InterestInb
   const byId = useMemo(() => new Map(investors.map((i) => [i.id, i])), [investors]);
 
   const requests = store.interests
-    .filter((i) => i.founderId === fid && i.state !== "expired")
+    .filter((i) => i.founderId === fid && i.state !== "expired" && i.state !== "withdrawn")
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
   const active = requests.filter((i) => i.state !== "declined");
   const declined = requests.filter((i) => i.state === "declined");

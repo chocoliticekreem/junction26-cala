@@ -44,7 +44,7 @@ Adapted from SPEC 7.1 to what the app shows. Record at 1440 px wide, founder win
 
 | Time | Screen | Voiceover / action |
 |---|---|---|
-| 0:00-0:10 | Founder view loads: the investor points sit dim before any pitch | "193 investors in London. Ranked by what they did, not what they say." |
+| 0:00-0:10 | Founder view loads: the investor points sit dim before any pitch | "193 investors active in London. Ranked by what they did, not what they say." |
 | 0:10-0:20 | Press `R` (or the Replay button). Transcript starts streaming on the right | Pitch begins: "Hi, I'm Amara, founder of Helixa Bio, a London startup." |
 | 0:20-0:50 | Words stream. On "therapeutics" the biotech chip appears and the biotech investors move inward. On "pre-seed" the stage chip appears | Silent. The motion carries it |
 | 0:50-1:05 | Graph settles. Top 10 cards on the right: Zinc, 4BIO Capital, Syncona at the top | "Ten matches. Every one backed by real deals." |
@@ -98,9 +98,9 @@ From SPEC 7.2.
 | 0:30-1:40 | Live: a teammate pitches into the mic, or a judge gives a one-line idea. The graph reacts. If the mic or Wi-Fi fails, press `R` | "Watch the biotech investors move when she says therapeutics." |
 | 1:40-2:10 | Click the top match, show evidence edges and sources. Show London Business Angels' contradiction (#9 in the replay). Show the door | "Ranked by what they did. Nine of London Business Angels' last ten deals were pre-seed, not seed or Series A." |
 | 2:10-2:40 | Investor window: Zinc room suggestion, then Medicxi, Interested, accept, verify | "A VC told us the value is the room." |
-| 2:40-3:00 | Back to the founder window | "Revealed thesis needs typed, sourced deal data. 2,636 deals, 193 investors, all from Cala." |
+| 2:40-3:00 | Back to the founder window | "Revealed thesis needs typed, sourced deal data. 2,632 deals, 193 investors, all from Cala." |
 
-Facts to have ready for questions, from `data/investors.json`: 2,636 deals, 68% with at least one URL source, 133 investors with a Cala-linked partner, 12 with a contradiction badge, 32 flagged thin history. See `docs/SUBMISSION.md` for the full table and for the honesty notes (approximate dates, mocked chat and email checks).
+Facts to have ready for questions, from `data/investors.json`: 2,632 deals, 68% with at least one URL source, 133 investors with a Cala-linked partner, 12 with a contradiction badge, 32 flagged thin history. See `docs/SUBMISSION.md` for the full table and for the honesty notes (approximate dates, mocked chat and email checks).
 
 If a judge pitches a non-biotech idea, the room suggestion will not appear for the investors above. That is expected: only the biotech cluster passes the threshold with the seeded pool.
 

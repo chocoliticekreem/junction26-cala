@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { Source, Stage } from "./types";
+import type { Deal, Source, Stage } from "./types";
 
 export const CALA_BASE = "https://api.cala.ai";
 
@@ -403,6 +403,43 @@ export function companyKey(name: string): string {
     .replace(LEGAL, " ")
     .replace(/\b(technologies|technology|labs|ai|global|holdings)\b/g, " ")
     .replace(/[^a-z0-9]+/g, "");
+}
+
+export const DUPLICATE_DEAL_DAYS = 60;
+
+const hasUrl = (d: Deal) => d.sources.some((s) => !!s.url);
+const rank = (d: Deal) => [d.round !== "unknown", hasUrl(d), !!d.amount].map(Number);
+
+// a is kept over b when it has a known round, then a URL source, then an amount.
+function better(a: Deal, b: Deal): boolean {
+  const ra = rank(a);
+  const rb = rank(b);
+  for (let i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return ra[i] > rb[i];
+  return true;
+}
+
+function sameDeal(a: Deal, b: Deal): boolean {
+  if (!a.date || !b.date || companyKey(a.company) !== companyKey(b.company)) return false;
+  // Two different known rounds a few weeks apart can both be real (a seed then a quick Series A).
+  if (a.round !== "unknown" && b.round !== "unknown" && a.round !== b.round) return false;
+  return Math.abs(Date.parse(a.date) - Date.parse(b.date)) <= DUPLICATE_DEAL_DAYS * 86_400_000;
+}
+
+// One investor's deal list can carry the same round twice (one copy with round "unknown", a day
+// apart), because the query rows are deduped on company + round. Keeps the better copy, fills its
+// blanks from the other and merges the sources.
+export function dedupeDeals(deals: Deal[]): Deal[] {
+  const kept: Deal[] = [];
+  for (const d of deals) {
+    const i = kept.findIndex((k) => sameDeal(k, d));
+    if (i < 0) {
+      kept.push(d);
+      continue;
+    }
+    const [win, lose] = better(kept[i], d) ? [kept[i], d] : [d, kept[i]];
+    kept[i] = { ...lose, ...win, sources: dedupeSources([...win.sources, ...lose.sources], 4) };
+  }
+  return kept;
 }
 
 export function slugify(name: string): string {

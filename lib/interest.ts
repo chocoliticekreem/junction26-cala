@@ -37,6 +37,23 @@ export function emptyStore(): InterestStore {
   return { interests: [], messages: [], seats: [], verifications: [] };
 }
 
+const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
+const strings = (o: Record<string, unknown>, keys: string[]) => keys.every((k) => typeof o[k] === "string");
+const arrayOf = (v: unknown, ok: (o: Record<string, unknown>) => boolean) =>
+  Array.isArray(v) && v.every((x) => isObj(x) && ok(x));
+
+// localStorage is user-editable and survives schema changes; anything that is not this shape is
+// dropped rather than crashing the page.
+export function isInterestStore(v: unknown): v is InterestStore {
+  return (
+    isObj(v) &&
+    arrayOf(v.interests, (i) => strings(i, ["id", "investorId", "founderId", "state", "createdAt", "updatedAt"])) &&
+    arrayOf(v.messages, (m) => strings(m, ["interestId", "from", "text", "at"])) &&
+    arrayOf(v.seats, (s) => strings(s, ["roomId", "founderId", "state", "at"])) &&
+    arrayOf(v.verifications, (x) => strings(x, ["subjectId", "side"]) && arrayOf(x.checks, (c) => typeof c.passed === "boolean"))
+  );
+}
+
 export function interestId(investorId: string, founderId: string): string {
   return `int_${investorId}_${founderId}`;
 }
@@ -113,6 +130,16 @@ export function declineInterest(s: InterestStore, interestId: string, now: Date)
   if (interest.state !== "interested" && interest.state !== "pending_verification")
     return fail(`cannot_decline_from_${interest.state}`);
   return ok(replaceInterest(store, { ...interest, state: "declined", updatedAt: now.toISOString() }));
+}
+
+// The investor takes back an unanswered request, which frees its slot under the cap at once
+// instead of waiting out the 14-day expiry. The pair can be asked again later.
+export function withdrawInterest(s: InterestStore, interestId: string, now: Date): Result {
+  const { store, interest } = findLive(s, interestId, now);
+  if (!interest) return fail("not_found");
+  if (interest.state === "expired") return fail("expired");
+  if (interest.state !== "interested") return fail(`cannot_withdraw_from_${interest.state}`);
+  return ok(replaceInterest(store, { ...interest, state: "withdrawn", updatedAt: now.toISOString() }));
 }
 
 export function recheckVerification(s: InterestStore, interestId: string, now: Date): Result {

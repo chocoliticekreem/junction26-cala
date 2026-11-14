@@ -10,7 +10,7 @@ Say your pitch out loud, and watch London's investors sort themselves around you
 
 ## What it does
 
-- **Founder, live ranking.** Speak a pitch (or press `R` to replay a recorded one). Claude Haiku extracts sector, stage, raise, traction and team signals from the transcript every few seconds. A force graph of 193 London investors reorders around the founder as the profile fills in.
+- **Founder, live ranking.** Speak a pitch (or press `R` to replay a recorded one). Claude Haiku extracts sector, stage, raise, traction and team signals from the transcript every few seconds. A force graph of 193 investors active in London reorders around the founder as the profile fills in.
 - **Founder, evidence.** Each of the top 10 matches shows a score out of 100, a one-line reason, and the portfolio deals behind it with round, date and source link. Selecting an investor draws evidence edges to those companies.
 - **Founder, honesty and doors.** Where a fund's stated thesis disagrees with its recent deals, a contradiction badge says so with counted deals. Each investor lists the easiest door in: a warm-intro path through its Cala-linked partners, or a request to be considered for a room.
 - **Investor, founder feed.** Pick an investor at `/investor`. The same engine runs in reverse and ranks the founder pool (40 seeded profiles plus the live pitch) against that investor's revealed thesis, with group, sort and filter. When 12 or more matched founders share a sector, it suggests a themed room.
@@ -67,12 +67,12 @@ Computed with a short Python script over the committed file.
 |---|---|
 | Investors | 193 (148 funds, 17 accelerators, 14 CVCs, 14 angel networks) |
 | Fixture records | 0 |
-| Deals | 2,636, between 2024-01-10 and 2026-11-12 |
-| Deals with a date | 2,626 (99.6%) |
-| Deals with a parsed USD amount | 2,133 (80.9%) |
-| Deals with a known round type | 2,162 (82.0%) |
-| Deals with at least one URL source | 1,795 (68.1%) |
-| Deals with a Cala company ID | 1,869 (70.9%) |
+| Deals | 2,632 (4 duplicate rounds merged), between 2024-01-10 and 2026-11-12 |
+| Deals with a date | 2,622 (99.6%) |
+| Deals with a parsed USD amount | 2,132 (81.0%) |
+| Deals with a known round type | 2,162 (82.1%) |
+| Deals with at least one URL source | 1,792 (68.1%) |
+| Deals with a Cala company ID | 1,865 (70.9%) |
 | Deals classified sector `other` | 107 (4.1%) |
 | Investors with 3+ dated deals in 24 months | 161 |
 | Investors flagged thin history | 32 |

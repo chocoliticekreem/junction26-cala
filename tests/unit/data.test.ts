@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  defaultInvestor,
   loadDebriefs,
   loadFounders,
   loadInvestors,
@@ -25,6 +26,19 @@ describe("loaders", () => {
 
   it("reports fixtures only when loaded investors carry the flag", () => {
     expect(usingFixtures()).toBe(loadInvestors().some((i) => i.fixture === true));
+  });
+
+  it("defaults the investor view to a London investor with partners on record", () => {
+    const real = loadInvestors();
+    const pick = defaultInvestor(real);
+    expect(pick?.partners.length).toBeGreaterThan(0);
+    expect(pick?.description).toMatch(/london/i);
+    expect(pick).toBe(real.find((i) => i.partners.length > 0 && /london/i.test(i.description ?? "")));
+    const bare = { ...real[0], partners: [], description: "Menlo Park" };
+    const remote = { ...real[1], partners: [{ calaId: "p", name: "P" }], description: "Paris" };
+    expect(defaultInvestor([bare, remote])).toBe(remote);
+    expect(defaultInvestor([bare])).toBe(bare);
+    expect(defaultInvestor([])).toBeUndefined();
   });
 
   it("ships no invented quotes", () => {

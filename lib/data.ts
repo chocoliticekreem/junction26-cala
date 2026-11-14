@@ -14,9 +14,21 @@ import type {
   ReplayEvent,
 } from "@/lib/types";
 
+// The build time of data/investors.json (the --now passed to scripts/refinalize.ts). Stored
+// revealed vectors and contradiction lines count deals in the 24-month window ending here, so every
+// count the UI shows uses the same date instead of the viewer's clock.
+export const DATA_AS_OF = new Date("2026-11-14T05:31:21.300Z");
+
 export function loadInvestors(): Investor[] {
   const real = investorsReal as unknown as Investor[];
   return real.length > 0 ? real : (investorsFixture as unknown as Investor[]);
+}
+
+// The investor view opens on someone a presenter can verify as (partners on record), preferring a
+// London-based fund. Array order keeps the pick deterministic.
+export function defaultInvestor(investors: Investor[]): Investor | undefined {
+  const withPartners = investors.filter((i) => i.partners.length > 0);
+  return withPartners.find((i) => /london/i.test(i.description ?? "")) ?? withPartners[0] ?? investors[0];
 }
 
 export function usingFixtures(): boolean {

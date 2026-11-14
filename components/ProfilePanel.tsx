@@ -50,10 +50,10 @@ function cachedFetch(key: string, load: () => Promise<Fetched<CalaPayload>>): Pr
   return p;
 }
 
-function useCala(key: string, load: () => Promise<Fetched<CalaPayload>>): Fetched<CalaPayload> | undefined {
+function useCala(key: string | null, load: () => Promise<Fetched<CalaPayload>>): Fetched<CalaPayload> | undefined {
   const [result, setResult] = useState<{ key: string; r: Fetched<CalaPayload> } | null>(null);
   useEffect(() => {
-    if (settled.has(key)) return;
+    if (!key || settled.has(key)) return;
     let live = true;
     cachedFetch(key, load).then((r) => {
       if (live) setResult({ key, r });
@@ -64,6 +64,7 @@ function useCala(key: string, load: () => Promise<Fetched<CalaPayload>>): Fetche
     // load is rebuilt each render from the same key; the key alone identifies the request.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+  if (!key) return undefined;
   return settled.get(key) ?? (result?.key === key ? result.r : undefined);
 }
 
@@ -95,7 +96,8 @@ function Bars({ title, stated, revealed, labelOf, colorOf }: { title: string; st
 }
 
 export default function ProfilePanel({ investor, match, onClose }: ProfilePanelProps) {
-  const entity = useCala(`entity:${investor.calaId}`, () =>
+  // An empty calaId means no correct Cala entity was found for this investor; skip the fetch.
+  const entity = useCala(investor.calaId ? `entity:${investor.calaId}` : null, () =>
     getJson(`/api/cala/entity/${encodeURIComponent(investor.calaId)}`),
   );
   const search = useCala(`search:${investor.id}`, () =>
@@ -221,7 +223,7 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
             </span>
           </div>
         )}
-        {search && !search.ok && entity && !entity.ok && (
+        {search && !search.ok && (!investor.calaId || (entity && !entity.ok)) && (
           <p className="muted">Live Cala data unavailable ({search.detail}). Showing cached deals above.</p>
         )}
         {search && !search.ok && entity?.ok && <p className="muted">Live Cala summary unavailable ({search.detail}).</p>}

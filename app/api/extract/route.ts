@@ -60,6 +60,7 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
+  if (!body || typeof body !== "object") return Response.json({ error: "invalid_body" }, { status: 400 });
   const chunk = typeof body.chunk === "string" ? body.chunk.slice(-MAX_CHUNK) : "";
   if (!chunk.trim()) return respond(fallbackExtract(""), "fallback");
 
@@ -73,6 +74,9 @@ export async function POST(req: Request) {
       maxTokens: 200,
       strict: true,
       timeoutMs: 6000,
+      // A retry would hold the client's single in-flight slot past the latency budget; the
+      // keyword fallback answers instead.
+      maxRetries: 0,
     });
     const extraction = parseExtraction(input);
     if (extraction) return respond(extraction, "llm");

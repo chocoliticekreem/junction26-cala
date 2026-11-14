@@ -16,6 +16,7 @@ import { haikuTool, getAnthropic } from "../lib/anthropic";
 import {
   companyKey,
   createCalaClient,
+  dedupeDeals,
   dedupeSources,
   diskCache,
   entitySources,
@@ -430,13 +431,13 @@ function buildDeals(r: RawInvestor, sectorCache: Record<string, Sector>): Deal[]
     // Same company and round listed twice: keep the more precise date.
     if (!prev || (prev.approx && !approximate) || (!prev.date && date)) byKey.set(dk, deal);
   }
-  return [...byKey.values()]
-    .map((d) => {
-      const { approx, ...deal } = d;
-      void approx;
-      return deal;
-    })
-    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+  const deals = [...byKey.values()].map((d) => {
+    const { approx, ...deal } = d;
+    void approx;
+    return deal;
+  });
+  // The company+round key above misses a copy whose round came back "unknown".
+  return dedupeDeals(deals).sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 }
 
 function buildPartners(r: RawInvestor): Partner[] {

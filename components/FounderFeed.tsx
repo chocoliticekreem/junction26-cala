@@ -14,6 +14,7 @@ export type FounderFeedProps = {
   interestByFounder: Map<string, InterestState>;
   capHit: boolean;
   onInterested: (founderId: string) => void;
+  onWithdraw: (founderId: string) => void;
   groupBy: OrbitGroupBy;
   selectedId?: string;
   onSelect: (founderId?: string) => void;
@@ -44,7 +45,7 @@ export function Seg<T extends string>({ value, onChange, options }: { value: T; 
   );
 }
 
-export function FounderFeed({ founders, matches, interestByFounder, capHit, onInterested, groupBy, selectedId, onSelect }: FounderFeedProps) {
+export function FounderFeed({ founders, matches, interestByFounder, capHit, onInterested, onWithdraw, groupBy, selectedId, onSelect }: FounderFeedProps) {
   const [traction, setTraction] = useState<Traction>("all");
 
   const byId = useMemo(() => new Map(founders.map((f) => [f.id, f])), [founders]);
@@ -116,6 +117,7 @@ export function FounderFeed({ founders, matches, interestByFounder, capHit, onIn
                   interestState={interestByFounder.get(f.id) ?? null}
                   capHit={capHit}
                   onInterested={() => onInterested(f.id)}
+                  onWithdraw={() => onWithdraw(f.id)}
                   selected={f.id === selectedId}
                   onSelect={() => onSelect(f.id === selectedId ? undefined : f.id)}
                 />
