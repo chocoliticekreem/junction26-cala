@@ -28,8 +28,19 @@ function revealedFor(cohort: Cohort, investorId: string): Revealed | undefined {
 
 function mock(name: string, asOf: string): SpotterResult & { mock: true } {
   return {
-    investor: { id: "mock:investor", name, kind: "fund", chips: ["Mock data (E2E_MOCK=1)"], rounds: 0, companies: 0, leadShare: 0, lowConfidence: true },
-    picks: [1, 2, 3].map((rank) => ({
+    investor: {
+      id: "mock:investor",
+      name,
+      kind: "fund",
+      chips: ["Mock data (E2E_MOCK=1)"],
+      rounds: 0,
+      companies: 0,
+      leadShare: 0,
+      sectorDist: { fintech: 0.6, "applied AI/vertical SaaS": 0.4 },
+      stageDist: { seed: 0.7, "series-a": 0.3 },
+      lowConfidence: true,
+    },
+    picks: [1, 2, 3, 4, 5].map((rank) => ({
       rank,
       company: {
         id: `mock:co${rank}`,
@@ -42,7 +53,10 @@ function mock(name: string, asOf: string): SpotterResult & { mock: true } {
       },
       scores: { combined: 0.5 / rank, fit: 0.8, shape: 0.4 / rank, shapeBase: 0.1, shapeLift: 4 / rank, pUnicorn: 0.2 / rank, pRaiseNext: 0.6, medianMonthsToNextRound: 14, pOnPath: 0.3 / rank, pLeadNext: 0.1 },
       line: "Mock precedent line",
-      precedents: { unicorns: [], stalled: [] },
+      precedents: {
+        unicorns: [{ companyId: "mock:u1", name: "Mock Unicorn", outcome: "unicorn", distance: 0.5, similarity: 0.5, steps: "Pre-seed → Seed +6 mo", sharedLeads: [] }],
+        stalled: [{ companyId: "mock:s1", name: "Mock Stalled", outcome: "stalled", distance: 0.7, similarity: 0.3, steps: "Pre-seed → Seed +12 mo", sharedLeads: [] }],
+      },
       sample: { referenceSize: 0, unicornsInReference: 0, depth: 2, runs: 0, transitionsBehind: 0 },
       lowConfidence: true,
       actions: { sharedCoInvestors: [] },

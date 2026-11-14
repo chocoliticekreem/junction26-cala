@@ -163,7 +163,7 @@ describe("POST /api/spotter", () => {
     const b = await (await call({ investorName: "Seedcamp" })).json();
     expect(a).toEqual(b);
     expect(a.mock).toBe(true);
-    expect(a.picks).toHaveLength(3);
+    expect(a.picks).toHaveLength(5);
   });
 });
 
