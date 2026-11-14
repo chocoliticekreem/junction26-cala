@@ -91,7 +91,7 @@ export async function POST(req: Request) {
   const fixture = usingCohortFixture();
 
   const t0 = performance.now();
-  const key = `${ROUTE_PREFIX}spotter:v1:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
+  const key = `${ROUTE_PREFIX}spotter:v2:${cohort.asOf}:${asOf ?? "-"}:${(investorId || `name:${investorName}`).toLowerCase()}`;
   const shared = await routeCacheGet(key);
   if (shared) return Response.json({ ...shared, cached: true, source: "valkey", latencyMs: Math.round(performance.now() - t0) });
 
