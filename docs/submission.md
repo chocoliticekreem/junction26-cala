@@ -15,17 +15,17 @@ Room
 ### Punchline (max 200)
 
 ```
-Founders raising in London: speak your pitch and 193 investors rank themselves by the deals they actually backed, sourced from Cala, not by the thesis on their website.
+Founders raising in London: speak your pitch and 193 investors active in London rank themselves by the deals they actually backed, sourced from Cala, not by the thesis on their website.
 ```
 
-168 characters.
+185 characters.
 
 ### Description (Markdown, max 5000)
 
-4250 characters, measured on the text between the fences and nothing else.
+4261 characters, measured on the text between the fences and nothing else.
 
 ````markdown
-**Room is a live investor-matching tool for founders raising a pre-seed or seed round in London.** You say your pitch out loud. Within seconds, 193 London investors rearrange around you, ranked by what they actually invested in, not what their website says. It is built to be used at Slush next week.
+**Room is a live investor-matching tool for founders raising a pre-seed or seed round in London.** You say your pitch out loud. Within seconds, 193 investors active in London rearrange around you, ranked by what they actually invested in, not what their website says. It is built to be used at Slush next week.
 
 ## The problem
 
@@ -99,7 +99,7 @@ Say aloud or caption that chat and email checks are local to the browser (format
 
 Scored on Innovation, Impact and Implementation. Flow follows the "3-minute live pitch flow" in `docs/DEMO.md`. If the mic or Wi-Fi fails, press `R`.
 
-- **Innovation.** Investor tools show what a fund says. Room ranks investors by what they did: it extracts sector, stage and raise from a spoken pitch every few seconds and re-ranks 193 London investors against their dated deals. A contradiction badge shows where a fund's stated thesis disagrees with its deals (London Business Angels: says seed and Series A, 9 of its last 10 deals were pre-seed). The score has no fund-size or brand term.
+- **Innovation.** Investor tools show what a fund says. Room ranks investors by what they did: it extracts sector, stage and raise from a spoken pitch every few seconds and re-ranks 193 investors active in London against their dated deals. A contradiction badge shows where a fund's stated thesis disagrees with its deals (London Business Angels: says seed and Series A, 9 of its last 10 deals were pre-seed). The score has no fund-size or brand term.
 - **Impact.** The user is a founder raising pre-seed or seed in London, often first-time, who cold-emails investors who were never a fit. On the investor side the need is fewer wrong-fit first meetings. Room gives the 10 best-fit investors, the evidence behind each and an easiest door in. Do not quote a statistic: the problem-section numbers are placeholders until quotes are collected at Junction. Quote only what is in `data/quotes.json`.
 - **Implementation.** Works end to end on real data: 193 investors and 2,632 deals from Cala, no fixture records. Ranking is a pure function in the browser. Every match traces to Cala entity IDs and rounds, and Cala is required: without it there is no investor universe, evidence or verification. Be upfront about what is local: seeded founders and debriefs, localStorage interest and chat, format-only email checks, mock room pages. Roadmap: accounts and hosted Postgres, real debriefs, scheduled re-ingest.
 
