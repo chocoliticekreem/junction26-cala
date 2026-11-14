@@ -16,15 +16,21 @@
 - 06:33 Adversarial reviewer (opus, given only SPEC.md + code): 4 P1 (all = Cala track still in flight: API routes, ingest, ElevenLabs, live verification), 11 P2, 12 P3.
 - 06:58 PR #11 Review fixes (logic): honest debrief wording, founder-aware easiest doors, off-taxonomy 'other', live-loop race + LLM-overrides-fallback per chunk, R before hydration, 24-month inbox evidence, scheme-less website crash, human error copy, periodic expiry, lazy seed room, ElevenLabs realtime STT client.
 - 07:08 PR #12 Review fixes (UI): spec alpha 0.3 reheat + idle drift, sector names visible (no colour-only signal), valid match-row HTML, hover evidence edges, #N badges for unplaceable labels, fixture banner on all pages.
+- 07:45 PR #14 Real Cala data: 193 London investors (148 funds, 17 accelerators, 14 CVCs, 14 angel networks), 2,636 sourced deals since May 2024, 133 with Cala-linked partners, real contradiction lines from counted deals; live Cala entity/search routes, Haiku strict-tool extraction route, ElevenLabs token route. ~725 Cala calls. Fixture banner gone. E2E repointed to real investors (4BIO Capital, Medicxi): 14/14.
 - E2E: founder-smoke, replay (biotech chip + biotech investor in top 3), interest two-window flow, room seat flow: 4/4 green.
 
 ## In progress
-- Track C (opus): Cala client, introspection, real ingest of London investors (running: ~540 Cala calls, rate-limited with backoff), `/api/extract`, `/api/cala/*`, `/api/stt-token`.
+- DoD proofs agent (opus): offline replay e2e, live-loop timing e2e (3 pitches < 2.5 s, mic path minus the mic), contradiction visible on screen, stronger contradiction lines, UI copy audit for invented stats, top-10 evidence check over 6 pitches, slow Cala search loading state, per-signal team triggers.
 
 ## Next
-- Merge Track C, rebuild `data/investors.json` from real Cala data, check the fixture banner disappears and contradictions are real.
-- Mic test (manual in Chrome; headless has no Web Speech), adversarial review, fixes.
+- Second adversarial review on the full product (with real data), fix findings.
+- Manual for Anson: one live-mic run in Chrome (headless has no Web Speech).
+- Submission notes (Cala usage, video script).
 - Polish backlog 12.7 after DoD.
+
+## Findings
+- Real London pre-seed biotech money is thin: for the biotech pre-seed demo pitch the top scores on real data are 56-62 (Zinc, 4BIO Capital, Syncona) versus 80+ on fixtures, so the biotech halo (>= 5 investors inside 0.35 R_max) rarely forms. Not tuned away: it is the honest picture and a talking point.
+- Cala: funds link to portfolio via INVESTED_IN (no round/date/amount) and to rounds via PARTICIPATES_IN_CORPORATE_EVENT; useful deal rows came from one dot-notation knowledge query per investor. Uncached query/search takes 40-70 s; 3-4 concurrent is the safe rate.
 
 ## Decisions
 - Disabled Next 16 `cacheComponents`/`partialPrefetching` from the scaffold: app is client-heavy, avoids Suspense-boundary build errors.
@@ -40,4 +46,4 @@
 - Live-extract queue appends pending text instead of dropping it (deviation from 5.6 'newest replaces queued'; no words lost, still one request in flight).
 
 ## Elapsed
-- 07:10 — 1 h 38 min. (Earlier entry said 06:50 at what was really 06:32; corrected above.)
+- 07:50 — 2 h 18 min.
