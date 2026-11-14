@@ -20,12 +20,12 @@ import {
 import { SECTOR_COLOR, SECTOR_SHORT, SECTORS, STAGE_LABELS, type Sector } from "@/lib/taxonomy";
 import type { Deal, Match } from "@/lib/types";
 import type { GraphProps } from "./Graph";
+import { monoFont, uiFont } from "./canvasFont";
+import { useSimHeat } from "./simHeat";
 
 const ACCENT = "#FF6A3D";
 const FOUNDER_ID = "__founder__";
 const TOP_N = 10;
-const UI_FONT = "Inter, system-ui, sans-serif";
-const MONO_FONT = '"JetBrains Mono", ui-monospace, monospace';
 const BASE_PX = 12;
 const EDGE_MS = 500;
 const EDGE_STAGGER_MS = 70;
@@ -36,7 +36,20 @@ type Props = GraphProps & { width: number; height: number; reducedMotion: boolea
 
 type Satellite = { deal: Deal; x: number; y: number };
 type Rect = { x: number; y: number; w: number; h: number };
-type Label = { n: GraphNode; name: string; score: string; nameW: number; scoreW: number; rect: Rect; ax: number; ay: number; leader: boolean };
+type Label = {
+  n: GraphNode;
+  name: string;
+  score: string;
+  sector: string;
+  nameW: number;
+  scoreW: number;
+  sectorW: number;
+  rect: Rect;
+  ax: number;
+  ay: number;
+  leader: boolean;
+  compact: boolean;
+};
 
 // Eight directions, near ring first then far ring (far placements get a leader line).
 const DIRS = [0, Math.PI, -Math.PI / 4, Math.PI / 4, (-3 * Math.PI) / 4, (3 * Math.PI) / 4, -Math.PI / 2, Math.PI / 2];
@@ -90,8 +103,9 @@ function glowSprite(color: string, alpha: number): HTMLCanvasElement {
 }
 
 // Widths are measured once at BASE_PX and scaled; canvas text width is linear in font size.
-const NAME_FONT = `600 ${BASE_PX}px ${UI_FONT}`;
-const SCORE_FONT = `500 ${BASE_PX}px ${MONO_FONT}`;
+const nameFont = () => `600 ${BASE_PX}px ${uiFont()}`;
+const scoreFont = () => `500 ${BASE_PX}px ${monoFont()}`;
+const sectorFont = () => `500 ${BASE_PX}px ${uiFont()}`;
 const widthCache = new Map<string, number>();
 function textWidth(ctx: CanvasRenderingContext2D, font: string, text: string): number {
   const key = `${font}|${text}`;
@@ -153,6 +167,9 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
   const satBuf = useRef<Satellite[]>([]);
   const labelBuf = useRef<Label[]>([]);
   const obstacles = useRef<Rect[]>([]);
+  const { reheat, tick: heatTick, scaled } = useSimHeat(reducedMotion);
+  const UI = uiFont();
+  const MONO = monoFont();
 
   // Nodes are created once per investor set and then mutated in place so d3 keeps
   // positions and velocities across score updates.
@@ -210,10 +227,10 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     forcesReady.current = true;
     g.d3Force("link", null);
     g.d3Force("center", null);
-    g.d3Force("charge", forceManyBody().strength(-9).distanceMax(90));
+    g.d3Force("charge", scaled(forceManyBody().strength(-9).distanceMax(90)));
     g.d3Force("collide", forceCollide<NodeObject<GraphNode>>().radius((n) => (n.kind === "founder" ? 46 : n.rank < TOP_N ? 30 : 11)).strength(0.9));
-    g.d3Force("radial", forceRadialTarget());
-    g.d3Force("angular", forceAngularTarget());
+    g.d3Force("radial", scaled(forceRadialTarget()));
+    g.d3Force("angular", scaled(forceAngularTarget()));
   });
 
   const fitRadius = useMemo(() => {
@@ -224,8 +241,8 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
 
   useEffect(() => {
     applyMatches(byId, matches, reducedMotion);
-    fg.current?.d3ReheatSimulation();
-  }, [matches, byId, reducedMotion]);
+    reheat();
+  }, [matches, byId, reducedMotion, reheat]);
 
   // The cloud fills the canvas: zoom tracks the outermost investor, and the centre shifts
   // right when a panel covers the left edge.
@@ -263,8 +280,8 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     const right = sat.x >= originX;
     const round = sat.deal.round === "unknown" ? "Round n/a" : STAGE_LABELS[sat.deal.round];
     const line2 = `${round} ${dealYear(sat.deal)}`.trim();
-    const w1 = textWidth(ctx, NAME_FONT, sat.deal.company) * (11 / BASE_PX) * inv;
-    const w2 = textWidth(ctx, SCORE_FONT, line2) * (10 / BASE_PX) * inv;
+    const w1 = textWidth(ctx, nameFont(), sat.deal.company) * (11 / BASE_PX) * inv;
+    const w2 = textWidth(ctx, scoreFont(), line2) * (10 / BASE_PX) * inv;
     const w = Math.max(w1, w2) + 12 * inv;
     const h = 30 * inv;
     const dx = right ? 7 * inv : -7 * inv;
@@ -279,7 +296,7 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
   const paintPre = (ctx: CanvasRenderingContext2D, scale: number) => {
     // Sector ring: dim labels on the outer rim for every sector that has investors.
     ctx.save();
-    ctx.font = `500 ${11 / scale}px ${UI_FONT}`;
+    ctx.font = `500 ${11 / scale}px ${UI}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const rr = ringR.current;
@@ -324,7 +341,7 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       ctx.arc(h.cx, h.cy, h.r, 0, Math.PI * 2);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.font = `600 ${12 / scale}px ${UI_FONT}`;
+      ctx.font = `600 ${12 / scale}px ${UI}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
       ctx.fillStyle = withAlpha(color, 0.95 * a);
@@ -344,7 +361,24 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       ctx.stroke();
     }
 
-    // Evidence edges for the selected investor (F7): draw on along the line, staggered.
+    // Evidence edges (F7): a lighter static preview on hover, full staggered draw-on on select.
+    const hid = hovered.current;
+    if (hid && hid !== selectedId) {
+      const n = byId.get(hid);
+      const m = matchById.get(hid);
+      if (n && m && n.x !== undefined && n.y !== undefined) {
+        ctx.strokeStyle = withAlpha(ACCENT, 0.35);
+        ctx.lineWidth = 0.9 / scale;
+        ctx.setLineDash([3 / scale, 4 / scale]);
+        for (const sat of satellitesFor(n, m)) {
+          ctx.beginPath();
+          ctx.moveTo(n.x, n.y);
+          ctx.lineTo(sat.x, sat.y);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+      }
+    }
     if (selectedId) {
       const n = byId.get(selectedId);
       const m = matchById.get(selectedId);
@@ -378,7 +412,7 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       ctx.beginPath();
       ctx.arc(x, y, 9, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = `600 ${12 / scale}px ${UI_FONT}`;
+      ctx.font = `600 ${12 / scale}px ${UI}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "rgb(255 246 234 / 0.85)";
@@ -410,8 +444,9 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     }
   };
 
-  // Greedy label placement: selected first, then by rank; 8 directions on two rings; a
-  // label that fits nowhere is dropped (the list still shows it). Selected always shows.
+  // Greedy label placement: selected first, then by rank; 8 directions on three rings. Each
+  // label tries name + score + sector, then name + score, then a compact "#rank" badge, so
+  // every top-10 node keeps a mark (spec 5.5). Selected always shows the full label.
   const placeLabels = (ctx: CanvasRenderingContext2D, scale: number): Label[] => {
     const labels = labelBuf.current;
     labels.length = 0;
@@ -423,7 +458,7 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
     const gap = 6 * inv;
     const dotR = 7 * inv;
 
-    const founderW = textWidth(ctx, NAME_FONT, founder.name) * inv;
+    const founderW = textWidth(ctx, nameFont(), founder.name) * inv;
     obs.push({ x: -Math.max(founderW / 2, 12) - 4 * inv, y: -12 * inv, w: Math.max(founderW, 24) + 8 * inv, h: 12 * inv + 16 * inv + 6 + lineH });
     for (const n of topNodes) {
       if (n.x === undefined || n.y === undefined) continue;
@@ -435,23 +470,19 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
         for (const sat of satellitesFor(n, matchById.get(selectedId))) obs.push(satelliteBox(ctx, sat, n.x, inv).rect);
       }
     }
+    for (const h of haloCache.current.halos) {
+      if ((haloAlpha.current.get(h.sector) ?? 0) <= 0) continue;
+      const w = textWidth(ctx, nameFont(), `${SECTOR_SHORT[h.sector]} · ${h.count} investors`) * inv;
+      obs.push({ x: h.cx - w / 2, y: h.cy - h.r - 6 * inv - lineH, w, h: lineH });
+    }
 
-    const order = selectedId && topSet.has(selectedId) ? [byId.get(selectedId)!, ...topNodes.filter((n) => n.id !== selectedId)] : topNodes;
-    for (const n of order) {
-      if (n.x === undefined || n.y === undefined) continue;
-      const name = displayName(n.name);
-      const score = String(Math.round(n.score));
-      const nameW = textWidth(ctx, NAME_FONT, name) * inv;
-      const scoreW = textWidth(ctx, SCORE_FONT, score) * inv;
-      const w = nameW + gap + scoreW + padX * 2;
-      const h = lineH;
-      let placed: Label | null = null;
-      for (let ri = 0; ri < RINGS.length && !placed; ri++) {
+    const tryPlace = (n: GraphNode, w: number, h: number): { rect: Rect; ax: number; ay: number; leader: boolean } | null => {
+      for (let ri = 0; ri < RINGS.length; ri++) {
         const d = RINGS[ri] * inv;
         for (let di = 0; di < DIRS.length; di++) {
           const a = DIRS[di];
-          const ax = n.x + Math.cos(a) * d;
-          const ay = n.y + Math.sin(a) * d;
+          const ax = n.x! + Math.cos(a) * d;
+          const ay = n.y! + Math.sin(a) * d;
           const cx = Math.cos(a);
           const rx = cx > 0.1 ? ax : cx < -0.1 ? ax - w : ax - w / 2;
           const sy = Math.sin(a);
@@ -464,17 +495,43 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
               break;
             }
           }
-          if (free) {
-            placed = { n, name, score, nameW, scoreW, rect, ax, ay, leader: ri > 0 };
-            break;
-          }
+          if (free) return { rect, ax, ay, leader: ri > 0 };
         }
       }
-      if (!placed && n.id === selectedId) {
+      return null;
+    };
+
+    const order = selectedId && topSet.has(selectedId) ? [byId.get(selectedId)!, ...topNodes.filter((n) => n.id !== selectedId)] : topNodes;
+    for (const n of order) {
+      if (n.x === undefined || n.y === undefined) continue;
+      const selected = n.id === selectedId;
+      const name = displayName(n.name);
+      const score = String(Math.round(n.score));
+      const sector = SECTOR_SHORT[n.sector];
+      const nameW = textWidth(ctx, nameFont(), name) * inv;
+      const scoreW = textWidth(ctx, scoreFont(), score) * inv;
+      const sectorW = textWidth(ctx, sectorFont(), sector) * (11 / BASE_PX) * inv;
+      const h = lineH;
+      const fullW = nameW + gap + scoreW + gap + sectorW + padX * 2;
+      const shortW = nameW + gap + scoreW + padX * 2;
+      const base = { n, name, score, sector, nameW, scoreW, sectorW, compact: false };
+      let placed: Label | null = null;
+      const full = tryPlace(n, fullW, h);
+      if (full) placed = { ...base, ...full };
+      else if (selected) {
         const ax = n.x + RINGS[0] * inv;
-        placed = { n, name, score, nameW, scoreW, rect: { x: ax, y: n.y - h / 2, w, h }, ax, ay: n.y, leader: false };
+        placed = { ...base, rect: { x: ax, y: n.y - h / 2, w: fullW, h }, ax, ay: n.y, leader: false };
+      } else {
+        const short = tryPlace(n, shortW, h);
+        if (short) placed = { ...base, sector: "", sectorW: 0, ...short };
+        else {
+          const badge = `#${n.rank + 1}`;
+          const badgeW = textWidth(ctx, scoreFont(), badge) * (10 / BASE_PX) * inv + padX * 2;
+          const badgeH = 13 * inv;
+          const spot = tryPlace(n, badgeW, badgeH) ?? { rect: { x: n.x + dotR + 2 * inv, y: n.y - badgeH / 2, w: badgeW, h: badgeH }, ax: n.x, ay: n.y, leader: false };
+          placed = { ...base, score: badge, sector: "", sectorW: 0, compact: true, ...spot };
+        }
       }
-      if (!placed) continue;
       labels.push(placed);
       obs.push(placed.rect);
     }
@@ -509,6 +566,14 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
           ctx.lineTo(ex, ey);
           ctx.stroke();
         }
+        const cy = l.rect.y + l.rect.h / 2;
+        if (l.compact) {
+          pill(ctx, l.rect.x, l.rect.y, l.rect.w, l.rect.h, 0.82 * a);
+          ctx.font = `500 ${10 * inv}px ${MONO}`;
+          ctx.fillStyle = rank < 3 ? withAlpha(ACCENT, a) : `rgb(255 255 255 / ${0.7 * a})`;
+          ctx.fillText(l.score, l.rect.x + padX, cy);
+          continue;
+        }
         pill(ctx, l.rect.x, l.rect.y, l.rect.w, l.rect.h, 0.82 * a);
         if (selected) {
           ctx.strokeStyle = withAlpha(ACCENT, 0.7);
@@ -517,23 +582,27 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
           ctx.roundRect(l.rect.x, l.rect.y, l.rect.w, l.rect.h, l.rect.h / 2);
           ctx.stroke();
         }
-        const cy = l.rect.y + l.rect.h / 2;
-        ctx.font = `600 ${fontPx}px ${UI_FONT}`;
+        ctx.font = `600 ${fontPx}px ${UI}`;
         ctx.fillStyle = selected ? ACCENT : rank < 3 ? `rgb(255 255 255 / ${0.96 * a})` : `rgb(255 255 255 / ${0.8 * a})`;
         ctx.fillText(l.name, l.rect.x + padX, cy);
-        ctx.font = `500 ${fontPx}px ${MONO_FONT}`;
+        ctx.font = `500 ${fontPx}px ${MONO}`;
         ctx.fillStyle = selected ? ACCENT : rank < 3 ? withAlpha(ACCENT, a) : `rgb(255 255 255 / ${0.55 * a})`;
         ctx.fillText(l.score, l.rect.x + padX + l.nameW + gap, cy);
+        if (l.sector) {
+          ctx.font = `500 ${11 * inv}px ${UI}`;
+          ctx.fillStyle = withAlpha(color, 0.9 * a);
+          ctx.fillText(l.sector, l.rect.x + padX + l.nameW + gap + l.scoreW + gap, cy);
+        }
       }
     }
 
-    // Hover label for anything without a placed label.
+    // Hover label for anything without a full placed label.
     const hid = hovered.current;
-    if (hid && (idle || !topSet.has(hid) || !labelBuf.current.some((l) => l.n.id === hid))) {
+    if (hid && (idle || !topSet.has(hid) || !labelBuf.current.some((l) => l.n.id === hid && !l.compact))) {
       const n = byId.get(hid);
       if (n && n.x !== undefined && n.y !== undefined) {
         const text = `${displayName(n.name)}  ·  ${SECTOR_SHORT[n.sector]}  ·  ${Math.round(n.score)}`;
-        ctx.font = `500 ${fontPx}px ${UI_FONT}`;
+        ctx.font = `500 ${fontPx}px ${UI}`;
         const w = ctx.measureText(text).width;
         pill(ctx, n.x + 4 * inv, n.y - lineH / 2, w + 10 * inv, lineH, 0.85);
         ctx.textAlign = "left";
@@ -543,32 +612,41 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       }
     }
 
-    // Evidence satellites: company name, round and year, landing as each edge finishes.
+    // Evidence satellites: company name, round and year. Hover preview is static and faint;
+    // the selected investor's land as each edge finishes drawing.
+    const drawSatellites = (n: GraphNode, m: Match, progressAt: (i: number) => number, strength: number) => {
+      const sats = satellitesFor(n, m);
+      for (let i = 0; i < sats.length; i++) {
+        const sat = sats[i];
+        const progress = progressAt(i) * strength;
+        if (progress <= 0) continue;
+        ctx.fillStyle = withAlpha(ACCENT, progress);
+        ctx.beginPath();
+        ctx.arc(sat.x, sat.y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        const { right, line2, dx, rect } = satelliteBox(ctx, sat, n.x!, inv);
+        pill(ctx, rect.x, rect.y, rect.w, rect.h, 0.85 * progress);
+        ctx.textAlign = right ? "left" : "right";
+        ctx.textBaseline = "middle";
+        ctx.font = `600 ${11 * inv}px ${UI}`;
+        ctx.fillStyle = `rgb(255 255 255 / ${0.95 * progress})`;
+        ctx.fillText(sat.deal.company, sat.x + dx, sat.y - 6 * inv);
+        ctx.font = `500 ${10 * inv}px ${MONO}`;
+        ctx.fillStyle = withAlpha(ACCENT, 0.95 * progress);
+        ctx.fillText(line2, sat.x + dx, sat.y + 7 * inv);
+      }
+    };
+    if (hid && hid !== selectedId) {
+      const n = byId.get(hid);
+      const m = matchById.get(hid);
+      if (n && m && n.x !== undefined && n.y !== undefined) drawSatellites(n, m, () => 1, 0.55);
+    }
     if (selectedId) {
       const n = byId.get(selectedId);
       const m = matchById.get(selectedId);
       if (n && m && n.x !== undefined && n.y !== undefined) {
         const since = performance.now() - selectedAt.current;
-        const sats = satellitesFor(n, m);
-        for (let i = 0; i < sats.length; i++) {
-          const sat = sats[i];
-          const progress = reducedMotion ? 1 : easeOutCubic((since - i * EDGE_STAGGER_MS - EDGE_MS * 0.55) / 380);
-          if (progress <= 0) continue;
-          ctx.fillStyle = withAlpha(ACCENT, progress);
-          ctx.beginPath();
-          ctx.arc(sat.x, sat.y, 3.2, 0, Math.PI * 2);
-          ctx.fill();
-          const { right, line2, dx, rect } = satelliteBox(ctx, sat, n.x, inv);
-          pill(ctx, rect.x, rect.y, rect.w, rect.h, 0.85 * progress);
-          ctx.textAlign = right ? "left" : "right";
-          ctx.textBaseline = "middle";
-          ctx.font = `600 ${11 * inv}px ${UI_FONT}`;
-          ctx.fillStyle = `rgb(255 255 255 / ${0.95 * progress})`;
-          ctx.fillText(sat.deal.company, sat.x + dx, sat.y - 6 * inv);
-          ctx.font = `500 ${10 * inv}px ${MONO_FONT}`;
-          ctx.fillStyle = withAlpha(ACCENT, 0.95 * progress);
-          ctx.fillText(line2, sat.x + dx, sat.y + 7 * inv);
-        }
+        drawSatellites(n, m, (i) => (reducedMotion ? 1 : easeOutCubic((since - i * EDGE_STAGGER_MS - EDGE_MS * 0.55) / 380)), 1);
       }
     }
   };
@@ -608,6 +686,8 @@ export default function GraphCanvas({ investors, matches, selectedId, onSelect, 
       d3VelocityDecay={0.4}
       d3AlphaMin={0}
       cooldownTicks={Infinity}
+      cooldownTime={Infinity}
+      onEngineTick={heatTick}
       warmupTicks={reducedMotion ? 0 : 40}
     />
   );

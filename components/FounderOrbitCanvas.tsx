@@ -15,10 +15,10 @@ import {
 } from "@/lib/orbit";
 import { SECTOR_COLOR, SECTOR_SHORT, SECTORS } from "@/lib/taxonomy";
 import type { FounderOrbitProps } from "./FounderOrbit";
+import { monoFont, uiFont } from "./canvasFont";
+import { useSimHeat } from "./simHeat";
 
 const ACCENT = "#FF6A3D";
-const UI_FONT = "Inter, system-ui, sans-serif";
-const MONO_FONT = '"JetBrains Mono", ui-monospace, monospace';
 
 type Props = FounderOrbitProps & { width: number; height: number; reducedMotion: boolean };
 
@@ -52,6 +52,9 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
   const haloAlpha = useRef(new Map<string, number>());
   const forcesReady = useRef(false);
   const ringR = useRef(R_MAX);
+  const { reheat, tick: heatTick, scaled } = useSimHeat(reducedMotion);
+  const UI = uiFont();
+  const MONO = monoFont();
 
   const nodes = useMemo<OrbitNode[]>(() => {
     const list = makeOrbitNodes(investor.name, founders, liveId);
@@ -84,10 +87,10 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
     forcesReady.current = true;
     g.d3Force("link", null);
     g.d3Force("center", null);
-    g.d3Force("charge", forceManyBody().strength(-10).distanceMax(90));
+    g.d3Force("charge", scaled(forceManyBody().strength(-10).distanceMax(90)));
     g.d3Force("collide", forceCollide<NodeObject<OrbitNode>>().radius((n) => (n.kind === "founder" ? 50 : n.rank < ORBIT_TOP_N || n.live ? 30 : 13)).strength(0.9));
-    g.d3Force("radial", forceRadialTarget());
-    g.d3Force("angular", forceAngularTarget(0.045));
+    g.d3Force("radial", scaled(forceRadialTarget()));
+    g.d3Force("angular", scaled(forceAngularTarget(0.045)));
   });
 
   const fitRadius = useMemo(() => {
@@ -98,8 +101,8 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
 
   useEffect(() => {
     applyFounderMatches(byId, matches, groupBy, reducedMotion);
-    fg.current?.d3ReheatSimulation();
-  }, [matches, byId, groupBy, reducedMotion]);
+    reheat();
+  }, [matches, byId, groupBy, reducedMotion, reheat]);
 
   useEffect(() => {
     const g = fg.current;
@@ -114,7 +117,7 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
   const paintPre = (ctx: CanvasRenderingContext2D, scale: number) => {
     const rr = ringR.current;
     ctx.save();
-    ctx.font = `500 ${11 / scale}px ${UI_FONT}`;
+    ctx.font = `500 ${11 / scale}px ${UI}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     if (groupBy !== "stage" && width >= 560) {
@@ -166,14 +169,14 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
         ctx.arc(0, 0, outer, a0, a1);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.font = `600 ${12 / scale}px ${UI_FONT}`;
+        ctx.font = `600 ${12 / scale}px ${UI}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = `rgb(255 255 255 / ${0.8 * a})`;
         const lx = Math.cos(arc.angle) * (outer + 18 / scale);
         const ly = Math.sin(arc.angle) * (outer + 18 / scale);
         ctx.fillText(arc.label, lx, ly - 7 / scale);
-        ctx.font = `500 ${11 / scale}px ${MONO_FONT}`;
+        ctx.font = `500 ${11 / scale}px ${MONO}`;
         ctx.fillStyle = `rgb(255 255 255 / ${0.45 * a})`;
         ctx.fillText(`${arc.count} founders`, lx, ly + 8 / scale);
       }
@@ -200,7 +203,7 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
         ctx.setLineDash([4 / scale, 6 / scale]);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.font = `600 ${12 / scale}px ${UI_FONT}`;
+        ctx.font = `600 ${12 / scale}px ${UI}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
         ctx.fillStyle = withAlpha(color, 0.95 * a);
@@ -246,12 +249,12 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
       ctx.beginPath();
       ctx.arc(x, y, 10 + 6 / scale, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.font = `600 ${12 / scale}px ${UI_FONT}`;
+      ctx.font = `600 ${12 / scale}px ${UI}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "rgb(255 246 234 / 0.9)";
       ctx.fillText(node.name, x, y + 18 / scale + 6);
-      ctx.font = `500 ${10 / scale}px ${UI_FONT}`;
+      ctx.font = `500 ${10 / scale}px ${UI}`;
       ctx.fillStyle = "rgb(255 246 234 / 0.5)";
       ctx.fillText("you", x, y + 33 / scale + 6);
       return;
@@ -289,19 +292,26 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
   };
 
   const paintPost = (ctx: CanvasRenderingContext2D, scale: number) => {
-    type Label = { n: OrbitNode; x: number; y: number; w: number; h: number; text: string; score: string };
+    type Label = { n: OrbitNode; x: number; y: number; w: number; h: number; text: string; score: string; sector: string; nameW: number; scoreW: number };
     const labels: Label[] = [];
     const fontPx = 12 / scale;
+    const sectorPx = 11 / scale;
     const lineH = 15 / scale;
-    ctx.font = `600 ${fontPx}px ${UI_FONT}`;
     for (const id of topIds) {
       const n = byId.get(id);
       if (!n || n.x === undefined || n.y === undefined) continue;
       const text = n.name;
       const score = String(n.score);
-      const w = ctx.measureText(text).width + ctx.measureText(score).width + 12 / scale;
+      const sector = SECTOR_SHORT[n.sector];
+      ctx.font = `600 ${fontPx}px ${UI}`;
+      const nameW = ctx.measureText(text).width;
+      ctx.font = `500 ${fontPx}px ${MONO}`;
+      const scoreW = ctx.measureText(score).width;
+      ctx.font = `500 ${sectorPx}px ${UI}`;
+      const sectorW = ctx.measureText(sector).width;
+      const w = nameW + scoreW + sectorW + 12 / scale;
       const right = n.x >= 0;
-      labels.push({ n, x: n.x + (right ? 9 / scale : -9 / scale), y: n.y, w, h: lineH, text, score });
+      labels.push({ n, x: n.x + (right ? 9 / scale : -9 / scale), y: n.y, w, h: lineH, text, score, sector, nameW, scoreW });
     }
     labels.sort((a, b) => a.y - b.y);
     for (let i = 0; i < labels.length; i++) {
@@ -322,18 +332,21 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
       const rank = l.n.rank;
       const a = hot ? 1 : dim;
       const nameColor = hot ? ACCENT : rank < 3 ? `rgb(255 255 255 / ${0.96 * a})` : `rgb(255 255 255 / ${0.8 * a})`;
-      ctx.textAlign = right ? "left" : "right";
-      ctx.font = `600 ${fontPx}px ${UI_FONT}`;
-      const nameW = ctx.measureText(l.text).width;
+      // Always reads name · score · sector left to right; left-side labels end at l.x.
+      const x0 = right ? l.x : l.x - l.w;
+      const gap = 6 / scale;
       const padX = 5 / scale;
-      const px0 = right ? l.x - padX : l.x - l.w - padX;
-      pill(ctx, px0, l.y - lineH / 2, l.w + padX * 2, lineH, 0.78 * a);
+      ctx.textAlign = "left";
+      pill(ctx, x0 - padX, l.y - lineH / 2, l.w + padX * 2, lineH, 0.78 * a);
+      ctx.font = `600 ${fontPx}px ${UI}`;
       ctx.fillStyle = nameColor;
-      ctx.fillText(l.text, l.x, l.y);
-      ctx.font = `500 ${fontPx}px ${MONO_FONT}`;
+      ctx.fillText(l.text, x0, l.y);
+      ctx.font = `500 ${fontPx}px ${MONO}`;
       ctx.fillStyle = hot ? ACCENT : rank < 3 ? withAlpha(ACCENT, a) : `rgb(255 255 255 / ${0.55 * a})`;
-      const sx = right ? l.x + nameW + 6 / scale : l.x - nameW - 6 / scale;
-      ctx.fillText(l.score, sx, l.y);
+      ctx.fillText(l.score, x0 + l.nameW + gap, l.y);
+      ctx.font = `500 ${sectorPx}px ${UI}`;
+      ctx.fillStyle = withAlpha(l.n.live ? ACCENT : SECTOR_COLOR[l.n.sector], 0.9 * a);
+      ctx.fillText(l.sector, x0 + l.nameW + gap + l.scoreW + gap, l.y);
     }
 
     const hid = hovered.current;
@@ -341,7 +354,7 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
       const n = byId.get(hid);
       if (n && n.x !== undefined && n.y !== undefined) {
         const text = `${n.name}  ·  ${SECTOR_SHORT[n.sector]}  ·  ${n.score}`;
-        ctx.font = `500 ${fontPx}px ${UI_FONT}`;
+        ctx.font = `500 ${fontPx}px ${UI}`;
         const w = ctx.measureText(text).width;
         pill(ctx, n.x + 4 / scale, n.y - lineH / 2, w + 10 / scale, lineH, 0.8);
         ctx.textAlign = "left";
@@ -387,6 +400,8 @@ export default function FounderOrbitCanvas({ investor, founders, matches, groupB
       d3VelocityDecay={0.4}
       d3AlphaMin={0}
       cooldownTicks={Infinity}
+      cooldownTime={Infinity}
+      onEngineTick={heatTick}
       warmupTicks={reducedMotion ? 0 : 40}
     />
   );
