@@ -46,6 +46,9 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("candidates")).toHaveCount(0);
 
   await page.getByTestId("pitch-text").fill("We are a seed stage B2B SaaS company building developer tools for investors, raising $5m.");
+  // Key-by-key typing keeps its spaces (merging spoken text once trimmed them away).
+  await page.getByTestId("pitch-text").pressSequentially(" Two founders.");
+  await expect(page.getByTestId("pitch-text")).toHaveValue(/raising \$5m\. Two founders\.$/);
   await expect(page.getByTestId("pitch-read")).toContainText("Seed");
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "vision");
   await page.getByTestId("vision-example").first().click();

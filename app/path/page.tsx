@@ -29,6 +29,12 @@ import { usePitch } from "@/lib/usePitch";
 const REPLAY = loadReplay();
 const EMPTY_NET: NetworkData = { nodes: [], edges: [] };
 const joinText = (parts: string[]) => parts.map((x) => x.trim()).filter(Boolean).join(" ");
+// Typed text is kept as typed (a trailing space is the next word starting); spoken text is appended.
+const appendSpoken = (typed: string, spoken: string) => {
+  const s = spoken.trim();
+  if (!s) return typed;
+  return typed && !/\s$/.test(typed) ? `${typed} ${s}` : `${typed}${s}`;
+};
 
 const subscribeNever = () => () => {};
 
@@ -193,11 +199,11 @@ export default function PathPage() {
   const pitchFinal = joinText(pitchTokens.filter((t) => t.final).map((t) => t.text));
   const pitchInterimTokens = pitchTokens.filter((t) => !t.final);
   const pitchPending = pitchFinal.startsWith(pitchAbsorbed) ? pitchFinal.slice(pitchAbsorbed.length) : pitchFinal;
-  const pitchBox = joinText([pitchText, pitchPending]);
+  const pitchBox = appendSpoken(pitchText, pitchPending);
   const visionFinal = joinText(visionTokens.filter((t) => t.final).map((t) => t.text));
   const visionInterimTokens = visionTokens.filter((t) => !t.final);
   const visionPending = visionFinal.startsWith(visionAbsorbed) ? visionFinal.slice(visionAbsorbed.length) : visionFinal;
-  const visionBox = joinText([visionText, visionPending]);
+  const visionBox = appendSpoken(visionText, visionPending);
   const onPitchText = (v: string) => {
     setPitchText(v);
     setPitchAbsorbed(pitchFinal);
