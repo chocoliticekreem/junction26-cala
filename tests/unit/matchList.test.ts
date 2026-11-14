@@ -39,4 +39,31 @@ describe("MatchList", () => {
     expect(html).not.toContain("71.4");
     expect(html).toContain('title="Cala · 2026-03-02"');
   });
+
+  it("marks led rounds, names the source rank with its URL, and shows event chips by event name", () => {
+    const atEvent = { ...saysPreSeedDoesSeriesA, events: [{ id: "e1", name: "Demo Day 2026", date: "2026-11-20" }] };
+    const m: Match = {
+      ...match("contra", 60),
+      evidence: [
+        {
+          company: "Ray",
+          round: "seed",
+          date: "2026-04-22",
+          sector: "biotech/therapeutics",
+          isLead: true,
+          sourceRank: "PRIMARY",
+          roundId: "r1",
+          sources: [{ name: "ray.com", url: "https://ray.example/pr" }, { name: "press", url: "https://press.example" }],
+        },
+      ],
+    };
+    const html = renderToStaticMarkup(createElement(MatchList, { matches: [m], investors: [atEvent], onSelect: () => {} }));
+    expect(html).toContain('href="https://ray.example/pr"');
+    expect(html).toContain('<b class="evidence-led">Led</b>');
+    expect(html).toContain('<span class="evidence-rank">Company</span>');
+    expect(html).toMatch(/data-testid="event-chip"[^>]*>Demo Day 2026</);
+    const plain = renderToStaticMarkup(createElement(MatchList, { matches: [match("contra", 60)], investors: [saysPreSeedDoesSeriesA], onSelect: () => {} }));
+    expect(plain).not.toContain("event-chip");
+    expect(plain).not.toContain("evidence-led");
+  });
 });

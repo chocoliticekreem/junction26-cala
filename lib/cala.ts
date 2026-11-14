@@ -9,7 +9,14 @@ import { VALKEY_PREFIX, valkeyDecr, valkeyGetJson, valkeyGetNumber, valkeyIncr, 
 
 export const CALA_BASE = "https://api.cala.ai";
 
-export type CalaRawSource = { name?: string; document?: unknown; date?: string; url?: string };
+export type CalaRawSource = {
+  name?: string;
+  document?: unknown;
+  date?: string;
+  url?: string;
+  date_precision?: string;
+  source_rank?: string;
+};
 
 export type CalaEntityMention = {
   id: string;

@@ -9,6 +9,11 @@
 - UI note: the panel shows the budget message as the live answer with a "mock" tag. A dedicated "paused" tag needs a `components/ProfilePanel.tsx` change (read `budgetExhausted` from the response).
 - Rate limit: bursts of fast calls (introspection, entity search) hit `429 rate_limit_exceeded` within ~15 requests; it cleared after about a minute. The client backs off up to 8 times (max 60 s per wait). If a run logs repeated 429s, re-run with `--concurrency 2`; it resumes from the checkpoint.
 
+- **14 Nov, branch `cala-graph-rounds`:** 300 successful Cala calls after the top-up (FundingRound graph, Slush participants, accelerator probe; breakdown in `docs/CALA.md`, "Run"). Subtract them from the balance estimate above and confirm in console.cala.ai.
+
+## Anthropic
+- **API usage limit reached (14 Nov, ~11:20 Helsinki):** Haiku calls return `400 You have reached your specified API usage limits. You will regain access on 2026-12-01`. Live pitch extraction (`/api/extract`) therefore falls back to the keyword extractor until the limit is raised in console.anthropic.com (Limits). `scripts/ingest-rounds.ts` left the few issuers it could not classify as sector `other` (listed in its log).
+
 ## Aiven for Valkey
 - Nothing blocking. `AIVEN_VALKEY_URI` is in `.env.local` and works: `npm run seed-valkey` loaded all 741 cached Cala responses (10.1 MB) into Valkey with 0 Cala calls.
 - `.env.example` still needs the line `AIVEN_VALKEY_URI=` (empty): the agent's file guard blocks editing env files, so add it by hand.

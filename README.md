@@ -33,9 +33,18 @@ npm run ingest -- --dry-run      # plan only, no calls
 npm run ingest -- --limit 5      # small real run
 npm run ingest                   # full run, checkpointed and resumable
 npm run ingest -- --build        # rebuild data/investors.json from the raw cache
+
+# Entity graph: FundingRound deals (is_lead, source_rank), then Cala Event participants
+npm run ingest-rounds -- --dry-run          # plan + measured cost estimate, no calls
+npm run ingest-rounds -- --event-investors --limit 0  # rounds of event participants named as investors
+npm run ingest-rounds -- --limit 15         # demo top-15 first, then by score
+npm run ingest-rounds -- --ids zinc,4bio-capital
+npm run ingest-rounds -- --merge            # checkpoint -> data/investors.json, no calls
+npm run ingest-events -- --event <id> [--event <id>]  # Cala Event participants -> investors' events
+npm run ingest-events -- --merge            # cached events -> data/investors.json (run after ingest-rounds)
 ```
 
-See `docs/CALA.md` for the endpoints, relationship names and caveats.
+`ingest-rounds` stops at `--budget` live call attempts in total across runs (default 426, counted in `data/raw/rounds/usage.json`; failed attempts count too, so on 14 Nov 340 counted for 300 successful calls) and paces requests 5 s apart. `ingest-events` shares that budget file. See `docs/CALA.md` for the endpoints, relationship names and caveats.
 
 ### Live Cala credits
 
@@ -63,6 +72,18 @@ npm run seed-valkey              # load data/cala-cache + the snapshot's panel r
 ```
 
 Seeding means a fresh deploy pointed at the same Valkey answers everything in the cache with zero Cala calls.
+
+## Investor side: the early spotter
+
+`POST /api/spotter { investorId | investorName, asOf? }` lists up to 20 companies on a unicorn-shaped path for one investor. Each investor gets a different list, because the list is built from that investor's own rounds in Cala. Code: `lib/sim/spotter.ts` and `lib/sim/spotter/*`.
+
+1. **Taste.** From the investor's rounds before `asOf`: sector and stage mix (a led round counts 1.5, a participation 1), lead share, the stage it usually enters at, round-size band (IQR), co-investors, and follow-on behaviour (re-up rate). If the investor is one of the 193 in `data/investors.json` and has fewer than 8 rounds in the cohort, its revealed vectors are blended in. This never happens in a backtest, because those vectors are present-day.
+2. **Candidates.** The company's first dated round falls within 36 months before `asOf`. The company is not already in the investor's portfolio, is not already a unicorn and is not closed. Its fit (0.6 × sector + 0.4 × next-stage, each relative to the investor's top one) is at least 0.3. If fewer than 40 companies pass, the best 40 by fit are used instead.
+3. **Unicorn shape.** A kNN (K = 12) compares the company's first 1–3 stage steps with the same number of steps at every cohort company whose outcome is known as of `asOf`: unicorn (valued at $1B or more) or stalled (no round for 24 months, or closed). It compares lead kinds, specific leads, months between rounds, round sizes, participants, investor overlap, and headcount growth when present. The score is the similarity-weighted unicorn share, shrunk toward the base rate. Each pick names its 2–3 nearest unicorns and its nearest stalled company.
+4. **Simulated futures.** 500 runs start from the last real round, using the founder simulator's rules (raise-or-stall rates, real gaps and step-ups, next lead drawn through co-investor ties). Each pick reports P(unicorn-shaped: Series B+ with $100M or more raised in 5 years), the median months to the next round, and P(this investor leads or joins one of the next two rounds).
+5. **Rank.** `fit^0.2 × shape^0.35 × P(unicorn)^0.3 × (0.05 + P(on path))^0.15`. Every component, sample size and `lowConfidence` flag is in the response.
+
+Responses are cached in Valkey per investor, `asOf` and cohort version. `E2E_MOCK=1` returns a fixed mock. A request takes about 85 ms on a synthetic 900-company cohort, including the cold index build. The backtest (`tests/unit/spotterBacktest.test.ts`) runs as soon as `data/cohort.json` exists. It ranks as of 2015 and 2016 and prints where later unicorns such as Tractable, Revolut and Wise landed.
 
 ## Deploy
 

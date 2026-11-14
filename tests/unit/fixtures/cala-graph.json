@@ -1,0 +1,787 @@
+{
+ "_note": "Recorded from Cala entity retrievals on 2026-11-14 (scripts/ingest-rounds.ts). Event participants: 7 of the 2989 on Slush 2026 (bc844d56-6ab4-452b-96bf-2661e86e592b).",
+ "rounds": [
+  {
+   "id": "8ba01c39-46e5-5098-837d-b0199ff5b29f",
+   "name": "Seed",
+   "entity_type": "FundingRound",
+   "description": null,
+   "properties": {
+    "name": {
+     "value": "Seed",
+     "sources": [
+      {
+       "name": "vcbeathealth.com",
+       "document": "https://www.vcbeathealth.com/article/12230",
+       "date": "2026-04-22",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "round_label": {
+     "value": "SEED",
+     "sources": [
+      {
+       "name": "vcbeathealth.com",
+       "document": "https://www.vcbeathealth.com/article/12230",
+       "date": "2026-04-22",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "transaction_value": {
+     "value": 6000000,
+     "sources": [
+      {
+       "name": "vcbeathealth.com",
+       "document": "https://www.vcbeathealth.com/article/12230",
+       "date": "2026-04-22",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "transaction_value_units": {
+     "value": "USD",
+     "sources": [
+      {
+       "name": "vcbeathealth.com",
+       "document": "https://www.vcbeathealth.com/article/12230",
+       "date": "2026-04-22",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "event_date": {
+     "value": "2022-01-01",
+     "sources": [
+      {
+       "name": "vcbeathealth.com",
+       "document": "https://www.vcbeathealth.com/article/12230",
+       "date": "2026-04-22",
+       "date_precision": "day"
+      }
+     ]
+    }
+   },
+   "relationships": {
+    "outgoing": {},
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": [
+      {
+       "id": "15910dad-535f-4e6d-82f6-a24e4e2b9308",
+       "name": "Ray Therapeutics, Inc.",
+       "entity_type": "Company",
+       "properties": {
+        "role": "ISSUER",
+        "sources": [
+         {
+          "name": "vcbeathealth.com",
+          "document": "https://www.vcbeathealth.com/article/12230",
+          "date": "2026-04-22",
+          "date_precision": "day"
+         }
+        ],
+        "id": "7de889c8-866e-546b-a61d-8ebf8c513b41"
+       }
+      },
+      {
+       "id": "30b28644-8080-4d4c-bd57-8b67b3f75a22",
+       "name": "4Bio Capital",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vcbeathealth.com",
+          "document": "https://www.vcbeathealth.com/article/12230",
+          "date": "2026-04-22",
+          "date_precision": "day"
+         }
+        ],
+        "is_lead": true,
+        "id": "f54b007a-0d2d-5084-90a6-f1dbaa1b123e"
+       }
+      }
+     ]
+    }
+   },
+   "numerical_observations": []
+  },
+  {
+   "id": "da4351e7-3990-5096-ba74-f61339826e1f",
+   "name": "Series A",
+   "entity_type": "FundingRound",
+   "description": null,
+   "properties": {
+    "name": {
+     "value": "Series A",
+     "sources": [
+      {
+       "name": "cellgenetherapyreview.com",
+       "document": "https://www.cellgenetherapyreview.com/3972-News/621867-Trogenix-raises-95-million-Series-A-to-drive-brain-cancer-gene-therapy/",
+       "date": "2025-10-08",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "round_label": {
+     "value": "SERIES_A",
+     "sources": [
+      {
+       "name": "cellgenetherapyreview.com",
+       "document": "https://www.cellgenetherapyreview.com/3972-News/621867-Trogenix-raises-95-million-Series-A-to-drive-brain-cancer-gene-therapy/",
+       "date": "2025-10-08",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "transaction_value": {
+     "value": 70000000,
+     "sources": [
+      {
+       "name": "cellgenetherapyreview.com",
+       "document": "https://www.cellgenetherapyreview.com/3972-News/621867-Trogenix-raises-95-million-Series-A-to-drive-brain-cancer-gene-therapy/",
+       "date": "2025-10-08",
+       "date_precision": "day"
+      },
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/10/edinburgh-based-biotech-trogenix-lands-e80-million-to-accelerate-curative-cancer-treatments/",
+       "date": "2025-10-06",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "transaction_value_units": {
+     "value": "GBP",
+     "sources": [
+      {
+       "name": "cellgenetherapyreview.com",
+       "document": "https://www.cellgenetherapyreview.com/3972-News/621867-Trogenix-raises-95-million-Series-A-to-drive-brain-cancer-gene-therapy/",
+       "date": "2025-10-08",
+       "date_precision": "day"
+      },
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/10/edinburgh-based-biotech-trogenix-lands-e80-million-to-accelerate-curative-cancer-treatments/",
+       "date": "2025-10-06",
+       "date_precision": "day"
+      }
+     ]
+    },
+    "announcement_date": {
+     "value": "2025-10-06",
+     "sources": [
+      {
+       "name": "vestbee.com",
+       "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+       "date": "2025-10-06",
+       "date_precision": "day"
+      },
+      {
+       "name": "eu-startups.com",
+       "document": "https://www.eu-startups.com/2025/10/edinburgh-based-biotech-trogenix-lands-e80-million-to-accelerate-curative-cancer-treatments/",
+       "date": "2025-10-06",
+       "date_precision": "day"
+      }
+     ]
+    }
+   },
+   "relationships": {
+    "outgoing": {},
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": [
+      {
+       "id": "0974156f-b65e-4c2f-89d8-2f4eed882f47",
+       "name": "IQ CAPITAL PARTNERS GP LIMITED",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "is_lead": true,
+        "id": "c7be7794-9c3a-545c-80cb-c3814c250780"
+       }
+      },
+      {
+       "id": "0e1e7c6f-f3e0-46e3-b01b-f495e29c270a",
+       "name": "CALCULUS CAPITAL LIMITED",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "839d4b97-b6f8-5f60-8167-2e2bfa0a9140"
+       }
+      },
+      {
+       "id": "1bf97f27-fbc3-4c11-95f9-afdfc07db563",
+       "name": "Brain Tumor Investment Fund",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "3e630525-cb59-5a04-aee8-ac7704272826"
+       }
+      },
+      {
+       "id": "2751fe36-b525-49fc-8985-3d98234d3b88",
+       "name": "Meltwind",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "5fa59dc9-0ca6-506a-b910-1c374b9935e0"
+       }
+      },
+      {
+       "id": "30b28644-8080-4d4c-bd57-8b67b3f75a22",
+       "name": "4Bio Capital",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "93ff44a1-1a0a-5719-bbed-749543a19328"
+       }
+      },
+      {
+       "id": "743e7e78-0e11-4735-a7ca-c15591434ac2",
+       "name": "Trogenix",
+       "entity_type": "Company",
+       "properties": {
+        "role": "ISSUER",
+        "sources": [
+         {
+          "name": "cellgenetherapyreview.com",
+          "document": "https://www.cellgenetherapyreview.com/3972-News/621867-Trogenix-raises-95-million-Series-A-to-drive-brain-cancer-gene-therapy/",
+          "date": "2025-10-08",
+          "date_precision": "day"
+         }
+        ],
+        "id": "d34a2b13-45de-547c-875c-1c8ca7dd74d2"
+       }
+      },
+      {
+       "id": "84b54d6d-0118-4515-9235-5af84131f4c0",
+       "name": "LongeVC",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "657c5fe1-957d-59c0-80ec-72964f384d0d"
+       }
+      },
+      {
+       "id": "e64693c2-f525-48f2-ba89-4109dd67e217",
+       "name": "ELI LILLY AND COMPANY",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "921c950c-50d0-556e-bf0d-9606230709a1"
+       }
+      },
+      {
+       "id": "f6d76e99-f5f8-4c9e-b59f-6d1e9967b7dc",
+       "name": "CANCER RESEARCH HORIZONS LIMITED",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "vestbee.com",
+          "document": "https://www.vestbee.com/insights/articles/trogenix-secures-95-m",
+          "date": "2025-10-06",
+          "date_precision": "day"
+         }
+        ],
+        "id": "ee31b957-72bc-55c7-8e40-16fa9f1ec0b7"
+       }
+      }
+     ]
+    }
+   },
+   "numerical_observations": []
+  },
+  {
+   "id": "8a55c00a-3ed2-5c7e-9278-268f87525f99",
+   "name": "Series B",
+   "entity_type": "FundingRound",
+   "description": null,
+   "properties": {
+    "name": {
+     "value": "Series B",
+     "sources": [
+      {
+       "name": "businesswire.com",
+       "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+       "date": "2026-04-21",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      }
+     ]
+    },
+    "round_label": {
+     "value": "SERIES_B",
+     "sources": [
+      {
+       "name": "businesswire.com",
+       "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+       "date": "2026-04-21",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      }
+     ]
+    },
+    "instrument": {
+     "value": "EQUITY",
+     "sources": [
+      {
+       "name": "businesswire.com",
+       "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+       "date": "2026-04-21",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      }
+     ]
+    },
+    "transaction_value": {
+     "value": 125000000,
+     "sources": [
+      {
+       "name": "businesswire.com",
+       "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+       "date": "2026-04-21",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "nordiclifescience.org",
+       "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+       "date": "2026-04-30",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "transaction_value_units": {
+     "value": "USD",
+     "sources": [
+      {
+       "name": "businesswire.com",
+       "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+       "date": "2026-04-21",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      },
+      {
+       "name": "nordiclifescience.org",
+       "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+       "date": "2026-04-30",
+       "date_precision": "day",
+       "source_rank": "PRESS"
+      }
+     ]
+    },
+    "announcement_date": {
+     "value": "2026-04-21",
+     "sources": [
+      {
+       "name": "businesswire.com",
+       "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+       "date": "2026-04-21",
+       "date_precision": "day",
+       "source_rank": "PRIMARY"
+      }
+     ]
+    }
+   },
+   "relationships": {
+    "outgoing": {},
+    "incoming": {
+     "PARTICIPATES_IN_FUNDING_ROUND": [
+      {
+       "id": "05ec2e1d-a2c4-44d0-8186-604ff80239a3",
+       "name": "PLATANUS INVESTMENT LLC",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "4aaa2926-bb6c-5290-825a-2276847feed3"
+       }
+      },
+      {
+       "id": "15910dad-535f-4e6d-82f6-a24e4e2b9308",
+       "name": "Ray Therapeutics, Inc.",
+       "entity_type": "Company",
+       "properties": {
+        "role": "ISSUER",
+        "sources": [
+         {
+          "name": "businesswire.com",
+          "document": "https://www.businesswire.com/news/home/20260421096801/en/Ray-Therapeutics-Announces-Upsized-and-Oversubscribed-$125-Million-Series-B-Financing-for-Vision-Restoration-Treatments",
+          "date": "2026-04-21",
+          "date_precision": "day",
+          "source_rank": "PRIMARY"
+         }
+        ],
+        "id": "2ffb974d-2d5d-518e-a529-9322c0a9bb43"
+       }
+      },
+      {
+       "id": "1ed6853c-3bde-41bb-aaee-aaeb279f4382",
+       "name": "Franklin Templeton",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "4e51b8d9-d5ff-5660-ad2c-6af02b2b9d56"
+       }
+      },
+      {
+       "id": "3020ff10-2b7c-4b11-80b7-e59855e132c5",
+       "name": "Invus Group, LLC",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "351270d7-bf2a-5018-8fd4-43b595b9b58d"
+       }
+      },
+      {
+       "id": "30b28644-8080-4d4c-bd57-8b67b3f75a22",
+       "name": "4Bio Capital",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "ce298a06-ce4c-59f1-8f8d-33ea92d56789"
+       }
+      },
+      {
+       "id": "459d9fdc-7af0-4bbb-964a-0c759e123df0",
+       "name": "Deerfield Management",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "235b4414-f9b1-54eb-a928-e4d056665c51"
+       }
+      },
+      {
+       "id": "5155c84b-767c-4c4e-a206-e23dbb0d46e3",
+       "name": "Norwest Venture Partners",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "bb50317e-97c1-550e-88f2-f247af95cd17"
+       }
+      },
+      {
+       "id": "5312ab06-6d81-415d-be97-c827011b3cd9",
+       "name": "Janus Henderson Investors",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "is_lead": true,
+        "id": "412d6b93-2066-5bd2-b651-426b8954ea26"
+       }
+      },
+      {
+       "id": "7a717d7b-b30e-4f2d-8d44-ccf06fbca20a",
+       "name": "Adage Capital Management",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "a5cd2828-74c2-540e-9714-d59806797155"
+       }
+      },
+      {
+       "id": "aac17666-bdb0-4c6f-89a1-eb4f9065f5ad",
+       "name": "MRL Ventures Fund LLC",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "df2eb229-b844-57c0-9d97-bb4a1064508c"
+       }
+      },
+      {
+       "id": "ce059fb2-4f32-5e49-9b91-b369505fcf60",
+       "name": "Marshall Wace Llp",
+       "entity_type": "Organization",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "6604cb28-90f1-52d0-9318-e38e7879f863"
+       }
+      },
+      {
+       "id": "fde0f70c-d370-4c71-919a-5e9f8a2233f9",
+       "name": "Novo Holdings A/S",
+       "entity_type": "Company",
+       "properties": {
+        "role": "INVESTOR",
+        "sources": [
+         {
+          "name": "nordiclifescience.org",
+          "document": "https://nordiclifescience.org/ray-therapeutics-raises-usd-125-million-novo-holdings-doubles-down-on-optogenetic-eye-gene-therapy/",
+          "date": "2026-04-30",
+          "date_precision": "day",
+          "source_rank": "PRESS"
+         }
+        ],
+        "id": "647b905c-a08b-51d7-9b82-fba90ecc8d40"
+       }
+      }
+     ]
+    }
+   },
+   "numerical_observations": []
+  }
+ ],
+ "eventParticipants": [
+  {
+   "id": "001eb587-ff78-5d7a-85bb-7c454cd0c176",
+   "name": "Humanpath",
+   "entity_type": "Company",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "f52f13d1-01b3-569c-942d-87c56196486e"
+   }
+  },
+  {
+   "id": "00200320-e131-52f9-885e-f147c80fcc9e",
+   "name": "ExoSphere by Exoft",
+   "entity_type": "Company",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "01e3f855-8d56-5efd-bb73-58c62b8bd2e0"
+   }
+  },
+  {
+   "id": "002fa088-723a-55ca-a047-15aa02cb731c",
+   "name": "Sonofit",
+   "entity_type": "Company",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "e92c0643-a3aa-5abb-9b44-89ec5903383f"
+   }
+  },
+  {
+   "id": "4913ac0d-48f8-5b34-af83-333213572d17",
+   "name": "Form",
+   "entity_type": "Company",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "468db0cb-73ef-51c8-b906-7e2f8c317e4d"
+   }
+  },
+  {
+   "id": "a2e00460-78f7-42c7-bb1b-8aaecce08f9f",
+   "name": "EWOR",
+   "entity_type": "Organization",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "1e0d3c9d-95a4-5a0d-871d-0cedaad57de0"
+   }
+  },
+  {
+   "id": "ae7530e4-556e-4547-ba15-88a12fbcdcb1",
+   "name": "Techstars",
+   "entity_type": "Organization",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "6d6e9b7a-63be-5e05-9ada-f3ac1127affd"
+   }
+  },
+  {
+   "id": "c934f7e3-6ee3-4983-b0e1-f7827df567f9",
+   "name": "Point Nine Capital",
+   "entity_type": "Organization",
+   "properties": {
+    "role": "ATTENDEE",
+    "sources": [
+     {
+      "name": "Slush",
+      "document": "https://slush.org/",
+      "date": "2026-11-14"
+     }
+    ],
+    "id": "882c1155-91b6-5a50-a6e4-b3f431ea180c"
+   }
+  }
+ ]
+}

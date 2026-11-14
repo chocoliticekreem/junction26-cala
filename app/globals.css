@@ -811,6 +811,23 @@ a.evidence:focus-visible {
   color: var(--fg);
 }
 
+.evidence-led,
+.evidence-rank {
+  margin-left: 5px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.evidence-led {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.evidence-rank {
+  color: var(--fg-3);
+}
+
 .match-score {
   font-size: 16px;
   font-weight: 500;

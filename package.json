@@ -14,6 +14,8 @@
     "make-fixtures": "tsx scripts/make-fixtures.ts",
     "introspect": "tsx scripts/introspect.ts",
     "ingest": "tsx scripts/ingest.ts",
+    "ingest-rounds": "tsx scripts/ingest-rounds.ts",
+    "ingest-events": "tsx scripts/ingest-events.ts",
     "build-replay": "tsx scripts/build-replay.ts",
     "prewarm": "tsx scripts/prewarm.ts",
     "build-snapshot": "tsx scripts/build-snapshot.ts",
