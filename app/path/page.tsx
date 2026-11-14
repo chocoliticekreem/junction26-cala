@@ -26,6 +26,8 @@ import { usePitch } from "@/lib/usePitch";
 
 const REPLAY = loadReplay();
 const EMPTY_NET: NetworkData = { nodes: [], edges: [] };
+const joinText = (parts: string[]) => parts.map((x) => x.trim()).filter(Boolean).join(" ");
+
 const subscribeNever = () => () => {};
 
 // Stage geometry (px): the brief bar and the two drawers the map lays out around.
@@ -100,6 +102,8 @@ export default function PathPage() {
   const [picked, setPicked] = useState(false);
   const [pitchText, setPitchText] = useState("");
   const [visionText, setVisionText] = useState("");
+  const [pitchAbsorbed, setPitchAbsorbed] = useState("");
+  const [visionAbsorbed, setVisionAbsorbed] = useState("");
   const [network, setNetwork] = useState<NetworkData>(EMPTY_NET);
   const [networkError, setNetworkError] = useState<string | undefined>();
   const [result, setResult] = useState<SimulateResponse | undefined>();
@@ -183,10 +187,26 @@ export default function PathPage() {
   const fixName = useCallback((t: string) => correctCompanyName(t, companyName.trim()), [companyName]);
   const pitchTokens = useMemo(() => q1.tokens.map((t) => ({ ...t, text: fixName(t.text) })), [q1.tokens, fixName]);
   const visionTokens = useMemo(() => q2.tokens.map((t) => ({ ...t, text: fixName(t.text) })), [q2.tokens, fixName]);
-  const visionSpoken = visionTokens.map((t) => t.text).join(" ").trim();
-  const vision = fixName(visionText.trim()) || visionSpoken;
-  const pitchSpoken = pitchTokens.map((t) => t.text).join(" ").trim();
-  const pitch = [fixName(pitchText.trim()), pitchSpoken].filter(Boolean).join(" ");
+  // Finished speech goes into the text box itself (editable like typing); only the words still
+  // being heard show live under it. "Absorbed" is the spoken text already folded into the box.
+  const pitchFinal = joinText(pitchTokens.filter((t) => t.final).map((t) => t.text));
+  const pitchInterimTokens = pitchTokens.filter((t) => !t.final);
+  const pitchPending = pitchFinal.startsWith(pitchAbsorbed) ? pitchFinal.slice(pitchAbsorbed.length) : pitchFinal;
+  const pitchBox = joinText([pitchText, pitchPending]);
+  const visionFinal = joinText(visionTokens.filter((t) => t.final).map((t) => t.text));
+  const visionInterimTokens = visionTokens.filter((t) => !t.final);
+  const visionPending = visionFinal.startsWith(visionAbsorbed) ? visionFinal.slice(visionAbsorbed.length) : visionFinal;
+  const visionBox = joinText([visionText, visionPending]);
+  const onPitchText = (v: string) => {
+    setPitchText(v);
+    setPitchAbsorbed(pitchFinal);
+  };
+  const onVisionText = (v: string) => {
+    setVisionText(v);
+    setVisionAbsorbed(visionFinal);
+  };
+  const vision = joinText([fixName(visionBox), ...visionInterimTokens.map((t) => t.text)]);
+  const pitch = joinText([fixName(pitchBox), ...pitchInterimTokens.map((t) => t.text)]);
   const companyLabel = result?.start.companyName || candidate?.name || companyName.trim() || result?.founder?.company || profile.company || "You";
   const step: InterviewStep = !pitch ? (mode === "new" || companyName.trim() ? "pitch" : "company") : !vision ? "vision" : "ready";
   const read = pitch ? pitchRead(profile) : undefined;
@@ -233,6 +253,8 @@ export default function PathPage() {
       setPicked(true);
       setPitchText(s.pitch);
       setVisionText(s.vision);
+      setPitchAbsorbed("");
+      setVisionAbsorbed("");
     },
     [q1, q2, mode],
   );
@@ -296,6 +318,8 @@ export default function PathPage() {
     setPicked(false);
     setPitchText("");
     setVisionText("");
+    setPitchAbsorbed("");
+    setVisionAbsorbed("");
     setResult(undefined);
     setContext(undefined);
     setContextError(undefined);
@@ -363,6 +387,21 @@ export default function PathPage() {
     return [...ids].slice(0, 3);
   }, [result, selectedReality, decision]);
 
+  // Starting the mic resets the hook's transcript, so spoken text already in the box is kept as typed first.
+  const toggleMic1 = () => {
+    if (!q1.micOn) {
+      setPitchText(pitchBox);
+      setPitchAbsorbed("");
+    }
+    q1.toggleMic();
+  };
+  const toggleMic2 = () => {
+    if (!q2.micOn) {
+      setVisionText(visionBox);
+      setVisionAbsorbed("");
+    }
+    q2.toggleMic();
+  };
   const mic = (on: boolean): "idle" | "listening" | "unsupported" => (!sttSupported ? "unsupported" : on ? "listening" : "idle");
   const backerIds = result?.start.existingInvestors.map((b) => b.id);
   const showInput = phase === "idle" || editing;
@@ -422,19 +461,19 @@ export default function PathPage() {
                     onChangeCompany={() => setPicked(false)}
                     saved={[]}
                     onLoadSaved={loadSaved}
-                    pitchTokens={pitchTokens}
-                    pitchText={pitchText}
-                    onPitchText={setPitchText}
+                    pitchTokens={pitchInterimTokens}
+                    pitchText={pitchBox}
+                    onPitchText={onPitchText}
                     pitchRead={read}
                     micState={mic(q1.micOn)}
-                    onMic={q1.toggleMic}
+                    onMic={toggleMic1}
                     onReplay={q1.replay}
                     replaying={q1.replaying}
-                    visionTokens={visionTokens}
-                    visionText={visionText}
-                    onVisionText={setVisionText}
+                    visionTokens={visionInterimTokens}
+                    visionText={visionBox}
+                    onVisionText={onVisionText}
                     visionMicState={mic(q2.micOn)}
-                    onVisionMic={q2.toggleMic}
+                    onVisionMic={toggleMic2}
                     visionTarget={visionTarget}
                     onSimulate={() => void simulate(undefined, true)}
                   />

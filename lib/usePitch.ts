@@ -72,7 +72,13 @@ declare global {
 
 export function usePitch(replayEvents: ReplayEvent[]) {
   const [transcript, setTranscript] = useState<TranscriptToken[]>([]);
-  const [interim, setInterim] = useState("");
+  const [interim, setInterimState] = useState("");
+  // Mirrors the words still being heard, so stopping the mic can keep them instead of dropping them.
+  const interimRef = useRef("");
+  const setInterim = useCallback((t: string) => {
+    interimRef.current = t;
+    setInterimState(t);
+  }, []);
   const [profile, setProfile] = useState<FounderProfile>(() => emptyProfile());
   const [triggers, setTriggers] = useState<Record<string, string>>({});
   const [replaying, setReplaying] = useState(false);
@@ -120,7 +126,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     setReplaying(false);
     setMicOn(false);
     setExtractSource(null);
-  }, []);
+  }, [setInterim]);
 
   // One LLM request in flight per session. The queued request holds all text sent since the
   // in-flight one, not just the newest chunk, so the LLM never misses words (spec 5.6 deviation).
@@ -186,7 +192,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
       const sentenceEnd = /[.!?]\s*$/.test(text);
       if (sentenceEnd || Date.now() - lastSent.current > CHUNK_MS) flush();
     },
-    [apply, flush],
+    [apply, flush, setInterim],
   );
 
   // Test-only seam: Playwright sets window.__ROOM_TEST__ before load and drives the same two
@@ -197,7 +203,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
     return () => {
       delete window.__roomPitch;
     };
-  }, [onFinal]);
+  }, [onFinal, setInterim]);
 
   // Flush a half-sentence chunk if the speaker pauses without a full stop.
   useEffect(() => {
@@ -221,10 +227,13 @@ export function usePitch(replayEvents: ReplayEvent[]) {
 
   const toggleMic = useCallback(() => {
     if (session.current) {
+      // The service only finalises on a pause; whatever was heard when the founder stops is kept.
+      const heard = interimRef.current.trim();
       session.current.stop();
       session.current = null;
       setMicOn(false);
       setInterim("");
+      if (heard) onFinal(heard);
       return;
     }
     reset();
@@ -241,7 +250,7 @@ export function usePitch(replayEvents: ReplayEvent[]) {
       },
     });
     setMicOn(true);
-  }, [onFinal, reset]);
+  }, [onFinal, reset, setInterim]);
 
   useEffect(
     () => () => {
