@@ -93,7 +93,7 @@ export default function ProfilePanel({ investor, match, onClose }: ProfilePanelP
         <div className="profile-score">
           {match && (
             <span className="font-mono">
-              {match.score}
+              {Math.round(match.score)}
               <small>/100</small>
             </span>
           )}
