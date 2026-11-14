@@ -15,7 +15,8 @@
     "introspect": "tsx scripts/introspect.ts",
     "ingest": "tsx scripts/ingest.ts",
     "build-replay": "tsx scripts/build-replay.ts",
-    "prewarm": "tsx scripts/prewarm.ts"
+    "prewarm": "tsx scripts/prewarm.ts",
+    "build-snapshot": "tsx scripts/build-snapshot.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

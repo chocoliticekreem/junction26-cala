@@ -109,7 +109,15 @@ export class MemoryLRU implements CalaCache {
   }
 }
 
+// A deploy (e.g. Vercel) has a read-only filesystem: writes fail with EROFS, or EACCES/EPERM.
+export function isReadOnlyFsError(e: unknown): boolean {
+  const code = (e as { code?: unknown } | null)?.code;
+  return code === "EROFS" || code === "EACCES" || code === "EPERM";
+}
+
+// On a read-only filesystem the cache stops writing and acts as read-only (usually empty).
 export function diskCache(dir: string): CalaCache {
+  let readOnly = false;
   const file = (key: string) => path.join(dir, createHash("sha1").update(key).digest("hex") + ".json");
   return {
     async get(key) {
@@ -120,8 +128,14 @@ export function diskCache(dir: string): CalaCache {
       }
     },
     async set(key, value) {
-      await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(file(key), JSON.stringify({ key, at: new Date().toISOString(), value }));
+      if (readOnly) return;
+      try {
+        await fs.mkdir(dir, { recursive: true });
+        await fs.writeFile(file(key), JSON.stringify({ key, at: new Date().toISOString(), value }));
+      } catch (e) {
+        if (!isReadOnlyFsError(e)) throw e;
+        readOnly = true;
+      }
     },
   };
 }
@@ -155,9 +169,13 @@ export type BudgetUsage = { used: number; limit: number };
 
 // Counts live calls in a JSON file so the cap survives restarts. Consumes are serialised within
 // the process so concurrent route calls cannot overshoot. Delete the file to reset the count.
+// If the file cannot be written (read-only deploy), counting continues in memory with the same
+// cap, so the limit then holds per server instance only.
 export function fileBudget(file: string, limit: number): CalaBudget & { usage(): Promise<BudgetUsage> } {
   let chain: Promise<unknown> = Promise.resolve();
+  let memoryUsed: number | undefined;
   const read = async (): Promise<number> => {
+    if (memoryUsed !== undefined) return memoryUsed;
     try {
       const used = Number(JSON.parse(await fs.readFile(file, "utf8")).used);
       return Number.isFinite(used) && used > 0 ? used : 0;
@@ -176,8 +194,17 @@ export function fileBudget(file: string, limit: number): CalaBudget & { usage():
       serial(async () => {
         const used = await read();
         if (used >= limit) return false;
-        await fs.mkdir(path.dirname(file), { recursive: true });
-        await fs.writeFile(file, JSON.stringify({ used: used + 1, updatedAt: new Date().toISOString() }));
+        if (memoryUsed !== undefined) {
+          memoryUsed = used + 1;
+          return true;
+        }
+        try {
+          await fs.mkdir(path.dirname(file), { recursive: true });
+          await fs.writeFile(file, JSON.stringify({ used: used + 1, updatedAt: new Date().toISOString() }));
+        } catch (e) {
+          if (!isReadOnlyFsError(e)) throw e;
+          memoryUsed = used + 1;
+        }
         return true;
       }),
   };

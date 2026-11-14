@@ -1,4 +1,6 @@
+import { SNAPSHOT } from "@/lib/calaSnapshotData";
 import { CalaBudgetError, getRouteCala, searchSources } from "@/lib/cala";
+import { snapshotSearch } from "@/lib/calaSnapshot";
 
 const MAX_QUERY = 400;
 
@@ -32,17 +34,22 @@ export async function POST(req: Request) {
   if (!query) return Response.json({ error: "missing_query" }, { status: 400 });
   if (query.length > MAX_QUERY) return Response.json({ error: "query_too_long" }, { status: 400 });
 
+  const snap = snapshotSearch(SNAPSHOT, query);
+  if (snap) return Response.json({ answer: snap.answer, sources: snap.sources, cached: true, source: "snapshot" });
+
   const cala = getRouteCala();
   if (!cala) return Response.json(mock(query));
 
   const hitsBefore = cala.stats.cacheHits;
   try {
     const r = await cala.search(query);
+    const cached = cala.stats.cacheHits > hitsBefore;
     return Response.json({
       answer: r.content,
       sources: searchSources(r),
       entities: (r.entities ?? []).map((e) => ({ id: e.id, name: e.name, entity_type: e.entity_type })),
-      cached: cala.stats.cacheHits > hitsBefore,
+      cached,
+      source: cached ? "cache" : "live",
     });
   } catch (err) {
     if (err instanceof CalaBudgetError) return Response.json(budgetExhausted());
