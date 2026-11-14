@@ -1,0 +1,272 @@
+[
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-01",
+    "investorId": "fx-001",
+    "fit": "yes",
+    "again": true,
+    "tag": "sector",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-04",
+    "investorId": "fx-002",
+    "fit": "no",
+    "again": false,
+    "tag": "traction",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-07",
+    "investorId": "fx-003",
+    "fit": "maybe",
+    "again": true,
+    "tag": "stage",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-10",
+    "investorId": "fx-004",
+    "fit": "yes",
+    "again": true,
+    "tag": "team",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-13",
+    "investorId": "fx-005",
+    "fit": "yes",
+    "again": true,
+    "tag": "timing",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-16",
+    "investorId": "fx-006",
+    "fit": "no",
+    "again": false,
+    "tag": "sector",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-19",
+    "investorId": "fx-007",
+    "fit": "maybe",
+    "again": true,
+    "tag": "traction",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-22",
+    "investorId": "fx-008",
+    "fit": "yes",
+    "again": true,
+    "tag": "stage",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-25",
+    "investorId": "fx-009",
+    "fit": "yes",
+    "again": true,
+    "tag": "team",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-28",
+    "investorId": "fx-010",
+    "fit": "no",
+    "again": false,
+    "tag": "timing",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-31",
+    "investorId": "fx-011",
+    "fit": "maybe",
+    "again": true,
+    "tag": "sector",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-34",
+    "investorId": "fx-012",
+    "fit": "yes",
+    "again": true,
+    "tag": "traction",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-37",
+    "investorId": "fx-013",
+    "fit": "yes",
+    "again": true,
+    "tag": "stage",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-40",
+    "investorId": "fx-014",
+    "fit": "no",
+    "again": false,
+    "tag": "team",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-03",
+    "investorId": "fx-015",
+    "fit": "maybe",
+    "again": true,
+    "tag": "timing",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-1",
+    "founderId": "seed-f-06",
+    "investorId": "fx-016",
+    "fit": "yes",
+    "again": true,
+    "tag": "sector",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-09",
+    "investorId": "fx-017",
+    "fit": "yes",
+    "again": true,
+    "tag": "traction",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-12",
+    "investorId": "fx-018",
+    "fit": "no",
+    "again": false,
+    "tag": "stage",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-15",
+    "investorId": "fx-019",
+    "fit": "maybe",
+    "again": true,
+    "tag": "team",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-18",
+    "investorId": "fx-020",
+    "fit": "yes",
+    "again": true,
+    "tag": "timing",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-21",
+    "investorId": "fx-021",
+    "fit": "yes",
+    "again": true,
+    "tag": "sector",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-24",
+    "investorId": "fx-022",
+    "fit": "no",
+    "again": false,
+    "tag": "traction",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-27",
+    "investorId": "fx-023",
+    "fit": "maybe",
+    "again": true,
+    "tag": "stage",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-30",
+    "investorId": "fx-024",
+    "fit": "yes",
+    "again": true,
+    "tag": "team",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-33",
+    "investorId": "fx-025",
+    "fit": "yes",
+    "again": true,
+    "tag": "timing",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-36",
+    "investorId": "fx-026",
+    "fit": "no",
+    "again": false,
+    "tag": "sector",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-39",
+    "investorId": "fx-027",
+    "fit": "maybe",
+    "again": true,
+    "tag": "traction",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-02",
+    "investorId": "fx-028",
+    "fit": "yes",
+    "again": true,
+    "tag": "stage",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-05",
+    "investorId": "fx-029",
+    "fit": "yes",
+    "again": true,
+    "tag": "team",
+    "seeded": true
+  },
+  {
+    "roomId": "room-seed-2",
+    "founderId": "seed-f-08",
+    "investorId": "fx-030",
+    "fit": "no",
+    "again": false,
+    "tag": "timing",
+    "seeded": true
+  }
+]

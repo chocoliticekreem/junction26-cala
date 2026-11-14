@@ -1,0 +1,450 @@
+[
+  {
+    "t": 1200,
+    "kind": "transcript",
+    "text": "Hi, I'm Amara,"
+  },
+  {
+    "t": 2400,
+    "kind": "transcript",
+    "text": "founder of Helixa"
+  },
+  {
+    "t": 3600,
+    "kind": "transcript",
+    "text": "Bio, a London"
+  },
+  {
+    "t": 4400,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "geography": {
+        "value": "London",
+        "confidence": 0.9
+      },
+      "triggers": {
+        "geography": "London"
+      }
+    }
+  },
+  {
+    "t": 4800,
+    "kind": "transcript",
+    "text": "startup. We're building"
+  },
+  {
+    "t": 6000,
+    "kind": "transcript",
+    "text": "therapeutics for autoimmune"
+  },
+  {
+    "t": 6000,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [
+        {
+          "label": "biotech/therapeutics",
+          "confidence": 0.8
+        }
+      ],
+      "triggers": {
+        "biotech/therapeutics": "therapeutics"
+      }
+    }
+  },
+  {
+    "t": 7200,
+    "kind": "transcript",
+    "text": "disease, specifically AI-designed"
+  },
+  {
+    "t": 8400,
+    "kind": "transcript",
+    "text": "antibody drugs. Today,"
+  },
+  {
+    "t": 8400,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [
+        {
+          "label": "biotech/therapeutics",
+          "confidence": 0.9
+        }
+      ],
+      "triggers": {
+        "biotech/therapeutics": "antibody"
+      }
+    }
+  },
+  {
+    "t": 9600,
+    "kind": "transcript",
+    "text": "drug discovery means"
+  },
+  {
+    "t": 10000,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [
+        {
+          "label": "biotech/therapeutics",
+          "confidence": 0.9
+        }
+      ],
+      "triggers": {
+        "biotech/therapeutics": "drug discovery"
+      }
+    }
+  },
+  {
+    "t": 10800,
+    "kind": "transcript",
+    "text": "years of trial"
+  },
+  {
+    "t": 12000,
+    "kind": "transcript",
+    "text": "and error in"
+  },
+  {
+    "t": 13200,
+    "kind": "transcript",
+    "text": "the lab before"
+  },
+  {
+    "t": 14400,
+    "kind": "transcript",
+    "text": "you find one"
+  },
+  {
+    "t": 15600,
+    "kind": "transcript",
+    "text": "good antibody. Patients"
+  },
+  {
+    "t": 16800,
+    "kind": "transcript",
+    "text": "wait while that"
+  },
+  {
+    "t": 18000,
+    "kind": "transcript",
+    "text": "happens, and most"
+  },
+  {
+    "t": 19200,
+    "kind": "transcript",
+    "text": "current treatments only"
+  },
+  {
+    "t": 20400,
+    "kind": "transcript",
+    "text": "manage symptoms. We"
+  },
+  {
+    "t": 21600,
+    "kind": "transcript",
+    "text": "use machine learning"
+  },
+  {
+    "t": 22400,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [
+        {
+          "label": "AI infrastructure",
+          "confidence": 0.3
+        }
+      ],
+      "triggers": {
+        "AI infrastructure": "machine learning"
+      }
+    }
+  },
+  {
+    "t": 22800,
+    "kind": "transcript",
+    "text": "to design candidates"
+  },
+  {
+    "t": 24000,
+    "kind": "transcript",
+    "text": "in weeks, then"
+  },
+  {
+    "t": 25200,
+    "kind": "transcript",
+    "text": "test them in"
+  },
+  {
+    "t": 26400,
+    "kind": "transcript",
+    "text": "our own wet"
+  },
+  {
+    "t": 27600,
+    "kind": "transcript",
+    "text": "lab. We're pre-seed,"
+  },
+  {
+    "t": 27600,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [
+        {
+          "label": "biotech/therapeutics",
+          "confidence": 0.92
+        }
+      ],
+      "triggers": {
+        "biotech/therapeutics": "wet lab"
+      }
+    }
+  },
+  {
+    "t": 28400,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "stage": {
+        "value": "pre-seed",
+        "confidence": 0.9
+      },
+      "triggers": {
+        "stage": "pre-seed"
+      }
+    }
+  },
+  {
+    "t": 28800,
+    "kind": "transcript",
+    "text": "and we're raising"
+  },
+  {
+    "t": 30000,
+    "kind": "transcript",
+    "text": "£1.2 million. So"
+  },
+  {
+    "t": 30400,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "raise_amount": {
+        "value": 1524000,
+        "confidence": 0.85
+      },
+      "triggers": {
+        "raise_amount": "£1.2 million"
+      }
+    }
+  },
+  {
+    "t": 31200,
+    "kind": "transcript",
+    "text": "far we have"
+  },
+  {
+    "t": 32400,
+    "kind": "transcript",
+    "text": "a signed letter"
+  },
+  {
+    "t": 33600,
+    "kind": "transcript",
+    "text": "of intent from"
+  },
+  {
+    "t": 34000,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "traction": {
+        "users": "Letter of intent from a large pharma company",
+        "confidence": 0.75
+      },
+      "triggers": {
+        "traction": "letter of intent"
+      }
+    }
+  },
+  {
+    "t": 34800,
+    "kind": "transcript",
+    "text": "a large pharma"
+  },
+  {
+    "t": 36000,
+    "kind": "transcript",
+    "text": "company, and three"
+  },
+  {
+    "t": 37200,
+    "kind": "transcript",
+    "text": "academic labs are"
+  },
+  {
+    "t": 37600,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "traction": {
+        "users": "3 academic labs using the designs",
+        "confidence": 0.8
+      },
+      "triggers": {
+        "traction": "three academic labs"
+      }
+    }
+  },
+  {
+    "t": 38400,
+    "kind": "transcript",
+    "text": "already using our"
+  },
+  {
+    "t": 39600,
+    "kind": "transcript",
+    "text": "designs. Our first"
+  },
+  {
+    "t": 40800,
+    "kind": "transcript",
+    "text": "lab validation showed"
+  },
+  {
+    "t": 42000,
+    "kind": "transcript",
+    "text": "the antibody binds"
+  },
+  {
+    "t": 43200,
+    "kind": "transcript",
+    "text": "the target as"
+  },
+  {
+    "t": 44400,
+    "kind": "transcript",
+    "text": "predicted. Our team"
+  },
+  {
+    "t": 45600,
+    "kind": "transcript",
+    "text": "is two PhDs:"
+  },
+  {
+    "t": 46400,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "team_signals": [
+        {
+          "value": "Two PhDs",
+          "confidence": 0.85
+        }
+      ],
+      "triggers": {
+        "team_signals": "PhDs"
+      }
+    }
+  },
+  {
+    "t": 46800,
+    "kind": "transcript",
+    "text": "I did my"
+  },
+  {
+    "t": 48000,
+    "kind": "transcript",
+    "text": "doctorate in immunology"
+  },
+  {
+    "t": 48800,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "team_signals": [
+        {
+          "value": "Doctorate in immunology",
+          "confidence": 0.85
+        }
+      ],
+      "triggers": {
+        "team_signals": "immunology"
+      }
+    }
+  },
+  {
+    "t": 49200,
+    "kind": "transcript",
+    "text": "at Imperial, and"
+  },
+  {
+    "t": 50400,
+    "kind": "transcript",
+    "text": "my co-founder has"
+  },
+  {
+    "t": 51600,
+    "kind": "transcript",
+    "text": "a PhD in"
+  },
+  {
+    "t": 52800,
+    "kind": "transcript",
+    "text": "machine learning from"
+  },
+  {
+    "t": 53200,
+    "kind": "profile",
+    "extraction": {
+      "sectors": [],
+      "team_signals": [
+        {
+          "value": "PhD in machine learning",
+          "confidence": 0.85
+        }
+      ],
+      "triggers": {
+        "team_signals": "PhD in machine learning"
+      }
+    }
+  },
+  {
+    "t": 54000,
+    "kind": "transcript",
+    "text": "UCL. This round"
+  },
+  {
+    "t": 55200,
+    "kind": "transcript",
+    "text": "takes us to"
+  },
+  {
+    "t": 56400,
+    "kind": "transcript",
+    "text": "our first animal"
+  },
+  {
+    "t": 57600,
+    "kind": "transcript",
+    "text": "study. We'd love"
+  },
+  {
+    "t": 58800,
+    "kind": "transcript",
+    "text": "to meet investors"
+  },
+  {
+    "t": 60000,
+    "kind": "transcript",
+    "text": "who back early"
+  },
+  {
+    "t": 60800,
+    "kind": "transcript",
+    "text": "therapeutics companies."
+  }
+]
