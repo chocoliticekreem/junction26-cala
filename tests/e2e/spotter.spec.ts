@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function pickSeedcamp(page: Page) {
   await page.goto("/path/investor");
   await expect(page.getByTestId("spotter-idle")).toBeVisible();
+  await expect(page.getByTestId("spotter-idle")).toContainText("Which fund are you?");
   await page.getByTestId("spotter-picker").click();
   await page.getByTestId("spotter-picker").fill("Seedcamp");
   await page.getByTestId("spotter-pick-investor-seedcamp").click();
@@ -18,8 +19,11 @@ test("early spotter ranks at least five picks on a non-blank constellation", asy
 
   const rows = page.locator('[data-testid^="spotter-pick-"]:not([data-testid^="spotter-pick-investor-"])');
   await expect.poll(() => rows.count()).toBeGreaterThanOrEqual(5);
+  await expect(rows.first()).toContainText(/Unicorn-like odds \d+%/);
+  await expect(rows.first()).toContainText(/You’re on its path \d+%/);
 
   await expect(page.getByTestId("spotter-taste")).toContainText("Your taste");
+  await expect(page.getByTestId("spotter-taste")).toContainText(/from \d+ real rounds/);
   await expect(page.getByTestId("spotter-basis")).toContainText(/as of \d{4}-\d{2}-\d{2}/);
 
   const svg = page.locator('[data-testid="spotter-constellation"] svg');
@@ -31,18 +35,45 @@ test("early spotter ranks at least five picks on a non-blank constellation", asy
   await expect(page.getByTestId("spotter-you")).toBeVisible();
 });
 
-test("selecting a pick opens its card with precedents and actions", async ({ page }) => {
+test("quick pick runs the spotter for that fund", async ({ page }) => {
+  await page.goto("/path/investor");
+  await page.getByTestId("spotter-quick-seedcamp").click();
+  await expect(page.getByTestId("spotter-list")).toBeVisible();
+  await expect(page.locator(".sp-title")).toContainText(/picks for seedcamp/i);
+});
+
+test("how-this-works popover holds the method, evidence counts and the as-of date", async ({ page }) => {
+  await pickSeedcamp(page);
+  await expect(page.getByTestId("spotter-how-pop")).toHaveCount(0);
+  await page.getByTestId("spotter-how").click();
+  const pop = page.getByTestId("spotter-how-pop");
+  await expect(pop).toBeVisible();
+  await expect(pop).toContainText("Your taste");
+  await expect(pop).toContainText(/\d+ considered/);
+  await expect(pop).toContainText(/as of \d{4}-\d{2}-\d{2}/);
+  await page.keyboard.press("Escape");
+  await expect(pop).toHaveCount(0);
+});
+
+test("selecting a pick opens its card with why-it-fits, rounds, precedents and actions", async ({ page }) => {
   await pickSeedcamp(page);
   const first = page.locator('[data-testid^="spotter-pick-"]:not([data-testid^="spotter-pick-investor-"])').first();
   await first.click();
 
   const card = page.getByTestId("spotter-card");
   await expect(card).toBeVisible();
+  await expect(card).toContainText("Why it fits you");
+  await expect(card.getByTestId("spotter-rounds").locator(".sp-chip")).not.toHaveCount(0);
   await expect(card.getByTestId("spotter-precedents").locator(".sp-precedent")).not.toHaveCount(0);
+  await expect(card.getByTestId("spotter-numbers")).toContainText("Unicorn-like odds");
+  await expect(card.getByTestId("spotter-numbers")).toContainText("You’re on its path");
   await expect(card).toContainText(/n=\d+/);
-  await expect(card.getByTestId("spotter-watch")).toBeVisible();
-  await card.getByTestId("spotter-watch").click();
-  await expect(card.getByTestId("spotter-watch")).toContainText("Watching");
+  await expect(card.getByTestId("spotter-watch")).toHaveCount(0);
+
+  const file = card.getByTestId("spotter-company-file");
+  await expect(file).toHaveAttribute("href", /^\/\?company=/);
+  await card.getByTestId("spotter-sources").click();
+  await expect(card.getByTestId("spotter-sources-list")).toBeVisible();
 
   await page.keyboard.press("Escape");
   await expect(card).toHaveCount(0);
