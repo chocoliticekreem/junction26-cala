@@ -221,6 +221,16 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
   }
 }
 
+// d3 position forces cache their accessor values when (re)attached, so every change of a
+// node's target re-attaches them.
+function retarget(sim: Simulation<Node, undefined>, phase: PathMapPhase, h: number) {
+  const results = phase === "results";
+  sim.force("charge", forceManyBody<Node>().strength((n) => (n.onHighway && results ? -70 : -14)).distanceMax(170));
+  sim.force("collide", forceCollide<Node>().radius((n) => n.r + (n.onHighway && results ? Math.min(24, h / 24) : 5)).strength(0.8));
+  sim.force("x", forceX<Node>((n) => n.tx).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
+  sim.force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
+}
+
 export default function PathMap({ network, highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion }: PathMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -263,19 +273,13 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
     }
     nodesRef.current = map;
     edgesRef.current = new Map();
-    const sim = forceSimulation<Node>([...map.values()])
-      .force("charge", forceManyBody<Node>().strength((n) => (n.onHighway ? -60 : -14)).distanceMax(160))
-      .force("collide", forceCollide<Node>().radius((n) => n.r + (n.onHighway ? 22 : 5)).strength(0.8))
-      .force("x", forceX<Node>((n) => n.tx).strength((n) => (n.onHighway ? 0.22 : 0.05)))
-      .force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway ? 0.22 : 0.05)))
-      .alphaDecay(0.028)
-      .velocityDecay(0.42)
-      .stop();
+    const sim = forceSimulation<Node>([...map.values()]).alphaDecay(0.028).velocityDecay(0.42).stop();
     simRef.current = sim;
     const { w, h } = sizeRef.current;
     if (w && h) {
       assignDepths(map, propsRef.current.highways);
       layoutTargets(map, w, h, propsRef.current.phase);
+      retarget(sim, propsRef.current.phase, h);
       for (const n of map.values()) {
         n.x = n.tx + (seeded(`${n.id}x`)() - 0.5) * 40;
         n.y = n.ty + (seeded(`${n.id}y`)() - 0.5) * 40;
@@ -298,10 +302,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
     if (you) you.name = youLabel;
     assignDepths(map, highways);
     layoutTargets(map, w, h, phase);
-    sim.force("charge", forceManyBody<Node>().strength((n) => (n.onHighway && phase === "results" ? -70 : -14)).distanceMax(170));
-    sim.force("collide", forceCollide<Node>().radius((n) => n.r + (n.onHighway && phase === "results" ? Math.min(24, h / 24) : 5)).strength(0.8));
-    sim.force("x", forceX<Node>((n) => n.tx).strength((n) => (n.onHighway && phase === "results" ? 0.34 : 0.06)));
-    sim.force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway && phase === "results" ? 0.34 : 0.06)));
+    retarget(sim, phase, h);
     sim.alpha(reducedMotion ? 1 : 0.9);
     if (reducedMotion) for (let i = 0; i < 120; i++) sim.tick();
 
@@ -341,7 +342,9 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
     const resize = () => {
       const rect = wrap.getBoundingClientRect();
       const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const hadSize = sizeRef.current.w > 0 && sizeRef.current.h > 0;
       sizeRef.current = { w: rect.width, h: rect.height, dpr };
+      if (!rect.width || !rect.height) return;
       canvas.width = Math.floor(rect.width * dpr);
       canvas.height = Math.floor(rect.height * dpr);
       canvas.style.width = `${rect.width}px`;
@@ -351,7 +354,10 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
       if (sim && map.size) {
         assignDepths(map, propsRef.current.highways);
         layoutTargets(map, rect.width, rect.height, propsRef.current.phase);
-        const first = ![...map.values()].some((n) => n.id !== YOU_ID && n.alpha > 0);
+        retarget(sim, propsRef.current.phase, rect.height);
+        // Nothing visible yet (or the pane only just got a size): snap to the layout instead of
+        // letting the weak idle forces drift stars in from wherever they were.
+        const first = !hadSize || ![...map.values()].some((n) => n.id !== YOU_ID && n.alpha > 0.1);
         if (first) {
           for (const n of map.values()) {
             n.x = n.tx + (seeded(`${n.id}x`)() - 0.5) * 40;

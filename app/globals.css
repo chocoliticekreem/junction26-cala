@@ -1687,7 +1687,7 @@ a.deal-src:hover,
 }
 
 .path-stage.is-results .path-sub,
-.path-stage.is-results .hero-kicker {
+.path-stage.is-results .path-hero .hero-kicker {
   display: none;
 }
 
@@ -2210,8 +2210,8 @@ a.deal-src:hover,
 .path-simulating {
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  top: calc(50% + 64px);
+  transform: translate(-50%, 0);
   z-index: 2;
   text-align: center;
   pointer-events: none;
@@ -2517,6 +2517,30 @@ a.deal-src:hover,
 
 .path-start-line b {
   font-weight: 600;
+}
+
+.path-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  color: var(--fg-2);
+  font-family: var(--font-mono), monospace;
+  font-size: 9.5px;
+  line-height: 1;
+  vertical-align: 1px;
+  cursor: help;
+}
+
+.path-info:hover,
+.path-info:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
 }
 
 .path-vision-line b {

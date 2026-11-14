@@ -405,12 +405,22 @@ export default function PathPage() {
                   {result.start.companyName ? (
                     <>
                       <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
+                      {result.start.stageNote && (
+                        <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                          i
+                        </span>
+                      )}
                       {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
                     </>
                   ) : (
                     <>
                       <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
                       {STAGE_LABELS[result.start.stage]}
+                      {result.start.stageNote && (
+                        <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                          i
+                        </span>
+                      )}
                     </>
                   )}
                 </p>
