@@ -9,6 +9,8 @@ export type NextMovesProps = {
   tree: DecisionNode;
   selected?: Decision;
   onSelect: (d?: Decision) => void;
+  // Opens the case study of the real company closest to this branch; undefined when none fits.
+  onCaseStudy?: (node: DecisionNode) => void;
   leadIds: string[];
   // Store id of the built company file; the action and watch routes read it. Undefined until built.
   docId?: string;
@@ -17,7 +19,7 @@ export type NextMovesProps = {
 const pct = (p: number) => `${Math.round(p * 100)}%`;
 const sameDecision = (a?: Decision | null, b?: Decision | null) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-function Branch({ node, selected, onSelect, depth }: { node: DecisionNode; selected?: Decision; onSelect: (d?: Decision) => void; depth: number }) {
+function Branch({ node, selected, onSelect, onCaseStudy, depth }: { node: DecisionNode; selected?: Decision; onSelect: (d?: Decision) => void; onCaseStudy?: (node: DecisionNode) => void; depth: number }) {
   const isSel = !!node.decision && sameDecision(node.decision, selected);
   const [open, setOpen] = useState(false);
   return (
@@ -54,6 +56,11 @@ function Branch({ node, selected, onSelect, depth }: { node: DecisionNode; selec
             <span title="Best simulated outcome">▲ {node.outcomeBands.best}</span>
             <span title="Median simulated outcome">● {node.outcomeBands.median}</span>
             <span title="Worst simulated outcome">▼ {node.outcomeBands.worst}</span>
+            {onCaseStudy && (
+              <button type="button" className="path-link path-case-btn" onClick={() => onCaseStudy(node)} data-testid="case-study">
+                Case study
+              </button>
+            )}
           </div>
           <ol className="path-toppaths">
             {node.topPaths.slice(0, 3).map((p, i) => (
@@ -73,7 +80,7 @@ function Branch({ node, selected, onSelect, depth }: { node: DecisionNode; selec
           {node.children.length > 0 && (
             <ul className="path-branches path-branches-sub">
               {node.children.map((c) => (
-                <Branch key={c.label} node={c} selected={selected} onSelect={onSelect} depth={depth + 1} />
+                <Branch key={c.label} node={c} selected={selected} onSelect={onSelect} onCaseStudy={onCaseStudy} depth={depth + 1} />
               ))}
             </ul>
           )}
@@ -167,7 +174,7 @@ function Action({ card }: { card: InvestorAction }) {
 
 type Leads = { key: string; actions: InvestorAction[]; unknown: string[]; error?: string };
 
-export default function NextMoves({ tree, selected, onSelect, leadIds, docId }: NextMovesProps) {
+export default function NextMoves({ tree, selected, onSelect, onCaseStudy, leadIds, docId }: NextMovesProps) {
   const [leads, setLeads] = useState<Leads | undefined>();
   const branches = [...tree.children].sort((a, b) => b.reachVisionShare - a.reachVisionShare);
   const leadKey = leadIds.join("|");
@@ -201,7 +208,7 @@ export default function NextMoves({ tree, selected, onSelect, leadIds, docId }: 
       </header>
       <ul className="path-branches" data-testid="tree">
         {branches.map((b) => (
-          <Branch key={b.label} node={b} selected={selected} onSelect={onSelect} depth={1} />
+          <Branch key={b.label} node={b} selected={selected} onSelect={onSelect} onCaseStudy={onCaseStudy} depth={1} />
         ))}
       </ul>
       {leadsSection && (

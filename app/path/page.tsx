@@ -4,6 +4,7 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import TopBar from "@/components/TopBar";
 import { buildContext, errorMessage, fetchNetwork, resolveCompany, runSimulate } from "@/components/path/api";
+import CaseStudy, { type CaseStudyPath } from "@/components/path/CaseStudy";
 import CompanyFile from "@/components/path/CompanyFile";
 import HowThisWorks from "@/components/path/HowThisWorks";
 import Interview, { type CompanyMode, type InterviewStep } from "@/components/path/Interview";
@@ -11,7 +12,7 @@ import NextMoves from "@/components/path/NextMoves";
 import PathMap, { type MapInset, edgeKey } from "@/components/path/PathMap";
 import Precedents from "@/components/path/Precedents";
 import Realities from "@/components/path/Realities";
-import { YOU_ID, type CompanyCandidate, type ContextResult, type Decision, type Highway, type NetworkData, type SimulateResponse, type Upload } from "@/components/path/types";
+import { YOU_ID, type CompanyCandidate, type ContextResult, type Decision, type DecisionNode, type Highway, type NetworkData, type Precedent, type Reality, type SimulateResponse, type Upload } from "@/components/path/types";
 import { loadReplay } from "@/lib/data";
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { mergeProfile } from "@/lib/mergeProfile";
@@ -30,11 +31,10 @@ const joinText = (parts: string[]) => parts.map((x) => x.trim()).filter(Boolean)
 
 const subscribeNever = () => () => {};
 
-// Stage geometry (px): the brief bar and the two drawers the map lays out around.
+// Stage geometry (px): the brief bar and the results column the map lays out around.
 const BAR_H = 76;
-const LEFT_W = 316;
-const LEFT_TAB_W = 44;
-const RIGHT_W = 456;
+const LEFT_W = 440;
+const pct = (p: number) => `${Math.round(p * 100)}%`;
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const SPRING = { duration: 0.55, ease: EASE };
 
@@ -113,7 +113,8 @@ export default function PathPage() {
   const [error, setError] = useState<string | undefined>();
   const [realityId, setRealityId] = useState<string | undefined>();
   const [decision, setDecision] = useState<Decision | undefined>();
-  const [fileOpen, setFileOpen] = useState(true);
+  const [fileOpen, setFileOpen] = useState(false);
+  const [caseStudy, setCaseStudy] = useState<{ precedent: Precedent; path?: CaseStudyPath } | undefined>();
   const epoch = useRef(0);
   // A saved company arrives with its Cala match; the lookup for that exact name must not undo it.
   const presetFor = useRef<string | null>(null);
@@ -276,6 +277,7 @@ export default function PathPage() {
         setContextError(undefined);
         setRealityId(undefined);
         setDecision(undefined);
+        setCaseStudy(undefined);
         setEditing(false);
         setPhase("simulating");
         setPicked(true);
@@ -327,7 +329,8 @@ export default function PathPage() {
     setError(undefined);
     setRealityId(undefined);
     setDecision(undefined);
-    setFileOpen(true);
+    setFileOpen(false);
+    setCaseStudy(undefined);
   }, [q1, q2]);
 
   const addContext = useCallback(
@@ -356,8 +359,8 @@ export default function PathPage() {
   // Map inputs: a selected reality re-weights the highways along its chain; a selected branch
   // (already re-simulated by the engine) brightens its top paths.
   const selectedReality = result?.realities.find((r) => r.title === realityId);
-  const { highways, brightPaths, emphasis } = useMemo(() => {
-    if (!result) return { highways: [] as Highway[], brightPaths: [] as string[][], emphasis: undefined as Set<string> | undefined };
+  const { highways, brightPaths, emphasis, emphasisNodes } = useMemo(() => {
+    if (!result) return { highways: [] as Highway[], brightPaths: [] as string[][], emphasis: undefined as Set<string> | undefined, emphasisNodes: undefined as Set<string> | undefined };
     const base = result.highways;
     if (selectedReality) {
       const chain = [YOU_ID, ...selectedReality.steps.map((s) => s.leadId).filter((x): x is string => !!x)];
@@ -369,14 +372,75 @@ export default function PathPage() {
         const k = edgeKey(chain[i - 1], chain[i]);
         if (!base.some((h) => edgeKey(h.from, h.to) === k)) boosted.push({ from: chain[i - 1], to: chain[i], weight: top * 0.9 });
       }
-      return { highways: boosted, brightPaths: [chain], emphasis: keys };
+      return { highways: boosted, brightPaths: chain.length > 1 ? [chain] : [], emphasis: keys, emphasisNodes: new Set(chain) };
     }
     const node = decision ? result.tree.children.find((c) => JSON.stringify(c.decision) === JSON.stringify(decision)) : undefined;
-    const paths = (node ?? result.tree).topPaths.filter((p) => p.reachedVision).slice(0, 3);
-    const chains = paths.map((p) => [YOU_ID, ...p.steps.map((s) => s.leadId).filter((x): x is string => !!x)]);
+    const all = (node ?? result.tree).topPaths;
+    const reached = all.filter((p) => p.reachedVision);
+    const paths = (reached.length ? reached : all).slice(0, 3);
+    const chains = paths.map((p) => [YOU_ID, ...p.steps.map((s) => s.leadId).filter((x): x is string => !!x)]).filter((c) => c.length > 1);
     const keys = node ? new Set(chains.flatMap((c) => c.slice(1).map((id, i) => edgeKey(c[i], id)))) : undefined;
-    return { highways: base, brightPaths: chains, emphasis: keys };
+    return { highways: base, brightPaths: chains, emphasis: keys, emphasisNodes: node ? new Set(chains.flat()) : undefined };
   }, [result, selectedReality, decision]);
+
+  // A star on the map selects the best reality it leads, else the branch that names it as the
+  // next lead; a second click on the chosen path, or empty space, clears the selection.
+  const onNodeClick = useCallback(
+    (id?: string) => {
+      if (!result) return;
+      const clear = () => {
+        setRealityId(undefined);
+        if (decision) selectDecision(undefined);
+      };
+      if (!id || emphasisNodes?.has(id)) return clear();
+      const reality = [...result.realities].sort((a, b) => b.probability - a.probability).find((r) => r.steps.some((s) => s.leadId === id));
+      if (reality) {
+        setRealityId(reality.title);
+        return;
+      }
+      const branch = result.tree.children.find((c) => c.decision?.kind === "lead" && c.decision.investorId === id);
+      if (branch?.decision) selectDecision(branch.decision);
+      else clear();
+    },
+    [result, decision, emphasisNodes, selectDecision],
+  );
+
+  // Case studies: a reality's named company against that reality; a branch against the real
+  // company that its next lead actually backed, else the closest one that reached the vision.
+  // The branch's path is its best simulated route: reached the vision, else the longest.
+  const bestPath = (node?: DecisionNode) => node?.topPaths.find((p) => p.reachedVision) ?? [...(node?.topPaths ?? [])].sort((a, b) => b.steps.length - a.steps.length)[0];
+  const allPrecedents = useMemo(() => {
+    if (!result) return [] as Precedent[];
+    const seen = new Map<string, Precedent>();
+    for (const p of [...result.precedents, ...result.realities.flatMap((r) => r.precedents)]) if (!seen.has(p.companyId)) seen.set(p.companyId, p);
+    return [...seen.values()];
+  }, [result]);
+  const openRealityCase = useCallback((precedent: Precedent, r: Reality) => {
+    setRealityId(r.title);
+    setCaseStudy({ precedent, path: { title: r.title, steps: r.steps } });
+  }, []);
+  const openBranchCase = useCallback(
+    (node: DecisionNode) => {
+      const leadId = node.decision?.kind === "lead" ? node.decision.investorId : undefined;
+      const precedent =
+        (leadId && allPrecedents.find((p) => p.path.some((s) => s.leadId === leadId))) ||
+        allPrecedents.find((p) => p.reachedVision) ||
+        allPrecedents[0];
+      if (!precedent) return;
+      const best = bestPath(node);
+      setCaseStudy({ precedent, path: best ? { title: node.label, steps: best.steps } : undefined });
+    },
+    [allPrecedents],
+  );
+  const openPrecedentCase = useCallback(
+    (precedent: Precedent) => {
+      const node = decision ? result?.tree.children.find((c) => JSON.stringify(c.decision) === JSON.stringify(decision)) : undefined;
+      const best = bestPath(node);
+      const path = selectedReality ? { title: selectedReality.title, steps: selectedReality.steps } : node && best ? { title: node.label, steps: best.steps } : undefined;
+      setCaseStudy({ precedent, path });
+    },
+    [selectedReality, decision, result],
+  );
 
   const leadIds = useMemo(() => {
     if (!result) return [];
@@ -408,8 +472,8 @@ export default function PathPage() {
   const showResults = phase === "results" && !editing && !!result;
   const mapPhase = editing ? "idle" : phase;
   const inset = useMemo<MapInset>(
-    () => (showResults ? { left: (fileOpen ? LEFT_W : LEFT_TAB_W) + 16, right: RIGHT_W + 16, top: BAR_H, bottom: 16 } : { left: 0, right: 0, top: 0, bottom: 0 }),
-    [showResults, fileOpen],
+    () => (showResults ? { left: LEFT_W + 32, right: 16, top: BAR_H, bottom: 16 } : { left: 0, right: 0, top: 0, bottom: 0 }),
+    [showResults],
   );
   const briefLabel = mode === "new" && !companyName.trim() ? "New idea" : companyLabel;
 
@@ -431,7 +495,7 @@ export default function PathPage() {
         />
         <main className="fx-stage" data-view={showInput ? "input" : phase}>
           <div className="fx-map" data-view={showInput ? "input" : phase}>
-            <PathMap network={network} inset={inset} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} backerIds={backerIds} youLabel={companyLabel} phase={mapPhase} reducedMotion={reducedMotion} />
+            <PathMap network={network} inset={inset} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} emphasisNodes={emphasisNodes} onNodeClick={onNodeClick} backerIds={backerIds} youLabel={companyLabel} phase={mapPhase} reducedMotion={reducedMotion} />
           </div>
 
           <AnimatePresence initial={false}>
@@ -530,82 +594,71 @@ export default function PathPage() {
             {showResults && result && (
               <motion.aside
                 key="left"
-                className={`fx-drawer fx-left ${fileOpen ? "" : "is-closed"}`}
-                style={{ width: fileOpen ? LEFT_W : LEFT_TAB_W }}
+                className="fx-drawer fx-left glass"
+                style={{ width: LEFT_W }}
                 initial={{ opacity: 0, x: -24 }}
-                animate={{ opacity: 1, x: 0, width: fileOpen ? LEFT_W : LEFT_TAB_W }}
+                animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -24, transition: { duration: 0.3 } }}
-                data-testid="left-drawer"
+                data-testid="results"
               >
-                <button type="button" className="fx-drawer-tab" onClick={() => setFileOpen((v) => !v)} aria-expanded={fileOpen} data-testid="toggle-file">
-                  <span>Company file</span>
-                  <i aria-hidden />
-                </button>
-                {fileOpen && (
-                  <div className="fx-drawer-body glass">
-                    <p className="path-start-line" data-testid="start-line">
-                      {result.start.companyName ? (
-                        <>
-                          <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
-                          {result.start.stageNote && (
-                            <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
-                              i
-                            </span>
-                          )}
-                          {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
-                        </>
-                      ) : (
-                        <>
-                          <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
-                          {STAGE_LABELS[result.start.stage]}
-                          {result.start.stageNote && (
-                            <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
-                              i
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </p>
-                    {result.founder && result.founder.tags.length > 0 && (
-                      <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
-                        {result.founder.tags.map((t) => (
-                          <span key={t} className="chip" data-chip={`tag:${t}`}>
-                            <span className="chip-value">{t}</span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {context ? (
+                <header className="fx-headline" data-testid="headline">
+                  <b className="fx-odds font-mono">{pct(result.tree.reachVisionShare)}</b>
+                  <span className="fx-odds-text">
+                    of {result.runs.toLocaleString()} simulated futures reach <b>{visionTarget ?? "the vision"}</b>
+                  </span>
+                </header>
+                <p className="path-start-line" data-testid="start-line">
+                  {result.start.companyName ? (
+                    <>
+                      Starts after <b>{result.start.companyName}</b>&apos;s {STAGE_LABELS[result.start.stage]}
+                      {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
+                    </>
+                  ) : (
+                    <>
+                      Starts from your pitch at {STAGE_LABELS[result.start.stage]} · {companyLabel === "You" ? "not" : `${companyLabel} is not`} in Cala&apos;s cohort yet
+                    </>
+                  )}
+                  {result.start.stageNote && (
+                    <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                      i
+                    </span>
+                  )}
+                </p>
+                <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} onCaseStudy={openRealityCase} horizonYears={result.vision.horizonYears || 5} />
+                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} onCaseStudy={allPrecedents.length ? openBranchCase : undefined} leadIds={leadIds} docId={context?.doc.id} />
+                <Precedents precedents={result.precedents} onCaseStudy={openPrecedentCase} />
+                <section className="path-file-wrap" aria-label="Company file">
+                  <button type="button" className="path-section-head path-toggle" onClick={() => setFileOpen((v) => !v)} aria-expanded={fileOpen} data-testid="toggle-file">
+                    <span>Company file</span>
+                    <i aria-hidden />
+                  </button>
+                  {fileOpen && result.founder && result.founder.tags.length > 0 && (
+                    <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
+                      {result.founder.tags.map((t) => (
+                        <span key={t} className="chip" data-chip={`tag:${t}`}>
+                          <span className="chip-value">{t}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {fileOpen &&
+                    (context ? (
                       <CompanyFile doc={context.doc} markdown={context.markdown} verification={context.verification} onAddContext={(u) => void addContext(u)} />
                     ) : (
                       <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
-                        <header className="path-section-head">
-                          <span>Company file</span>
-                        </header>
                         <p className="muted path-empty">{contextError ?? "Building…"}</p>
                       </section>
-                    )}
-                    <Precedents precedents={result.precedents} />
-                  </div>
-                )}
+                    ))}
+                </section>
               </motion.aside>
             )}
           </AnimatePresence>
 
           <AnimatePresence>
-            {showResults && result && (
-              <motion.aside
-                key="right"
-                className="fx-drawer fx-right glass"
-                style={{ width: RIGHT_W }}
-                initial={{ opacity: 0, x: 32 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 32, transition: { duration: 0.3 } }}
-                data-testid="results"
-              >
-                <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} horizonYears={result.vision.horizonYears || 5} />
-                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
-              </motion.aside>
+            {caseStudy && showResults && (
+              <motion.div key="case" className="case-layer" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: 0.18 } }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+                <CaseStudy precedent={caseStudy.precedent} path={caseStudy.path} companyLabel={companyLabel} onClose={() => setCaseStudy(undefined)} />
+              </motion.div>
             )}
           </AnimatePresence>
         </main>

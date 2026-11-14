@@ -124,7 +124,7 @@ export type Precedent = {
   // (or less): shown as a looser comparison.
   fallback?: boolean;
   // source: the round's first sourced URL, else "Cala knowledge query" (query rows carry no URL).
-  path: { stage: Stage; leadName?: string; date?: string; roundId: string; source?: { name: string; url?: string } }[];
+  path: { stage: Stage; leadId?: string; leadName?: string; date?: string; amountUsd?: number; roundId: string; source?: { name: string; url?: string } }[];
 };
 
 export type DecisionNode = {
@@ -175,7 +175,7 @@ export type Reality = {
   outcomeLine: string;
   // Chip-length form of outcomeLine ("Stalls · no round in 24 mo"); older cached runs lack it.
   outcomeShort?: string;
-  precedents: { companyId: string; name: string; roundIds: string[] }[];
+  precedents: Precedent[];
   // True when at least one named precedent is a looser, out-of-domain match.
   precedentsFallback?: boolean;
   sampleSize: number;

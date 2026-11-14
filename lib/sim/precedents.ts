@@ -52,10 +52,13 @@ export function toPrecedent(model: SimModel, companyId: string, reachedVision: b
       e.roundIds.map((rid) => {
         const r = model.cohort.rounds[rid];
         const src = r.sources.find((s) => s.url) ?? r.sources[0];
+        const lead = leadOf(r);
         return {
           stage: e.stage,
-          leadName: leadOf(r)?.name,
+          ...(lead ? { leadId: lead.investorId } : {}),
+          leadName: lead?.name,
           date: r.date,
+          ...(r.amountUsd ? { amountUsd: r.amountUsd } : {}),
           roundId: rid,
           source: src?.url ? { name: src.name, url: src.url } : { name: src?.name ?? NO_URL_SOURCE },
         };
@@ -256,7 +259,7 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
         steps,
         outcomeLine,
         outcomeShort,
-        precedents: named.map((f) => ({ companyId: f.id, name: model.cohort.companies[f.id].name, roundIds: model.episodes[f.id].flatMap((e) => e.roundIds) })),
+        precedents: named.map((f) => toPrecedent(model, f.id, f.reached, like?.(f.id), tier(f) > 0)),
         ...(named.some((f) => tier(f) > 0) ? { precedentsFallback: true } : {}),
         sampleSize: pool.length,
         lowConfidence: pool.length < LOW_CONFIDENCE_N,

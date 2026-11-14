@@ -31,7 +31,11 @@ export type PathMapProps = {
   highways: Highway[];
   // Ordered node-id chains (You -> lead -> lead ...) kept bright and labelled, best first.
   brightPaths: string[][];
+  // A chosen path: its edges and nodes stay bright and thick, everything else dims.
   emphasisEdges?: Set<string>;
+  emphasisNodes?: Set<string>;
+  // A star was clicked (its investor id), or empty space (undefined).
+  onNodeClick?: (id?: string) => void;
   backerIds?: string[];
   youLabel: string;
   phase: PathMapPhase;
@@ -240,7 +244,7 @@ function retarget(sim: Simulation<Node, undefined>, phase: PathMapPhase, h: numb
   sim.force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
 }
 
-export default function PathMap({ network, inset = NO_INSET, highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion }: PathMapProps) {
+export default function PathMap({ network, inset = NO_INSET, highways, brightPaths, emphasisEdges, emphasisNodes, onNodeClick, backerIds, youLabel, phase, reducedMotion }: PathMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const nodesRef = useRef<Map<string, Node>>(new Map());
@@ -250,9 +254,9 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
   const linksRef = useRef<{ links: Link[]; frame: number }>({ links: [], frame: 0 });
   const hoverRef = useRef<Node | null>(null);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
-  const propsRef = useRef({ highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion, inset });
+  const propsRef = useRef({ highways, brightPaths, emphasisEdges, emphasisNodes, onNodeClick, backerIds, youLabel, phase, reducedMotion, inset });
   useEffect(() => {
-    propsRef.current = { highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion, inset };
+    propsRef.current = { highways, brightPaths, emphasisEdges, emphasisNodes, onNodeClick, backerIds, youLabel, phase, reducedMotion, inset };
   });
   const insetKey = `${inset.left}|${inset.right}|${inset.top}|${inset.bottom}`;
 
@@ -382,7 +386,7 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
     ro.observe(wrap);
     resize();
 
-    const onMove = (ev: PointerEvent) => {
+    const hit = (ev: PointerEvent): Node | null => {
       const rect = canvas.getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const y = ev.clientY - rect.top;
@@ -396,11 +400,26 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
           best = n;
         }
       }
-      hoverRef.current = best;
+      return best;
+    };
+    const onMove = (ev: PointerEvent) => {
+      hoverRef.current = hit(ev);
+      canvas.style.cursor = hoverRef.current && propsRef.current.phase === "results" ? "pointer" : "";
     };
     const onLeave = () => (hoverRef.current = null);
+    let down: { x: number; y: number } | null = null;
+    const onDown = (ev: PointerEvent) => (down = { x: ev.clientX, y: ev.clientY });
+    const onUp = (ev: PointerEvent) => {
+      const was = down;
+      down = null;
+      if (!was || Math.hypot(ev.clientX - was.x, ev.clientY - was.y) > 5) return;
+      if (propsRef.current.phase !== "results") return;
+      propsRef.current.onNodeClick?.(hit(ev)?.id);
+    };
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerleave", onLeave);
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointerup", onUp);
 
     const UI = uiFont();
     const MONO = monoFont();
@@ -428,13 +447,27 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
       const edges = edgesRef.current;
       const emphasis = p.emphasisEdges;
       const hasEmphasis = !!emphasis && emphasis.size > 0;
+      const chosen = p.emphasisNodes;
       const brightEdges = new Set<string>();
       for (const chain of p.brightPaths) for (let i = 1; i < chain.length; i++) brightEdges.add(edgeKey(chain[i - 1], chain[i]));
 
-      // Node alpha targets: highway nodes full, others a quiet backdrop.
+      // Node alpha targets: highway nodes full, others a quiet backdrop; with a chosen path only
+      // its stars stay lit.
       for (const n of map.values()) {
         if (n.id === YOU_ID) continue;
-        const target = results ? (n.onHighway ? 1 : 0.42) : p.phase === "simulating" ? 0.55 : 0.75;
+        const target = results
+          ? hasEmphasis && chosen
+            ? chosen.has(n.id)
+              ? 1
+              : n.onHighway
+                ? 0.2
+                : 0.1
+            : n.onHighway
+              ? 1
+              : 0.42
+          : p.phase === "simulating"
+            ? 0.55
+            : 0.75;
         n.alpha += (target - n.alpha) * (motion ? 0.06 : 1);
       }
 
@@ -462,9 +495,10 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
         for (const e of edges.values()) {
           const bright = brightEdges.has(e.key);
           const emph = !hasEmphasis || emphasis!.has(e.key);
-          const base = (bright ? 0.22 : 0.09) * e.alpha * (emph ? 1 : 0.3);
-          ctx.strokeStyle = withAlpha(KIND_COLOR[e.to.kind], base);
-          ctx.lineWidth = 1.5 + Math.sqrt(e.particles.length) * 0.55;
+          const chosenEdge = hasEmphasis && emph;
+          const base = (chosenEdge ? 0.5 : bright ? 0.22 : 0.09) * e.alpha * (emph ? 1 : 0.12);
+          ctx.strokeStyle = withAlpha(chosenEdge ? ACCENT : KIND_COLOR[e.to.kind], base);
+          ctx.lineWidth = (1.5 + Math.sqrt(e.particles.length) * 0.55) * (chosenEdge ? 2.2 : 1);
           ctx.beginPath();
           const [sx, sy] = bezier(e, 0);
           ctx.moveTo(sx, sy);
@@ -481,7 +515,7 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
       for (const e of edges.values()) {
         const bright = brightEdges.has(e.key);
         const emph = !hasEmphasis || emphasis!.has(e.key);
-        const a = e.alpha * (emph ? 1 : 0.22) * (bright ? 1 : 0.7);
+        const a = e.alpha * (emph ? 1 : 0.08) * (bright ? 1 : 0.7);
         if (a < 0.02) continue;
         const spr = sprite(KIND_COLOR[e.to.kind]);
         const dx = e.to.x - e.from.x;
@@ -574,6 +608,13 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
           ctx.lineTo(n.x, n.y + sp);
           ctx.stroke();
         }
+        if (chosen?.has(n.id) && hasEmphasis) {
+          ctx.strokeStyle = withAlpha(ACCENT, 0.85);
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r + 7, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         if (isBacker) {
           ctx.strokeStyle = withAlpha(ACCENT, 0.9);
           ctx.lineWidth = 1.4;
@@ -633,6 +674,7 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
         const labelled = new Set<string>();
         for (const n of map.values()) {
           if (n.id === YOU_ID || !n.onHighway) continue;
+          if (hasEmphasis && chosen && !chosen.has(n.id)) continue;
           const right = n.depth >= 1;
           ctx.font = `600 12px ${UI}`;
           ctx.textAlign = right ? "left" : "right";
@@ -687,6 +729,8 @@ export default function PathMap({ network, inset = NO_INSET, highways, brightPat
       ro.disconnect();
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerleave", onLeave);
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointerup", onUp);
     };
   }, []);
 
