@@ -86,6 +86,8 @@ export type SpotterResult = {
     leadShare: number;
     entryStage?: Stage;
     chequeBand?: [number, number];
+    sectorDist: Partial<Record<Sector, number>>;
+    stageDist: Partial<Record<Stage, number>>;
     lowConfidence: boolean;
   };
   picks: SpotterPick[];
@@ -233,6 +235,8 @@ export function runSpotter(cohort: Cohort, q: SpotterQuery): SpotterResult {
       leadShare: r3(taste.leadShare),
       entryStage: taste.entryStage,
       chequeBand: taste.chequeBand,
+      sectorDist: taste.sectorDist,
+      stageDist: taste.stageDist,
       lowConfidence: taste.rounds < 5,
     },
     picks: top.map((r, i) => ({ rank: i + 1, ...buildPick(idx, taste, r.row, r.fit, r.shape, r.fut, r.combined) })),
