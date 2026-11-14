@@ -41,6 +41,7 @@ export type CohortCompany = {
   status: "active" | "acquired" | "closed" | "unknown";
   maxValuationUsd?: number;
   isUnicorn?: UnicornFlag;
+  tags?: string[]; // fine-grained domain from scripts/tag-cohort.ts (Haiku), e.g. "EEG", "neurotech"
   roundIds: string[]; // chronological
   sources: Source[];
 };
@@ -62,6 +63,9 @@ export type StartState = {
   companyId?: string;
   existingInvestorIds?: string[];
   asOf?: string;
+  // What the company does, for "companies like you" (lib/sim/similarity.ts).
+  tags?: string[];
+  description?: string;
 };
 
 export type Vision = {
@@ -70,8 +74,13 @@ export type Vision = {
   targetHeadcount?: number;
   targetFundingUsd?: number;
   targetValuationUsd?: number;
+  targetRevenueUsd?: number;
+  goesPublic?: boolean;
+  profitable?: boolean; // profitable / bootstrapped: funding is optional on this path
   horizonYears: number;
   sector?: Sector;
+  // One human line for the UI, e.g. "Unicorn = valuation of $1B or more".
+  interpretation?: string;
 };
 
 export type FirstChequeOption = "angel" | "accelerator" | "fund";
@@ -98,6 +107,8 @@ export type Precedent = {
   name: string;
   sector: Sector;
   reachedVision: boolean;
+  // Text similarity (tags + description) to the founder, 0..1; present when the founder gave any.
+  similarity?: number;
   // source: the round's first sourced URL, else "Cala knowledge query" (query rows carry no URL).
   path: { stage: Stage; leadName?: string; date?: string; roundId: string; source?: { name: string; url?: string } }[];
 };

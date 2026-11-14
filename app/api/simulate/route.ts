@@ -2,9 +2,11 @@
 // Results are cached in Aiven Valkey by a hash of the request (and cohort build); without Valkey the
 // route simply computes every time.
 import { createHash } from "node:crypto";
-import { getAnthropic } from "@/lib/anthropic";
+import { aiUnavailableReason, analyzeFounder, type FounderResult } from "@/lib/ai/analyzeFounder";
+import { analyzeVision, type VisionResult } from "@/lib/ai/analyzeVision";
+import { cleanTags, type Analysis } from "@/lib/ai/strict";
 import { findCompanyByName, loadCohort, loadCohortModel, usingCohortFixture } from "@/lib/cohort";
-import { narrate, parseVisionLlm } from "@/lib/sim/llm";
+import { narrate } from "@/lib/sim/llm";
 import { simulate } from "@/lib/sim/simulate";
 import type { Decision, StartState, Vision } from "@/lib/sim/types";
 import { parseVision } from "@/lib/sim/vision";
@@ -18,7 +20,8 @@ export const dynamic = "force-dynamic";
 const RUNS = 5000;
 const SEED = 20261114;
 const MAX_VISION = 1500;
-const CACHE_VERSION = 2;
+const MAX_PITCH = 4000;
+const CACHE_VERSION = 3;
 
 function parseDecision(x: unknown): Decision | undefined {
   if (!x || typeof x !== "object") return undefined;
@@ -29,7 +32,7 @@ function parseDecision(x: unknown): Decision | undefined {
   return undefined;
 }
 
-function cleanProfile(p: unknown): Pick<FounderProfile, "sectors" | "stage" | "raise"> {
+function cleanProfile(p: unknown): Pick<FounderProfile, "sectors" | "stage" | "raise" | "tags" | "oneLiner"> {
   const f = (p && typeof p === "object" ? p : {}) as Partial<FounderProfile>;
   const sectors = Object.fromEntries(
     Object.entries(f.sectors && typeof f.sectors === "object" ? f.sectors : {}).filter(([k, v]) => isSector(k) && typeof v === "number" && v > 0),
@@ -38,6 +41,8 @@ function cleanProfile(p: unknown): Pick<FounderProfile, "sectors" | "stage" | "r
     sectors,
     stage: typeof f.stage === "string" && isStage(f.stage) ? f.stage : undefined,
     raise: typeof f.raise === "number" && f.raise > 0 ? f.raise : undefined,
+    tags: cleanTags(f.tags, 12),
+    oneLiner: typeof f.oneLiner === "string" ? f.oneLiner.slice(0, 200) : undefined,
   };
 }
 
@@ -51,6 +56,7 @@ export async function POST(req: Request) {
   }
   if (!body || typeof body !== "object") return Response.json({ error: "invalid_body" }, { status: 400 });
   const visionText = typeof body.visionText === "string" ? body.visionText.slice(0, MAX_VISION) : "";
+  const pitchText = typeof body.pitchText === "string" ? body.pitchText.slice(0, MAX_PITCH) : "";
   const profile = cleanProfile(body.profile);
   const decision = parseDecision(body.decision);
   const companyName = typeof body.companyName === "string" ? body.companyName.slice(0, 200) : "";
@@ -58,47 +64,70 @@ export async function POST(req: Request) {
   const cohort = loadCohort();
   const fixture = usingCohortFixture();
   const company = companyName ? findCompanyByName(cohort, companyName) : undefined;
-  const useLlm = process.env.E2E_MOCK !== "1" && !!getAnthropic();
+  const useLlm = !aiUnavailableReason();
 
   const key =
     `${ROUTE_PREFIX}simulate:v${CACHE_VERSION}:` +
     createHash("sha1")
-      .update(JSON.stringify({ a: cohort.asOf, n: Object.keys(cohort.rounds).length, fixture, profile, visionText, decision, c: company?.id ?? null, llm: useLlm }))
+      .update(JSON.stringify({ a: cohort.asOf, n: Object.keys(cohort.rounds).length, fixture, profile, visionText, pitchText, decision, c: company?.id ?? null, llm: useLlm }))
       .digest("hex");
   const hit = await valkeyGetJson(key);
   if (hit && typeof hit === "object") {
     return Response.json({ ...(hit as object), cached: true, latencyMs: Math.round(performance.now() - t0) });
   }
 
-  const keywordVision = parseVision(visionText);
-  let vision: Vision = keywordVision;
-  let visionSource: "llm" | "keyword" = "keyword";
-  if (useLlm && visionText.trim()) {
-    const v = await parseVisionLlm(visionText, keywordVision);
-    if (v) {
-      vision = v;
-      visionSource = "llm";
-    }
-  }
+  // Haiku reads the vision and (when sent) the pitch; the keyword parsers answer only on failure,
+  // and the response says which one did.
+  const [visionR, founderR]: [VisionResult | undefined, FounderResult | undefined] = await Promise.all([
+    visionText.trim() ? analyzeVision(visionText) : undefined,
+    pitchText.trim() ? analyzeFounder(pitchText) : undefined,
+  ]);
+  const vision: Vision = visionR?.vision ?? parseVision(visionText);
+  const founder = founderR?.founder;
 
   const model = loadCohortModel();
+  const sectors = Object.keys(profile.sectors).length ? profile.sectors : (founder?.sectorWeights ?? {});
+  const tags = cleanTags([...(profile.tags ?? []), ...(founder?.tags ?? [])], 12);
+  const description = [founder?.oneLiner ?? profile.oneLiner, pitchText].filter(Boolean).join(". ");
   const start: StartState = {
-    sectors: profile.sectors,
-    stage: profile.stage ?? "pre-seed",
-    raiseUsd: profile.raise,
+    sectors,
+    stage: profile.stage ?? founder?.stage ?? "pre-seed",
+    raiseUsd: profile.raise ?? founder?.raiseUsd,
     companyId: company?.id,
+    ...(tags.length ? { tags } : {}),
+    ...(description ? { description } : {}),
   };
   const tSim = performance.now();
   const result = simulate(start, vision, model, { runs: RUNS, seed: SEED, decision });
   const simMs = Math.round(performance.now() - tSim);
   result.fixture = fixture;
+  let narrative: "ai" | "none" = "none";
   if (useLlm) {
     const lines = await narrate(result.tree.children, model);
-    if (lines) result.explanation = lines;
+    if (lines) {
+      result.explanation = lines;
+      narrative = "ai";
+    }
   }
 
-  const payload = { ...result, vision, visionSource, simMs };
+  const analysisDetail: { vision?: Analysis; founder?: Analysis; fallbackReasons?: string[] } = {};
+  if (visionR) analysisDetail.vision = visionR.analysis;
+  if (founderR) analysisDetail.founder = founderR.analysis;
+  const reasons = [visionR?.fallbackReason, founderR?.fallbackReason].filter((r): r is string => !!r);
+  if (reasons.length) analysisDetail.fallbackReasons = reasons;
+  const ran = [visionR, founderR].filter((r) => !!r);
+  const analysis: Analysis | undefined = ran.length ? (ran.some((r) => r.analysis === "keyword_fallback") ? "keyword_fallback" : "ai") : undefined;
+
+  const payload = {
+    ...result,
+    vision,
+    visionSource: visionR?.analysis === "ai" ? "llm" : "keyword",
+    ...(analysis ? { analysis, analysisDetail } : {}),
+    ...(founder ? { founder } : {}),
+    narrative,
+    simMs,
+  };
   // A keyword answer standing in for a failed LLM call is not cached, so the LLM gets another try.
-  if (!useLlm || visionSource === "llm") void valkeySetJson(key, payload);
+  if (!useLlm || analysis !== "keyword_fallback") void valkeySetJson(key, payload);
   return Response.json({ ...payload, cached: false, latencyMs: Math.round(performance.now() - t0) });
 }

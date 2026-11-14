@@ -6,6 +6,7 @@ import type { Sector } from "./taxonomy";
 // to earlier ones instead of replacing them.
 const EVIDENCE_KEY = "sectors.evidence";
 const MAX_CONFIDENCE = 0.99;
+const MAX_TAGS = 12;
 
 export function emptyProfile(id = "live"): FounderProfile {
   return { id, sectors: {}, teamSignals: [], confidence: {} };
@@ -89,6 +90,11 @@ export function mergeProfile(p: FounderProfile, e: Extraction): FounderProfile {
   if (e.founder_name && (!p.name || wins(e.founder_name.confidence, p.confidence.name))) {
     next.name = e.founder_name.value;
     confidence.name = e.founder_name.confidence;
+  }
+  if (e.tags?.length) {
+    const tags = [...(p.tags ?? [])];
+    for (const t of e.tags) if (!tags.some((x) => x.toLowerCase() === t.toLowerCase())) tags.push(t);
+    next.tags = tags.slice(0, MAX_TAGS);
   }
   return next;
 }

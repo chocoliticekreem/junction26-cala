@@ -1,4 +1,4 @@
-// Vision parsing (keyword fallback) and the rule that decides whether a path "reached the vision".
+// Vision parsing (keyword fallback; lib/ai/analyzeVision.ts is the primary path) and the rule that decides whether a path "reached the vision".
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { STAGE_LABELS, stageIndex, type Stage } from "@/lib/taxonomy";
 import type { SimModel, Vision, VisionBasis } from "./types";
@@ -42,9 +42,30 @@ export function parseVision(text: string): Vision {
   const years = t.match(/\bin\s+(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten)\s+years?\b/i);
   if (years) v.horizonYears = Math.min(10, Math.max(1, WORDS[years[1].toLowerCase()] ?? parseInt(years[1], 10)));
 
+  const revenue = t.match(new RegExp(`${MONEY}\\s+(?:in\\s+)?(?:revenue|arr|sales)`, "i")) ?? t.match(new RegExp(`(?:revenue|arr|sales)\\s+(?:of\\s+)?${MONEY}`, "i"));
+  if (revenue) v.targetRevenueUsd = money(revenue[2], revenue[3], revenue[1]);
+  if (/\b(?:ipo|public company|go(?:ing)? public|listed)\b/i.test(t)) v.goesPublic = true;
+  if (/\b(?:profitab|bootstrap|self[- ]funded|ramen)/i.test(t)) v.profitable = true;
+
   const sector = fallbackExtract(t).sectors[0]?.label;
   if (sector) v.sector = sector;
+  v.interpretation = interpretVision(v);
   return v;
+}
+
+// A plain line saying how the vision was read; used when Haiku gives none and by the fallback.
+export function interpretVision(v: Vision): string {
+  const parts: string[] = [];
+  if (v.targetValuationUsd === 10 * UNICORN_USD && /decacorn/i.test(v.text)) parts.push("Decacorn = valuation of $10B or more");
+  else if (v.targetValuationUsd === UNICORN_USD && /unicorn/i.test(v.text)) parts.push("Unicorn = valuation of $1B or more");
+  else if (v.targetValuationUsd) parts.push(`Valuation of ${fmtUsd(v.targetValuationUsd)} or more`);
+  if (v.goesPublic) parts.push("IPO = a public listing, after Series B+ rounds");
+  if (v.profitable) parts.push("Profitable = revenue covers costs, so outside funding is optional");
+  if (v.targetRevenueUsd) parts.push(`${fmtUsd(v.targetRevenueUsd)} in revenue`);
+  if (v.targetFundingUsd) parts.push(`${fmtUsd(v.targetFundingUsd)} raised in total`);
+  if (v.targetHeadcount) parts.push(`a team of ${v.targetHeadcount}`);
+  if (!parts.length) parts.push(`Reach ${STAGE_LABELS[v.targetStage === "pre-idea" ? "pre-seed" : v.targetStage]}`);
+  return `${parts.join("; ")}, within ${v.horizonYears} years`;
 }
 
 export type CompanyFacts = { stageIdx: number; totalUsd: number; valuationUsd?: number };
@@ -70,6 +91,12 @@ function cohortHasValuations(model: SimModel): boolean {
 }
 
 export function visionBasis(vision: Vision, model: SimModel): VisionBasis {
+  const b = basisCore(vision, model);
+  if (vision.profitable) b.text += " Profitability is not in round data, so funding paths are judged by stage.";
+  return b;
+}
+
+function basisCore(vision: Vision, model: SimModel): VisionBasis {
   if (vision.targetValuationUsd) {
     const target = vision.targetValuationUsd;
     const targetStage: Stage = "series-b-plus";

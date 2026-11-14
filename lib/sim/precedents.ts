@@ -3,6 +3,7 @@
 import { STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import type { Precedent, Reality, RealityStep, SimModel } from "./types";
 import type { Prepared, RunOutcome } from "./simulate";
+import { queryVector, similarityIndex, textSimilarity } from "./similarity";
 import { realReachedVision } from "./vision";
 import { LOW_CONFIDENCE_N, ROUND_STAGES, fmtMonths, fmtUsd, leadOf, median, quantile, roundStageIndex } from "./util";
 
@@ -10,6 +11,9 @@ const MAX_PRECEDENTS = 8;
 const MAX_REALITIES = 5;
 const MIN_REALITY_SHARE = 0.02;
 const NO_URL_SOURCE = "Cala knowledge query";
+// Weight of text similarity (0..1) in the precedent score, next to sector (x3), stage (2) and
+// shared investors (1.5 each).
+const LIKE_W = 4;
 
 type Facts = { id: string; sector: Sector; reached: boolean; stalledAt?: Stage; lastStage: Stage; stages: Set<Stage>; investors: Set<string>; leads: Set<string> };
 
@@ -33,7 +37,7 @@ function companyFactsList(model: SimModel, prep: Prepared): Facts[] {
   return out;
 }
 
-export function toPrecedent(model: SimModel, companyId: string, reachedVision: boolean): Precedent {
+export function toPrecedent(model: SimModel, companyId: string, reachedVision: boolean, similarity?: number): Precedent {
   const co = model.cohort.companies[companyId];
   const eps = model.episodes[companyId] ?? [];
   return {
@@ -41,6 +45,7 @@ export function toPrecedent(model: SimModel, companyId: string, reachedVision: b
     name: co.name,
     sector: co.sector,
     reachedVision,
+    ...(similarity !== undefined ? { similarity: Math.round(similarity * 1000) / 1000 } : {}),
     path: eps.flatMap((e) =>
       e.roundIds.map((rid) => {
         const r = model.cohort.rounds[rid];
@@ -62,8 +67,12 @@ export function buildPrecedents(model: SimModel, prep: Prepared): Precedent[] {
   const ds = prep.company ? ROUND_STAGES[Math.max(0, prep.lastStageIdx)] : prep.firstStage;
   const facts = companyFactsList(model, prep);
   const existing = new Set(prep.allExisting);
+  const like = likeness(model, prep);
   const score = (f: Facts) =>
-    (sw.size ? (sw.get(f.sector) ?? 0) * 3 : 1) + (f.stages.has(ds) ? 2 : 0) + 1.5 * [...f.investors].filter((i) => existing.has(i)).length;
+    (sw.size ? (sw.get(f.sector) ?? 0) * 3 : 1) +
+    (f.stages.has(ds) ? 2 : 0) +
+    1.5 * [...f.investors].filter((i) => existing.has(i)).length +
+    (like ? LIKE_W * like(f.id) : 0);
   const ranked = [...facts].sort((a, b) => score(b) - score(a) || a.id.localeCompare(b.id));
   const chosen: Facts[] = [];
   const take = (pred: (f: Facts) => boolean, n: number) => {
@@ -78,7 +87,15 @@ export function buildPrecedents(model: SimModel, prep: Prepared): Precedent[] {
   take((f) => f.reached, 4);
   take((f) => !!f.stalledAt && roundStageIndex(f.stalledAt) >= roundStageIndex(ds), 3);
   take(() => true, MAX_PRECEDENTS);
-  return chosen.map((f) => toPrecedent(model, f.id, f.reached));
+  return chosen.map((f) => toPrecedent(model, f.id, f.reached, like?.(f.id)));
+}
+
+// Text similarity to the founder's tags + description, or undefined when the founder gave none.
+function likeness(model: SimModel, prep: Prepared): ((companyId: string) => number) | undefined {
+  if (!prep.like.tags?.length && !prep.like.text?.trim()) return undefined;
+  const idx = similarityIndex(model.cohort);
+  const q = queryVector(idx, prep.like);
+  return q.size ? (id) => textSimilarity(idx, q, id) : undefined;
 }
 
 type ClassKey = string;
@@ -127,6 +144,7 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
   }
 
   const facts = companyFactsList(model, prep);
+  const like = likeness(model, prep);
   const sectorSet = new Set(prep.sectors.map(([s]) => s));
   const target = STAGE_LABELS[prep.basis.targetStage];
   const visionName = prep.basis.targetValuationUsd ? `a ${fmtUsd(prep.basis.targetValuationUsd)} outcome` : target;
@@ -186,9 +204,8 @@ export function buildRealities(outs: RunOutcome[], prep: Prepared, model: SimMod
       const inSector = sectorSet.size ? all.filter((f) => sectorSet.has(f.sector)) : all;
       const pool = inSector.length ? inSector : all;
       const routeLeads = new Set(first.steps.map((s) => s.leadId).filter((x): x is string => !!x));
-      const ranked = [...pool].sort(
-        (a, b) => [...b.leads].filter((l) => routeLeads.has(l)).length - [...a.leads].filter((l) => routeLeads.has(l)).length || a.id.localeCompare(b.id),
-      );
+      const shared = (f: Facts) => [...f.leads].filter((l) => routeLeads.has(l)).length;
+      const ranked = [...pool].sort((a, b) => shared(b) - shared(a) || (like ? like(b.id) - like(a.id) : 0) || a.id.localeCompare(b.id));
       return {
         title,
         outcome,

@@ -11,7 +11,7 @@
 // vectors are present-day and would leak the future into an asOf in the past.
 import { SECTOR_SHORT, STAGE_LABELS, type Sector, type Stage } from "@/lib/taxonomy";
 import type { Revealed } from "@/lib/types";
-import type { Cohort, InvestorKind } from "./cohort";
+import type { Cohort, InvestorKind } from "../types";
 import { MONTH_MS, ROUND_STAGES, median, spotterIndex, type SpotterIndex } from "./base";
 
 export const LEAD_WEIGHT = 1.5;
@@ -158,14 +158,17 @@ function tasteChips(t: InvestorTaste): string[] {
 
 // Fit of a company to the taste, 0..1. The investor would join at the company's NEXT round, so the
 // stage term reads the taste at that stage. Both terms are relative to the investor's own top
-// sector / stage, so a focused and a broad investor are on the same scale.
+// sector / stage, so a focused and a broad investor are on the same scale. The sector term is the
+// larger of the sector share and `like`, the company's text similarity to the investor's portfolio
+// (lib/sim/similarity.ts) relative to the best candidate's: a neurotech company filed under
+// "deep tech" still fits a fund whose portfolio is neurotech filed under "medtech".
 export const FIT_SECTOR_W = 0.6;
 export const FIT_STAGE_W = 0.4;
 
-export function tasteFit(t: InvestorTaste, sector: Sector, nextStage: Stage): number {
+export function tasteFit(t: InvestorTaste, sector: Sector, nextStage: Stage, like = 0): number {
   const maxS = Math.max(0, ...Object.values<number | undefined>(t.sectorDist).map((v) => v ?? 0));
   const maxG = Math.max(0, ...ROUND_STAGES.map((s) => t.stageDist[s] ?? 0));
-  const s = maxS ? (t.sectorDist[sector] ?? 0) / maxS : 0;
+  const s = Math.max(maxS ? (t.sectorDist[sector] ?? 0) / maxS : 0, Math.min(1, Math.max(0, like)));
   const g = maxG ? (t.stageDist[nextStage] ?? 0) / maxG : 0;
   return FIT_SECTOR_W * s + FIT_STAGE_W * g;
 }
