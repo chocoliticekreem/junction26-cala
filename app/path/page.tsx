@@ -1,23 +1,24 @@
 "use client";
 
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import CacheStats from "@/components/CacheStats";
 import TopBar from "@/components/TopBar";
 import { buildContext, errorMessage, fetchNetwork, resolveCompany, runSimulate } from "@/components/path/api";
 import CompanyFile from "@/components/path/CompanyFile";
-import Interview, { type InterviewStep } from "@/components/path/Interview";
+import HowThisWorks from "@/components/path/HowThisWorks";
+import Interview, { type CompanyMode, type InterviewStep } from "@/components/path/Interview";
 import NextMoves from "@/components/path/NextMoves";
-import PathMap, { KIND_COLOR, KIND_LABEL, edgeKey } from "@/components/path/PathMap";
+import PathMap, { type MapInset, edgeKey } from "@/components/path/PathMap";
 import Precedents from "@/components/path/Precedents";
 import Realities from "@/components/path/Realities";
-import { YOU_ID, type CompanyCandidate, type ContextResult, type Decision, type Highway, type InvestorKind, type NetworkData, type SimulateResponse, type Upload } from "@/components/path/types";
+import { YOU_ID, type CompanyCandidate, type ContextResult, type Decision, type Highway, type NetworkData, type SimulateResponse, type Upload } from "@/components/path/types";
 import { loadReplay } from "@/lib/data";
 import { fallbackExtract } from "@/lib/fallbackExtract";
 import { mergeProfile } from "@/lib/mergeProfile";
 import { correctCompanyName } from "@/lib/nameFix";
 import { getMyCompanies, getMyCompaniesServer, saveMyCompany, subscribeMyCompanies, type SavedCompany } from "@/lib/myCompanies";
 import { fmtUsd } from "@/lib/sim/util";
-import { parseVision } from "@/lib/sim/vision";
+import { UNICORN_USD, parseVision } from "@/lib/sim/vision";
 import { isSttSupported } from "@/lib/stt";
 import { SECTOR_SHORT, STAGE_LABELS, type Sector } from "@/lib/taxonomy";
 import type { FounderProfile } from "@/lib/types";
@@ -25,8 +26,15 @@ import { usePitch } from "@/lib/usePitch";
 
 const REPLAY = loadReplay();
 const EMPTY_NET: NetworkData = { nodes: [], edges: [] };
-const KINDS: InvestorKind[] = ["fund", "angel", "accelerator", "cvc"];
 const subscribeNever = () => () => {};
+
+// Stage geometry (px): the brief bar and the two drawers the map lays out around.
+const BAR_H = 76;
+const LEFT_W = 316;
+const LEFT_TAB_W = 44;
+const RIGHT_W = 456;
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+const SPRING = { duration: 0.55, ease: EASE };
 
 type Phase = "idle" | "simulating" | "results";
 
@@ -42,19 +50,24 @@ function useReducedMotion(): boolean {
   return reduced;
 }
 
-// The engine's keyword read of the vision, shown while the founder types. The run's visionBasis
-// (LLM-parsed when a key is set) is what the results show.
-function visionTarget(text: string): string {
+// The engine's keyword read of the vision in a few words ("Unicorn · 5 yrs"), shown while the
+// founder types. The run's visionBasis (LLM-parsed when a key is set) is what the (i) shows.
+function visionShort(text: string): string {
   const v = parseVision(text);
-  const parts = [STAGE_LABELS[v.targetStage]];
-  if (v.targetValuationUsd) parts.push(`${fmtUsd(v.targetValuationUsd)} valuation`);
+  const parts: string[] = [];
+  if (v.targetValuationUsd && v.targetValuationUsd >= 10 * UNICORN_USD) parts.push("Decacorn");
+  else if (v.targetValuationUsd && v.targetValuationUsd >= UNICORN_USD) parts.push("Unicorn");
+  else {
+    parts.push(STAGE_LABELS[v.targetStage]);
+    if (v.targetValuationUsd) parts.push(`${fmtUsd(v.targetValuationUsd)} valuation`);
+  }
   if (v.targetHeadcount) parts.push(`${v.targetHeadcount} people`);
   if (v.targetFundingUsd) parts.push(`${fmtUsd(v.targetFundingUsd)} raised`);
-  parts.push(`${v.horizonYears}y`);
+  parts.push(`${v.horizonYears} yrs`);
   return parts.join(" · ");
 }
 
-// One line of what the pitch gave the engine so far; replaces the old chip panel.
+// One line of what the pitch gave the engine so far.
 function pitchRead(p: FounderProfile): string | undefined {
   const sectors = (Object.entries(p.sectors) as [Sector, number][])
     .sort((a, b) => b[1] - a[1])
@@ -64,6 +77,8 @@ function pitchRead(p: FounderProfile): string | undefined {
   return parts.length ? parts.join(" · ") : undefined;
 }
 
+const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1).replace(/\s+\S*$/, "")}…` : s);
+
 export default function PathPage() {
   const q1 = usePitch(REPLAY);
   const q2 = usePitch([]);
@@ -71,6 +86,9 @@ export default function PathPage() {
   const reducedMotion = useReducedMotion();
 
   const [phase, setPhase] = useState<Phase>("idle");
+  // The brief bar was clicked: the CTA is back over the map while the last result stays loaded.
+  const [editing, setEditing] = useState(false);
+  const [mode, setMode] = useState<CompanyMode>("existing");
   const [companyName, setCompanyName] = useState("");
   const [website, setWebsite] = useState("");
   const [candidates, setCandidates] = useState<CompanyCandidate[]>([]);
@@ -92,23 +110,34 @@ export default function PathPage() {
   const [error, setError] = useState<string | undefined>();
   const [realityId, setRealityId] = useState<string | undefined>();
   const [decision, setDecision] = useState<Decision | undefined>();
+  const [fileOpen, setFileOpen] = useState(true);
   const epoch = useRef(0);
   // A saved company arrives with its Cala match; the lookup for that exact name must not undo it.
   const presetFor = useRef<string | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchNetwork().then(setNetwork, (e) => setNetworkError(errorMessage(e)));
   }, []);
 
-  // Candidate lookup as the name is typed; the best candidate is preselected, the founder can
-  // change it inline.
+  // The investor page links "Company file" to /?company=<name>: the field is pre-filled as an
+  // existing company and resolved; the founder still presses Simulate.
+  useEffect(() => {
+    const name = new URLSearchParams(window.location.search).get("company")?.trim();
+    if (!name) return;
+    queueMicrotask(() => {
+      setMode("existing");
+      setCompanyName(name);
+    });
+  }, []);
+
+  // Candidate lookup as the name is typed (existing companies only); the best candidate is
+  // preselected, the founder can change it inline.
   useEffect(() => {
     const name = companyName.trim();
     const site = website.trim();
     let alive = true;
     const id = window.setTimeout(() => {
-      if (name.length < 2) {
+      if (mode === "new" || name.length < 2) {
         setCandidates([]);
         setAutoPick(undefined);
         setResolving(false);
@@ -144,7 +173,7 @@ export default function PathPage() {
       alive = false;
       window.clearTimeout(id);
     };
-  }, [companyName, website]);
+  }, [companyName, website, mode]);
 
   const profile = useMemo(() => {
     const typed = pitchText.trim();
@@ -160,7 +189,17 @@ export default function PathPage() {
   const pitchSpoken = pitchTokens.map((t) => t.text).join(" ").trim();
   const pitch = [fixName(pitchText.trim()), pitchSpoken].filter(Boolean).join(" ");
   const companyLabel = result?.start.companyName || candidate?.name || companyName.trim() || result?.founder?.company || profile.company || "You";
-  const step: InterviewStep = !pitch ? (companyName.trim() ? "pitch" : "company") : !vision ? "vision" : "ready";
+  const step: InterviewStep = !pitch ? (mode === "new" || companyName.trim() ? "pitch" : "company") : !vision ? "vision" : "ready";
+  const read = pitch ? pitchRead(profile) : undefined;
+  const visionTarget = vision ? visionShort(vision) : undefined;
+
+  const onMode = useCallback((m: CompanyMode) => {
+    presetFor.current = null;
+    setPicked(false);
+    setCandidate(null);
+    setWebsite("");
+    setMode(m);
+  }, []);
 
   const onCompanyName = useCallback((v: string) => {
     presetFor.current = null;
@@ -188,6 +227,7 @@ export default function PathPage() {
       presetFor.current = s.name.trim();
       q1.reset();
       q2.reset();
+      setMode(s.candidate || s.website ? "existing" : mode);
       setCompanyName(s.name);
       setWebsite(s.website ?? "");
       setCandidate(s.candidate ?? null);
@@ -195,7 +235,7 @@ export default function PathPage() {
       setPitchText(s.pitch);
       setVisionText(s.vision);
     },
-    [q1, q2],
+    [q1, q2, mode],
   );
 
   const contextBody = useCallback(
@@ -204,17 +244,24 @@ export default function PathPage() {
   );
 
   const simulate = useCallback(
-    async (d?: Decision) => {
+    async (d: Decision | undefined, fresh: boolean) => {
       const my = ++epoch.current;
       setError(undefined);
-      if (!result) {
+      const prior = fresh ? undefined : result;
+      const ctxPrior = fresh ? undefined : context;
+      if (fresh) {
+        setResult(undefined);
+        setContext(undefined);
+        setContextError(undefined);
+        setRealityId(undefined);
+        setDecision(undefined);
+        setEditing(false);
         setPhase("simulating");
         setPicked(true);
         saveMyCompany({ name: candidate?.name ?? (companyName.trim() || companyLabel), website: website.trim() || undefined, candidate: candidate ?? undefined, pitch, vision });
-        window.setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" }), 50);
       }
       const body = { profile, pitchText: pitch || undefined, visionText: vision, decision: d, companyName: candidate?.name };
-      const [sim, ctx] = await Promise.allSettled([runSimulate(body), context ? Promise.resolve(undefined) : buildContext(contextBody(uploads))]);
+      const [sim, ctx] = await Promise.allSettled([runSimulate(body), ctxPrior ? Promise.resolve(undefined) : buildContext(contextBody(uploads))]);
       if (my !== epoch.current) return;
       if (ctx.status === "fulfilled") {
         if (ctx.value) {
@@ -227,10 +274,10 @@ export default function PathPage() {
         setPhase("results");
       } else {
         setError(errorMessage(sim.reason));
-        setPhase(result ? "results" : "idle");
+        setPhase(prior ? "results" : "idle");
       }
     },
-    [profile, pitch, vision, candidate, companyName, website, companyLabel, context, contextBody, uploads, result, reducedMotion],
+    [profile, pitch, vision, candidate, companyName, website, companyLabel, context, contextBody, uploads, result],
   );
 
   const reset = useCallback(() => {
@@ -239,6 +286,8 @@ export default function PathPage() {
     q1.reset();
     q2.reset();
     setPhase("idle");
+    setEditing(false);
+    setMode("existing");
     setCompanyName("");
     setWebsite("");
     setCandidates([]);
@@ -255,7 +304,7 @@ export default function PathPage() {
     setError(undefined);
     setRealityId(undefined);
     setDecision(undefined);
-    window.scrollTo({ top: 0 });
+    setFileOpen(true);
   }, [q1, q2]);
 
   const addContext = useCallback(
@@ -276,7 +325,7 @@ export default function PathPage() {
     (d?: Decision) => {
       setDecision(d);
       setRealityId(undefined);
-      void simulate(d);
+      void simulate(d, false);
     },
     [simulate],
   );
@@ -317,162 +366,212 @@ export default function PathPage() {
 
   const mic = (on: boolean): "idle" | "listening" | "unsupported" => (!sttSupported ? "unsupported" : on ? "listening" : "idle");
   const backerIds = result?.start.existingInvestors.map((b) => b.id);
-  const showResults = phase !== "idle";
+  const showInput = phase === "idle" || editing;
+  const showResults = phase === "results" && !editing && !!result;
+  const mapPhase = editing ? "idle" : phase;
+  const inset = useMemo<MapInset>(
+    () => (showResults ? { left: (fileOpen ? LEFT_W : LEFT_TAB_W) + 16, right: RIGHT_W + 16, top: BAR_H, bottom: 16 } : { left: 0, right: 0, top: 0, bottom: 0 }),
+    [showResults, fileOpen],
+  );
+  const briefLabel = mode === "new" && !companyName.trim() ? "New idea" : companyLabel;
 
   return (
-    <div className="shell path-shell" data-testid="path-page" data-phase={phase}>
-      <TopBar
-        inbox={null}
-        subtitle="Founder path"
-        showFixtureBanner={false}
-        tools={
-          <button type="button" className="btn" onClick={reset} data-testid="new-simulation" title="Clear the company, pitch, vision and results">
-            New simulation
-          </button>
-        }
-      />
-      <main className={`path-stage ${showResults ? "is-results" : ""}`}>
-        <Interview
-          step={step}
-          busy={phase === "simulating"}
-          companyName={companyName}
-          onCompanyName={onCompanyName}
-          website={website}
-          onWebsite={onWebsite}
-          candidates={candidates}
-          autoPick={autoPick}
-          resolving={resolving}
-          resolveError={resolveError}
-          company={candidate}
-          picked={picked}
-          onPick={pick}
-          onChangeCompany={() => setPicked(false)}
-          saved={saved}
-          onLoadSaved={loadSaved}
-          onNewCompany={reset}
-          pitchTokens={pitchTokens}
-          pitchText={pitchText}
-          onPitchText={setPitchText}
-          pitchRead={pitch ? pitchRead(profile) : undefined}
-          micState={mic(q1.micOn)}
-          onMic={q1.toggleMic}
-          onReplay={q1.replay}
-          replaying={q1.replaying}
-          visionTokens={visionTokens}
-          visionText={visionText}
-          onVisionText={setVisionText}
-          visionMicState={mic(q2.micOn)}
-          onVisionMic={q2.toggleMic}
-          visionTarget={vision ? visionTarget(vision) : undefined}
-          onSimulate={() => void simulate(decision)}
+    <MotionConfig reducedMotion="user" transition={SPRING}>
+      <div className="shell path-shell" data-testid="path-page" data-phase={phase} data-view={showInput ? "input" : phase}>
+        <TopBar
+          inbox={null}
+          subtitle="Founder path"
+          showFixtureBanner={false}
+          tools={
+            <>
+              <HowThisWorks result={result} vision={vision} networkError={networkError} />
+              <button type="button" className="btn" onClick={reset} data-testid="new-simulation" title="Clear the company, pitch, vision and results">
+                New simulation
+              </button>
+            </>
+          }
         />
-        {error && (
-          <p className="path-error" role="alert" data-testid="sim-error">
-            {error}
-          </p>
-        )}
-
-        {showResults && (
-          <div className="path-results" ref={resultsRef} data-testid="results">
-            <section className="path-left">
-              {phase === "results" && result && (
-                <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} startLabel={companyLabel} horizonYears={result.vision.horizonYears || 5} />
-              )}
-              <div className="path-map-pane glass">
-                <PathMap network={network} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} backerIds={backerIds} youLabel={companyLabel} phase={phase} reducedMotion={reducedMotion} />
-                <div className="path-legend" aria-label="Legend">
-                  {KINDS.map((k) => (
-                    <span key={k}>
-                      <i style={{ background: KIND_COLOR[k] }} /> {KIND_LABEL[k]}
-                    </span>
-                  ))}
-                  <span>
-                    <i className="path-legend-you" /> {companyLabel}
-                  </span>
-                  {networkError ? (
-                    <span className="muted" data-testid="network-error">
-                      investor map: {networkError}
-                    </span>
-                  ) : (
-                    <span className="muted">size = rounds led</span>
-                  )}
-                </div>
-                {phase === "results" && result && (
-                  <p className="path-honesty font-mono" data-testid="honesty">
-                    Evidence from {result.tree.sampleSize} real rounds in Cala, not a forecast · {result.runs.toLocaleString()} runs · as of {result.asOf}
-                    <CacheStats />
-                  </p>
-                )}
-                {phase === "simulating" && (
-                  <div className="path-simulating" role="status" data-testid="simulating">
-                    <p className="hero-kicker">Simulating</p>
-                    <p className="path-sim-title">5,000 futures of {companyLabel}</p>
-                  </div>
-                )}
-              </div>
-            </section>
-            {phase === "results" && result && (
-              <aside className="path-rail">
-                {context ? (
-                  <CompanyFile doc={context.doc} markdown={context.markdown} verification={context.verification} onAddContext={(u) => void addContext(u)} />
-                ) : (
-                  <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
-                    <header className="path-section-head">
-                      <span>Your company file</span>
-                    </header>
-                    <p className="muted path-empty">{contextError ?? "Building…"}</p>
-                  </section>
-                )}
-                <p className="path-start-line" data-testid="start-line">
-                  {result.start.companyName ? (
-                    <>
-                      <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
-                      {result.start.stageNote && (
-                        <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
-                          i
-                        </span>
-                      )}
-                      {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
-                    </>
-                  ) : (
-                    <>
-                      <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
-                      {STAGE_LABELS[result.start.stage]}
-                      {result.start.stageNote && (
-                        <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
-                          i
-                        </span>
-                      )}
-                    </>
-                  )}
-                </p>
-                <p className="path-vision-line" data-testid="vision-line" title={result.visionBasis.text}>
-                  <b>{result.vision.interpretation ?? result.visionBasis.text}</b>
-                  <span className="muted"> · {vision}</span>
-                  {result.analysis === "keyword_fallback" && (
-                    <span className="muted path-fallback" data-testid="keyword-fallback" title={result.analysisDetail?.fallbackReasons?.join("; ") || "The AI reader was unavailable; keyword rules read the text."}>
-                      {" "}
-                      · keyword fallback
-                    </span>
-                  )}
-                </p>
-                {result.vision.interpretation && <p className="muted path-empty">{result.visionBasis.text}</p>}
-                {result.founder && result.founder.tags.length > 0 && (
-                  <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
-                    {result.founder.tags.map((t) => (
-                      <span key={t} className="chip" data-chip={`tag:${t}`}>
-                        <span className="chip-value">{t}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
-                <Precedents precedents={result.precedents} />
-              </aside>
-            )}
+        <main className="fx-stage" data-view={showInput ? "input" : phase}>
+          <div className="fx-map" data-view={showInput ? "input" : phase}>
+            <PathMap network={network} inset={inset} highways={highways} brightPaths={brightPaths} emphasisEdges={emphasis} backerIds={backerIds} youLabel={companyLabel} phase={mapPhase} reducedMotion={reducedMotion} />
           </div>
-        )}
-      </main>
-    </div>
+
+          <AnimatePresence initial={false}>
+            {showInput ? (
+              <motion.section key="hero" className="fx-hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.25 } }}>
+                <motion.h1 className="path-title" layout="position" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, transition: { duration: 0.25 } }}>
+                  Where does {briefLabel === "You" ? "your company" : briefLabel} go from here?
+                </motion.h1>
+                <motion.div className="fx-card glass" layoutId="brief" style={{ borderRadius: 22 }}>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.25, duration: 0.3 } }} exit={{ opacity: 0, transition: { duration: 0.12 } }}>
+                    <Interview
+                    step={step}
+                    busy={phase === "simulating"}
+                    mode={mode}
+                    onMode={onMode}
+                    companyName={companyName}
+                    onCompanyName={onCompanyName}
+                    website={website}
+                    onWebsite={onWebsite}
+                    candidates={candidates}
+                    autoPick={autoPick}
+                    resolving={resolving}
+                    resolveError={resolveError}
+                    company={candidate}
+                    picked={picked}
+                    onPick={pick}
+                    onChangeCompany={() => setPicked(false)}
+                    saved={saved}
+                    onLoadSaved={loadSaved}
+                    pitchTokens={pitchTokens}
+                    pitchText={pitchText}
+                    onPitchText={setPitchText}
+                    pitchRead={read}
+                    micState={mic(q1.micOn)}
+                    onMic={q1.toggleMic}
+                    onReplay={q1.replay}
+                    replaying={q1.replaying}
+                    visionTokens={visionTokens}
+                    visionText={visionText}
+                    onVisionText={setVisionText}
+                    visionMicState={mic(q2.micOn)}
+                    onVisionMic={q2.toggleMic}
+                    visionTarget={visionTarget}
+                    onSimulate={() => void simulate(undefined, true)}
+                  />
+                  </motion.div>
+                </motion.div>
+              </motion.section>
+            ) : (
+              <motion.button
+                key="brief"
+                type="button"
+                className="fx-brief glass"
+                layoutId="brief"
+                style={{ borderRadius: 999 }}
+                onClick={() => setEditing(true)}
+                title="Edit the company, pitch or vision"
+                data-testid="brief"
+              >
+                <motion.span className="fx-brief-row" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.3, duration: 0.3 } }} exit={{ opacity: 0, transition: { duration: 0.12 } }}>
+                  <span className="fx-brief-company">{briefLabel}</span>
+                  <span className="fx-brief-sep" aria-hidden />
+                  <span className="fx-brief-pitch" title={pitch}>
+                    {read ?? clip(pitch, 72)}
+                  </span>
+                  <span className="fx-brief-sep" aria-hidden />
+                  <span className="fx-brief-vision chip" title={result?.visionBasis.text ?? vision}>
+                    <span className="chip-value">{visionTarget}</span>
+                  </span>
+                  <span className="fx-brief-edit" aria-hidden>
+                    edit
+                  </span>
+                </motion.span>
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {phase === "simulating" && !editing && (
+              <motion.div key="sim" className="fx-simulating" role="status" data-testid="simulating" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.3 } }}>
+                <p className="hero-kicker">Simulating</p>
+                <p className="path-sim-title">5,000 futures of {briefLabel}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {error && (
+              <motion.p key="err" className="path-error" role="alert" data-testid="sim-error" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showResults && result && (
+              <motion.aside
+                key="left"
+                className={`fx-drawer fx-left ${fileOpen ? "" : "is-closed"}`}
+                style={{ width: fileOpen ? LEFT_W : LEFT_TAB_W }}
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0, width: fileOpen ? LEFT_W : LEFT_TAB_W }}
+                exit={{ opacity: 0, x: -24, transition: { duration: 0.3 } }}
+                data-testid="left-drawer"
+              >
+                <button type="button" className="fx-drawer-tab" onClick={() => setFileOpen((v) => !v)} aria-expanded={fileOpen} data-testid="toggle-file">
+                  <span>Company file</span>
+                  <i aria-hidden />
+                </button>
+                {fileOpen && (
+                  <div className="fx-drawer-body glass">
+                    <p className="path-start-line" data-testid="start-line">
+                      {result.start.companyName ? (
+                        <>
+                          <b>{result.start.companyName}</b> in Cala&apos;s cohort · starts after its {STAGE_LABELS[result.start.stage]}
+                          {result.start.stageNote && (
+                            <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                              i
+                            </span>
+                          )}
+                          {result.start.existingInvestors.length > 0 && <> · backed by {result.start.existingInvestors.map((b) => b.name).join(", ")}</>}
+                        </>
+                      ) : (
+                        <>
+                          <b>{companyLabel === "You" ? "Not" : companyLabel}</b> {companyLabel === "You" ? "in Cala's cohort yet" : "is not in Cala's cohort yet"} · starts from your pitch at{" "}
+                          {STAGE_LABELS[result.start.stage]}
+                          {result.start.stageNote && (
+                            <span className="path-info" tabIndex={0} role="img" aria-label={result.start.stageNote} title={result.start.stageNote} data-testid="stage-note">
+                              i
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </p>
+                    {result.founder && result.founder.tags.length > 0 && (
+                      <div className="chips path-founder-tags" data-testid="founder-tags" aria-label="What the pitch is about">
+                        {result.founder.tags.map((t) => (
+                          <span key={t} className="chip" data-chip={`tag:${t}`}>
+                            <span className="chip-value">{t}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {context ? (
+                      <CompanyFile doc={context.doc} markdown={context.markdown} verification={context.verification} onAddContext={(u) => void addContext(u)} />
+                    ) : (
+                      <section className="path-file" aria-label="Your company file" data-testid="company-file-error">
+                        <header className="path-section-head">
+                          <span>Company file</span>
+                        </header>
+                        <p className="muted path-empty">{contextError ?? "Building…"}</p>
+                      </section>
+                    )}
+                    <Precedents precedents={result.precedents} />
+                  </div>
+                )}
+              </motion.aside>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showResults && result && (
+              <motion.aside
+                key="right"
+                className="fx-drawer fx-right glass"
+                style={{ width: RIGHT_W }}
+                initial={{ opacity: 0, x: 32 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 32, transition: { duration: 0.3 } }}
+                data-testid="results"
+              >
+                <Realities realities={result.realities} selectedId={realityId} onSelect={(id) => setRealityId(id)} horizonYears={result.vision.horizonYears || 5} />
+                <NextMoves tree={result.tree} selected={decision} onSelect={selectDecision} leadIds={leadIds} docId={context?.doc.id} />
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+    </MotionConfig>
   );
 }

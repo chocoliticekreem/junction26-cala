@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Figtree, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Manrope, Syne } from "next/font/google";
 import Starfield from "@/components/Starfield";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const display = Syne({
   variable: "--font-display",
   subsets: ["latin"],
-  axes: ["opsz", "wdth"],
 });
 
-const text = Figtree({
+const text = Manrope({
   variable: "--font-text",
   subsets: ["latin"],
 });

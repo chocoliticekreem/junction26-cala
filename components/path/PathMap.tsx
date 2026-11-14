@@ -21,8 +21,13 @@ const MAX_DEPTH = 4;
 
 export type PathMapPhase = "idle" | "interview" | "simulating" | "results";
 
+// Pixels the drawers and the brief bar cover; highway columns are laid out inside the rest.
+export type MapInset = { left: number; right: number; top: number; bottom: number };
+const NO_INSET: MapInset = { left: 0, right: 0, top: 0, bottom: 0 };
+
 export type PathMapProps = {
   network: NetworkData;
+  inset?: MapInset;
   highways: Highway[];
   // Ordered node-id chains (You -> lead -> lead ...) kept bright and labelled, best first.
   brightPaths: string[][];
@@ -183,15 +188,19 @@ function assignDepths(nodes: Map<string, Node>, highways: Highway[]) {
   }
 }
 
-function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: PathMapPhase) {
+function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: PathMapPhase, inset: MapInset) {
   const results = phase === "results";
-  const x0 = results ? w * 0.13 : w * 0.5;
-  const colW = w * 0.19;
+  const bx = results ? inset.left : 0;
+  const by = results ? inset.top : 0;
+  const bw = results ? Math.max(200, w - inset.left - inset.right) : w;
+  const bh = results ? Math.max(200, h - inset.top - inset.bottom) : h;
+  const x0 = results ? bx + bw * 0.1 : w * 0.5;
+  const colW = bw * 0.21;
   const byDepth = new Map<number, Node[]>();
   for (const n of nodes.values()) {
     if (n.id === YOU_ID) {
       n.tx = x0;
-      n.ty = results ? h * 0.47 : h * 0.5;
+      n.ty = results ? by + bh * 0.5 : h * 0.5;
       n.fx = n.tx;
       n.fy = n.ty;
       continue;
@@ -200,10 +209,10 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
   }
   for (const [d, list] of byDepth) {
     list.sort((a, b) => b.led - a.led);
-    const span = Math.min(h * 0.64, list.length * 58);
+    const span = Math.min(bh * 0.7, list.length * 58);
     list.forEach((n, i) => {
       n.tx = x0 + d * colW;
-      n.ty = Math.min(h * 0.86, Math.max(h * 0.2, h * 0.47 + (list.length === 1 ? 0 : -span / 2 + (span * i) / (list.length - 1))));
+      n.ty = Math.min(by + bh * 0.9, Math.max(by + bh * 0.1, by + bh * 0.5 + (list.length === 1 ? 0 : -span / 2 + (span * i) / (list.length - 1))));
     });
   }
   for (const n of nodes.values()) {
@@ -212,8 +221,8 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
     const a = rnd() * Math.PI * 2;
     const rr = 0.3 + rnd() * 0.7;
     if (results) {
-      n.tx = w * 0.3 + rnd() * w * 0.68;
-      n.ty = h * (0.08 + rnd() * 0.84);
+      n.tx = bx + bw * (0.2 + rnd() * 0.8);
+      n.ty = by + bh * (0.04 + rnd() * 0.92);
     } else {
       n.tx = w * 0.5 + Math.cos(a) * rr * w * 0.42;
       n.ty = h * 0.5 + Math.sin(a) * rr * h * 0.44;
@@ -226,12 +235,12 @@ function layoutTargets(nodes: Map<string, Node>, w: number, h: number, phase: Pa
 function retarget(sim: Simulation<Node, undefined>, phase: PathMapPhase, h: number) {
   const results = phase === "results";
   sim.force("charge", forceManyBody<Node>().strength((n) => (n.onHighway && results ? -70 : -14)).distanceMax(170));
-  sim.force("collide", forceCollide<Node>().radius((n) => n.r + (n.onHighway && results ? Math.min(24, h / 24) : 5)).strength(0.8));
+  sim.force("collide", forceCollide<Node>().radius((n) => n.r + (n.onHighway && results ? Math.min(34, h / 18) : 5)).strength(0.8));
   sim.force("x", forceX<Node>((n) => n.tx).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
   sim.force("y", forceY<Node>((n) => n.ty).strength((n) => (n.onHighway && results ? 0.34 : 0.06)));
 }
 
-export default function PathMap({ network, highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion }: PathMapProps) {
+export default function PathMap({ network, inset = NO_INSET, highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion }: PathMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const nodesRef = useRef<Map<string, Node>>(new Map());
@@ -241,10 +250,11 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
   const linksRef = useRef<{ links: Link[]; frame: number }>({ links: [], frame: 0 });
   const hoverRef = useRef<Node | null>(null);
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
-  const propsRef = useRef({ highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion });
+  const propsRef = useRef({ highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion, inset });
   useEffect(() => {
-    propsRef.current = { highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion };
+    propsRef.current = { highways, brightPaths, emphasisEdges, backerIds, youLabel, phase, reducedMotion, inset };
   });
+  const insetKey = `${inset.left}|${inset.right}|${inset.top}|${inset.bottom}`;
 
   // Nodes are built once per network and mutated in place so positions survive re-simulations.
   useEffect(() => {
@@ -278,7 +288,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
     const { w, h } = sizeRef.current;
     if (w && h) {
       assignDepths(map, propsRef.current.highways);
-      layoutTargets(map, w, h, propsRef.current.phase);
+      layoutTargets(map, w, h, propsRef.current.phase, propsRef.current.inset);
       retarget(sim, propsRef.current.phase, h);
       for (const n of map.values()) {
         n.x = n.tx + (seeded(`${n.id}x`)() - 0.5) * 40;
@@ -301,7 +311,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
     const you = map.get(YOU_ID);
     if (you) you.name = youLabel;
     assignDepths(map, highways);
-    layoutTargets(map, w, h, phase);
+    layoutTargets(map, w, h, phase, propsRef.current.inset);
     retarget(sim, phase, h);
     sim.alpha(reducedMotion ? 1 : 0.9);
     if (reducedMotion) for (let i = 0; i < 120; i++) sim.tick();
@@ -329,7 +339,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
       if (e.particles.length > count) e.particles.length = count;
     }
     for (const e of edges.values()) if (!live.has(e.key)) e.target = 0;
-  }, [highways, phase, youLabel, reducedMotion]);
+  }, [highways, phase, youLabel, reducedMotion, insetKey]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -353,7 +363,7 @@ export default function PathMap({ network, highways, brightPaths, emphasisEdges,
       const sim = simRef.current;
       if (sim && map.size) {
         assignDepths(map, propsRef.current.highways);
-        layoutTargets(map, rect.width, rect.height, propsRef.current.phase);
+        layoutTargets(map, rect.width, rect.height, propsRef.current.phase, propsRef.current.inset);
         retarget(sim, propsRef.current.phase, rect.height);
         // Nothing visible yet (or the pane only just got a size): snap to the layout instead of
         // letting the weak idle forces drift stars in from wherever they were.

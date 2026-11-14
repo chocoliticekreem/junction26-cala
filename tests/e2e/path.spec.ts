@@ -1,8 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // The Scalaxy founder flow against the typed mock (E2E_MOCK=1, no engine routes): one CTA with
-// company -> pitch -> vision -> simulate -> realities + tree + galaxy map -> flip a branch ->
-// the company is remembered in "My companies" -> reset clears everything.
+// company -> pitch -> vision -> simulate -> the CTA collapses into the brief bar, realities + tree
+// slide in beside the galaxy map -> flip a branch -> the company is remembered (recent list on
+// focus) -> reset clears everything.
 
 async function mapHasContent(page: Page): Promise<boolean> {
   return page.evaluate(() => {
@@ -38,6 +39,8 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("candidates")).toHaveCount(0);
 
   // A website makes the match certain: no "Is this you?" even after the name is re-resolved.
+  await expect(page.getByTestId("company-website")).toHaveCount(0);
+  await page.getByTestId("add-website").click();
   await page.getByTestId("company-website").fill("cala.ai");
   await expect(page.getByTestId("company-found")).toContainText("Cala");
   await expect(page.getByTestId("candidates")).toHaveCount(0);
@@ -46,7 +49,7 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("pitch-read")).toContainText("Seed");
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "vision");
   await page.getByTestId("vision-example").first().click();
-  await expect(page.getByTestId("vision-basis")).toContainText("Judged as");
+  await expect(page.getByTestId("vision-basis")).toContainText("Read as");
   await expect(page.getByTestId("interview")).toHaveAttribute("data-step", "ready");
   await page.getByTestId("simulate").click();
 
@@ -55,9 +58,18 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   expect(await realities.count()).toBeGreaterThanOrEqual(3);
   const branches = page.getByTestId("tree").locator('[data-testid="branch"][data-depth="1"]');
   expect(await branches.count()).toBeGreaterThanOrEqual(2);
-  await expect(page.getByTestId("honesty")).toContainText("real rounds in Cala");
+  await expect(page.getByTestId("brief")).toContainText("Cala");
+  await expect(page.getByTestId("interview")).toHaveCount(0);
   await expect(page.getByTestId("precedent").first()).toBeVisible();
   await expect(page.getByTestId("company-file")).toBeVisible();
+
+  // Every explanation lives behind the one (i); the cache counter is gone from the founder UI.
+  await expect(page.getByTestId("honesty")).toHaveCount(0);
+  await page.getByTestId("how-this-works").click();
+  await expect(page.getByTestId("honesty")).toContainText("real rounds in Cala");
+  await expect(page.getByTestId("cache-stats")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("how-popover")).toHaveCount(0);
   await page.waitForTimeout(1500);
   expect(await mapHasContent(page)).toBe(true);
 
@@ -81,8 +93,8 @@ test("founder flow: CTA, simulate, flip a branch, remembered company, reset", as
   await expect(page.getByTestId("realities")).toHaveCount(0);
   await expect(page.getByTestId("tree")).toHaveCount(0);
 
-  // The simulated company is remembered; picking it pre-fills the whole CTA.
-  await page.getByTestId("my-companies").click();
+  // The simulated company is remembered; focusing the field lists it, picking it pre-fills the CTA.
+  await page.getByTestId("company-name").click();
   await expect(page.getByTestId("my-company")).toHaveCount(1);
   await page.getByTestId("my-company").first().click();
   await expect(page.getByTestId("company-name")).toHaveValue("Cala");
